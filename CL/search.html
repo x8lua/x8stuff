@@ -32,9 +32,7 @@
       background: #00fff7; border: none;
       padding: 6px 12px; cursor: pointer;
     }
-    .lock-screen button:hover {
-      background: #ff00ff; color: white;
-    }
+    .lock-screen button:hover { background: #ff00ff; color: white; }
 
     /* overlay */
     .bg-dim {
@@ -69,21 +67,6 @@
       animation: blink 1.2s infinite;
     }
     @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-
-    /* typewriter */
-    .typewriter {
-      font-size: 0.6rem;
-      color: #00fff7;
-      text-shadow: 0 0 5px #ff00ff;
-      height: 1em; overflow: hidden; white-space: nowrap;
-      border-right: 2px solid #00fff7;
-      animation: blinkCursor 0.8s infinite;
-    }
-    @keyframes blinkCursor {
-      0%{border-color:transparent;}
-      50%{border-color:#00fff7;}
-      100%{border-color:transparent;}
-    }
 
     /* sidebar */
     .sidebar {
@@ -158,7 +141,6 @@
     <div class="intro">
       <h1>x8's Classroom Log</h1>
       <p class="audit">Audit Log</p>
-      <div class="typewriter"><span id="typewriterText"></span></div>
       <p class="enter-hint">click anywhere to enter</p>
     </div>
 
