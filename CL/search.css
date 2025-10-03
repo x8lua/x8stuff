@@ -1,154 +1,101 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* background image */
+body {
+  background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+  margin: 0;
+  font-family: monospace;
+  color: #fff;
+}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body, html {
-  height: 100%;
-  width: 100%;
-  font-family: 'Press Start 2P', monospace;
-  background: #0d0d0d;
+/* password lock screen */
+.lock-screen {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85);
   color: #00fff7;
-  overflow-x: hidden;
+  padding: 20px;
+  border: 2px solid #00fff7;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 0 20px #ff00ff;
+}
+.lock-screen input {
+  margin: 10px 0;
+  padding: 6px;
+}
+.lock-screen button {
+  background: #00fff7;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.lock-screen button:hover {
+  background: #ff00ff;
+  color: white;
+}
+
+/* overlay that dims bg after entering */
+.bg-dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  transition: background 1s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+body.entered .bg-dim {
+  background: rgba(0,0,0,0.7);
 }
 
 /* intro section */
 .intro {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   transition: all 1s ease-in-out;
+  color: #00fff7;
+  z-index: 1;
 }
-
 .intro h1 {
   font-size: 2rem;
+  margin-bottom: 10px;
   text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-  margin-bottom: 15px;
-  transition: font-size 1s ease-in-out;
 }
-
-.intro p {
-  font-size: 0.8rem;
-  color: #fff;
-  margin: 5px 0;
-  transition: opacity 1s ease-in-out;
-}
-
 .intro .audit {
-  opacity: 0;
-  transform: translateY(-50px);
-}
-
-/* results appear below header */
-.results {
-  margin: 120px auto 20px;  /* spacing under header */
-  width: 90%;
-  max-width: 700px;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.results.show {
-  opacity: 1;
-}
-
-.results img {
-  max-width: 100%;
-  border: 2px solid #00fff7;
-  box-shadow: 0 0 15px #00fff7;
-  border-radius: 6px;
-  background: #111;
-}
-
-/* search bar under results */
-.search-area {
-  margin: 20px auto;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.search-area input {
-  padding: 12px;
-  font-family: inherit;
-  font-size: 0.8rem;
-  background: #111;
-  color: #00fff7;
-  border: 2px solid #00fff7;
-  border-radius: 6px;
-  width: 300px;
-  margin-right: 10px;
-  box-shadow: 0 0 10px #00fff7 inset, 0 0 5px #00fff7;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
-}
-
-.search-area input:focus {
-  outline: none;
-  box-shadow: 0 0 20px #ff00ff, 0 0 10px #00fff7 inset;
-  transform: scale(1.05);
-}
-
-.search-area button {
-  padding: 12px 18px;
-  font-family: inherit;
-  font-size: 0.8rem;
-  background: #00fff7;
-  color: #0d0d0d;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 0 10px #ff00ff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.search-area button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 20px #ff00ff, 0 0 20px #00fff7;
-}
-
-/* when entered */
-body.entered .intro {
-  top: 0;
-  transform: translate(-50%, 0);
-  background: rgba(10, 10, 10, 0.9);
-  width: 100%;
-  padding: 10px 0;
-  box-shadow: 0 0 10px #00fff7;
-}
-
-body.entered .intro h1 {
-  font-size: 1rem;
-  margin: 0;
-}
-
-body.entered .intro .enter-hint {
-  opacity: 0;
-}
-
-body.entered .intro .audit {
-  opacity: 1;
-  transform: translateY(0);
-  font-size: 0.6rem;
-  margin-top: 5px;
+  font-size: 0.9rem;
   color: #ccc;
-  animation: slideDown 0.8s ease forwards;
+  margin-bottom: 5px;
+}
+.intro .enter-hint {
+  font-size: 0.7rem;
+  margin-top: 6px;
+  text-shadow: 0 0 6px #00fff7;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
-@keyframes slideDown {
-  from { transform: translateY(-50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+/* typewriter */
+.typewriter {
+  font-size: 0.65rem;
+  color: #00fff7;
+  text-shadow: 0 0 5px #ff00ff;
+  height: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #00fff7;
+  animation: blinkCursor 0.8s infinite;
+}
+@keyframes blinkCursor {
+  0% { border-color: transparent; }
+  50% { border-color: #00fff7; }
+  100% { border-color: transparent; }
 }
 
-body.entered .search-area {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
-}
-
-/* sidebar styles */
+/* sidebar list */
 .sidebar {
   position: fixed;
   right: 0;
@@ -167,18 +114,12 @@ body.entered .search-area {
   transform: translateX(100%);
   transition: all 0.8s ease;
 }
-
 .sidebar h2 {
   font-size: 0.8rem;
   margin-bottom: 10px;
   text-shadow: 0 0 5px #ff00ff;
 }
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
+.sidebar ul { list-style: none; padding: 0; }
 .sidebar li {
   margin: 8px 0;
   padding: 6px;
@@ -188,63 +129,44 @@ body.entered .search-area {
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
 }
-
 .sidebar li:hover {
   background: #00fff7;
   color: #0d0d0d;
   transform: scale(1.05);
   box-shadow: 0 0 10px #ff00ff;
 }
-
-/* show sidebar after enter */
 body.entered .sidebar {
   opacity: 1;
   transform: translateX(0);
 }
 
-body {
-  background: url("/CL/search.jpg") center center / cover no-repeat fixed;
-  position: relative;
+/* results */
+.results {
+  margin: 120px auto 20px;
+  width: 90%;
+  max-width: 700px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.results.show { opacity: 1; }
+.results img {
+  max-width: 100%;
+  border: 2px solid #00fff7;
+  box-shadow: 0 0 15px #00fff7;
+  border-radius: 6px;
+  background: #111;
 }
 
-/* overlay that fades in when entered */
-body::after {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0);   /* transparent at start */
-  transition: background 1s ease;
-  z-index: -1; /* keeps it behind everything */
-}
-
-body.entered::after {
-  background: rgba(0,0,0,0.7); /* dark overlay */
-}
-
-/* full-screen background image */
-body {
-  background: url("/CL/search.jpg") center center / cover no-repeat fixed;
-}
-
-/* overlay layer that fades in when entered */
-.bg-dim {
-  position: fixed;
-  inset: 0;                 /* top:0; right:0; bottom:0; left:0 */
-  background: rgba(0,0,0,0);/* fully visible bg at start */
-  transition: background 0.9s ease;
+/* search bar */
+.search-area {
+  margin: 20px auto;
+  text-align: center;
+  opacity: 0;
   pointer-events: none;
-  z-index: 0;               /* sits under UI, over the bg image */
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
-
-/* when clicked/entered, darken bg to 70% */
-body.entered .bg-dim {
-  background: rgba(0,0,0,0.7);
+body.entered .search-area {
+  opacity: 1;
+  pointer-events: auto;
 }
-
-/* make sure all UI sits above the overlay */
-.intro,
-.results,
-.search-area { position: relative; z-index: 1; }
-
-.sidebar { position: fixed; z-index: 2; }
