@@ -1,8 +1,8 @@
 // map each date to your log image
 const logs = {
-  "2025-10-01": "/logs/2025-10-01.png",
-  "2025-10-02": "/logs/2025-10-02.png",
-  "2025-10-03": "/logs/2025-10-03.png"  // your scanned page
+  "2025-09-29": "/logs/2025-09-29.png",
+  "2025-09-30": "/logs/2025-09-30.png",
+  "2025-10-03": "/logs/2025-10-03.png"
 };
 
 const resultsDiv = document.getElementById("results");
@@ -20,7 +20,7 @@ function normalizeDate(query) {
 function showResult(query) {
   const date = normalizeDate(query);
   if (logs[date]) {
-    resultsDiv.innerHTML = `<img src="${logs[date]}" alt="Audit log for ${date}" style="max-width:100%; border:2px solid #00fff7; box-shadow:0 0 15px #00fff7">`;
+    resultsDiv.innerHTML = `<img src="${logs[date]}" alt="Audit log for ${date}">`;
   } else {
     resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
   }
