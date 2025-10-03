@@ -14,7 +14,6 @@
       width: 100%;
       overflow: hidden;
       font-family: 'Press Start 2P', monospace;
-      background: #0d0d0d;
     }
 
     .bg-container {
@@ -22,21 +21,12 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: -1;
-      overflow: hidden;
     }
 
-    .bg-container video,
     .bg-container img {
-      position: absolute;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-    }
-
-    .bg-container .active {
-      opacity: 1;
     }
 
     h1 {
@@ -81,7 +71,9 @@
   </style>
 </head>
 <body>
-  <div class="bg-container" id="bg"></div>
+  <div class="bg-container">
+    <img src="/pics/lobby.jpg" alt="background">
+  </div>
 
   <h1>x8's stuff</h1>
 
@@ -93,66 +85,10 @@
   </div>
 
   <script>
-    const bgContainer = document.getElementById("bg");
-
-    // list of your media files (update this list with real filenames in /pics/)
-    const media = [
-      "/pics/bg1.png",
-      "/pics/bg2.png",
-      "/pics/bg3.png",
-      "/pics/clip1.mp4",
-      "/pics/clip2.mp4"
-    ];
-
-    let currentIndex = -1;
-    let currentElement = null;
-
-    function showNext() {
-      // pick next random
-      const nextIndex = Math.floor(Math.random() * media.length);
-      const file = media[nextIndex];
-
-      let el;
-      if (file.endsWith(".mp4")) {
-        el = document.createElement("video");
-        el.src = file;
-        el.autoplay = true;
-        el.loop = true;
-        el.muted = true;
-      } else {
-        el = document.createElement("img");
-        el.src = file;
-      }
-
-      el.classList.add("fade");
-      bgContainer.appendChild(el);
-
-      // allow CSS transition
-      requestAnimationFrame(() => {
-        el.classList.add("active");
-      });
-
-      // remove old one after fade
-      if (currentElement) {
-        currentElement.classList.remove("active");
-        setTimeout(() => {
-          currentElement.remove();
-        }, 1000); // wait for fade out
-      }
-
-      currentElement = el;
-      currentIndex = nextIndex;
-    }
-
-    // first background
-    showNext();
-    // change every 5s
-    setInterval(showNext, 5000);
-
-    // volume control
     const audio = document.getElementById("bg-audio");
     const volumeSlider = document.getElementById("volume");
 
+    // browsers block autoplay with sound, so resume on click
     document.body.addEventListener("click", () => {
       audio.play().catch(() => {});
     }, { once: true });
