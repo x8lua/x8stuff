@@ -189,26 +189,23 @@ body.entered #mainIntro {
   </style>
 </head>
 <body>
-  <!-- Password Gate -->
+  <!-- wrapper for lock -->
   <div class="lock-screen" id="lockScreen">
-    <div class="intro">
-      <h1>x8's Classroom Log System</h1>
-      <p class="audit">Audit Log</p>
-    </div>
-    <input type="password" id="pwdInput" placeholder="Password">
-    <button id="pwdBtn">Enter</button>
-    <p id="pwdMsg"></p>
-  </div>
-
-  <!-- Hidden content (unlocked area) -->
-  <div id="searchContent" style="display:none;">
-    <div class="bg-dim" aria-hidden="true"></div>
-
-    <!-- same intro, but we reuse it -->
     <div class="intro" id="mainIntro">
       <h1>x8's Classroom Log System</h1>
       <p class="audit">Audit Log</p>
     </div>
+
+    <div class="pwd-area">
+      <input type="password" id="pwdInput" placeholder="Password">
+      <button id="pwdBtn">Enter</button>
+      <p id="pwdMsg"></p>
+    </div>
+  </div>
+
+  <!-- Hidden content (unlocked area) -->
+  <div id="searchContent" style="display:none;">
+    <div class="bg-dim"></div>
 
     <div class="sidebar">
       <h2>Available Dates</h2>
