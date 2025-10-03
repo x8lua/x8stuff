@@ -147,3 +147,58 @@ body.entered .search-area {
   pointer-events: auto;
   transform: scale(1);
 }
+
+/* sidebar styles */
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 60px;
+  width: 200px;
+  background: rgba(10, 10, 10, 0.85);
+  border-left: 2px solid #00fff7;
+  box-shadow: -2px 0 10px #00fff7;
+  padding: 15px;
+  color: #00fff7;
+  font-size: 0.7rem;
+  text-align: left;
+  max-height: 80%;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.8s ease;
+}
+
+.sidebar h2 {
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px #ff00ff;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 8px 0;
+  padding: 6px;
+  background: #111;
+  border: 1px solid #00fff7;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.sidebar li:hover {
+  background: #00fff7;
+  color: #0d0d0d;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #ff00ff;
+}
+
+/* show sidebar after enter */
+body.entered .sidebar {
+  opacity: 1;
+  transform: translateX(0);
+}
+
