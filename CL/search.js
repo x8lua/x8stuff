@@ -1,26 +1,35 @@
-// map each date to your log image
+// only store the keys (YYDDMM), don't hardcode extensions
 const logs = {
-  "2025-09-29": "/logs/2025-09-29.jpg",
-  "2025-09-30": "/logs/2025-09-30.jpg",
-  "2025-10-03": "/logs/2025-10-03.jpg"
+  "251001": "2025-10-01",
+  "251002": "2025-10-02",
+  "251003": "2025-10-03"
 };
 
 const resultsDiv = document.getElementById("results");
 const input = document.getElementById("searchInput");
 const btn = document.getElementById("searchBtn");
 
+// format check: YYDDMM
 function normalizeDate(query) {
-  // allow "20251003" → "2025-10-03"
-  if (/^\d{8}$/.test(query)) {
-    return `${query.slice(0,4)}-${query.slice(4,6)}-${query.slice(6)}`;
+  if (/^\d{6}$/.test(query)) {
+    return query;
   }
-  return query;
+  return null;
 }
 
 function showResult(query) {
-  const date = normalizeDate(query);
-  if (logs[date]) {
-    resultsDiv.innerHTML = `<img src="${logs[date]}" alt="Audit log for ${date}">`;
+  const dateKey = normalizeDate(query);
+  if (dateKey && logs[dateKey]) {
+    // try both png and jpg
+    const base = logs[dateKey];
+    const pngPath = `/logs/${base}.png`;
+    const jpgPath = `/logs/${base}.jpg`;
+
+    // default try jpg first, fallback png
+    resultsDiv.innerHTML = `
+      <img src="${jpgPath}" 
+           alt="Audit log for ${dateKey}" 
+           onerror="this.onerror=null; this.src='${pngPath}';">`;
   } else {
     resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
   }
