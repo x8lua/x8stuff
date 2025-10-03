@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>x8's Classroom Log</title>
-  <!-- retro font -->
+  <title>x8's Classroom Log System</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
   <style>
     body {
       background: url("/CL/search.jpg") center center / cover no-repeat fixed;
@@ -14,68 +12,66 @@
       color: #fff;
     }
 
-    /* lock screen */
-    .lock-screen {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.85);
-      color: #00fff7;
-      padding: 20px;
-      border: 2px solid #00fff7;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 0 20px #ff00ff;
-    }
-    .lock-screen input { margin: 10px 0; padding: 6px; font-family: inherit; }
-    .lock-screen button {
-      background: #00fff7; border: none;
-      padding: 6px 12px; cursor: pointer;
-      font-family: inherit;
-    }
-    .lock-screen button:hover { background: #ff00ff; color: white; }
-
-    /* overlay */
-    .bg-dim {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0);
-      transition: background 1s ease;
-      pointer-events: none;
-      z-index: 0;
-    }
-    body.entered .bg-dim { background: rgba(0,0,0,0.7); }
-
-    /* intro */
+    /* INTRO header */
     .intro {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
       text-align: center;
-      transition: all 1s ease-in-out;
       color: #00fff7;
-      z-index: 1;
+      transition: all 1s ease-in-out;
     }
     .intro h1 {
       font-size: 1.5rem;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
     }
-    .intro .audit { font-size: 0.8rem; color: #ccc; margin-bottom: 5px; }
-    .intro .enter-hint {
-      font-size: 0.6rem;
-      margin-top: 6px;
-      text-shadow: 0 0 6px #00fff7;
-      animation: blink 1.2s infinite;
+    .intro .audit {
+      font-size: 0.8rem;
+      color: #ccc;
     }
-    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-    /* when entered, move intro to top bar */
-    body.entered .intro {
-      top: 20px;
-      transform: translate(-50%, 0);
+    /* LOCK SCREEN */
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background 1s ease;
+    }
+    .pwd-area { margin-top: 20px; }
+    .pwd-area input {
+      padding: 6px 10px;
+      border: 2px solid #00fff7;
+      border-radius: 4px;
+      background: #111;
+      color: #00fff7;
+      font-family: inherit;
+    }
+    .pwd-area button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      border: 2px solid #00fff7;
+      background: #00fff7;
+      color: #111;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .pwd-area button:hover {
+      background: #ff00ff;
+      border-color: #ff00ff;
+      color: #fff;
+    }
+
+    /* when unlocked: move intro to top */
+    body.entered #mainIntro {
+      position: absolute;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
       font-size: 0.8rem;
     }
-    body.entered .enter-hint { display: none; }
 
     /* sidebar */
     .sidebar {
@@ -124,7 +120,7 @@
       background: #111;
     }
 
-    /* search bar & button */
+    /* search area */
     .search-area {
       margin: 20px auto;
       text-align: center;
@@ -156,46 +152,15 @@
       color: #fff;
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
-
-    /* intro shared style */
-.intro {
-  text-align: center;
-  color: #00fff7;
-  transition: all 1s ease-in-out;
-}
-.intro h1 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-}
-.intro .audit {
-  font-size: 0.8rem;
-  color: #ccc;
-}
-
-/* center intro on lock screen */
-.lock-screen .intro {
-  margin-bottom: 20px;
-}
-
-/* after entering, the mainIntro slides to top */
-body.entered #mainIntro {
-  position: absolute;
-  top: 20px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.8rem;
-}
-
   </style>
 </head>
 <body>
-  <!-- wrapper for lock -->
+  <!-- Password Gate -->
   <div class="lock-screen" id="lockScreen">
     <div class="intro" id="mainIntro">
       <h1>x8's Classroom Log System</h1>
       <p class="audit">Audit Log</p>
     </div>
-
     <div class="pwd-area">
       <input type="password" id="pwdInput" placeholder="Password">
       <button id="pwdBtn">Enter</button>
@@ -203,22 +168,107 @@ body.entered #mainIntro {
     </div>
   </div>
 
-  <!-- Hidden content (unlocked area) -->
+  <!-- Hidden content -->
   <div id="searchContent" style="display:none;">
-    <div class="bg-dim"></div>
-
     <div class="sidebar">
       <h2>Available Dates</h2>
       <ul id="dateList"></ul>
     </div>
-
     <div class="results" id="results"></div>
-
     <div class="search-area">
       <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
       <button id="searchBtn">Search</button>
     </div>
   </div>
 
-  <script src="search.js"></script>
+  <script>
+    // --- PASSWORD GATE ---
+    async function checkPassword() {
+      const input = document.getElementById("pwdInput").value.trim();
+
+      try {
+        const res = await fetch("/api/check-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: input })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          // hide password inputs
+          document.querySelector(".pwd-area").style.display = "none";
+          document.getElementById("lockScreen").style.background = "transparent";
+
+          // show search content
+          document.getElementById("searchContent").style.display = "block";
+
+          // trigger tween up
+          document.body.classList.add("entered");
+        } else {
+          document.getElementById("pwdMsg").textContent = "Wrong password.";
+        }
+      } catch (err) {
+        document.getElementById("pwdMsg").textContent = "Server error: " + err.message;
+      }
+    }
+
+    document.getElementById("pwdBtn").addEventListener("click", checkPassword);
+    document.getElementById("pwdInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPassword();
+    });
+
+    // --- LOG SEARCH ---
+    const logs = {
+      "250929": "250929",
+      "250930": "250930",
+      "251003": "251003"
+    };
+
+    const resultsDiv = document.getElementById("results");
+    const input = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+    const dateList = document.getElementById("dateList");
+
+    function showResult(query) {
+      const base = logs[query];
+      if (!base) {
+        resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+        resultsDiv.classList.add("show");
+        return;
+      }
+      const jpg = `/logs/${base}.jpg`;
+      const png = `/logs/${base}.png`;
+
+      const img = new Image();
+      img.alt = `Audit log for ${query}`;
+      img.onload = () => {
+        resultsDiv.innerHTML = "";
+        resultsDiv.appendChild(img);
+        resultsDiv.classList.add("show");
+      };
+      img.onerror = () => {
+        img.onerror = () => {
+          resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+          resultsDiv.classList.add("show");
+        };
+        img.src = png;
+      };
+      img.src = jpg;
+    }
+
+    btn.addEventListener("click", () => showResult(input.value.trim()));
+    input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
+
+    // populate sidebar
+    for (const date in logs) {
+      const li = document.createElement("li");
+      li.textContent = date;
+      li.addEventListener("click", () => {
+        input.value = date;
+        showResult(date);
+      });
+      dateList.appendChild(li);
+    }
+  </script>
 </body>
+</html>
