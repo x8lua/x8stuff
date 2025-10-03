@@ -156,6 +156,36 @@
       color: #fff;
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
+
+    /* intro shared style */
+.intro {
+  text-align: center;
+  color: #00fff7;
+  transition: all 1s ease-in-out;
+}
+.intro h1 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
+}
+.intro .audit {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+/* center intro on lock screen */
+.lock-screen .intro {
+  margin-bottom: 20px;
+}
+
+/* after entering, the mainIntro slides to top */
+body.entered #mainIntro {
+  position: absolute;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+}
+
   </style>
 </head>
 <body>
