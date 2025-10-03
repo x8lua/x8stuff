@@ -161,20 +161,23 @@
 <body>
   <!-- Password Gate -->
   <div class="lock-screen" id="lockScreen">
-    <h2>Enter Password</h2>
+    <div class="intro">
+      <h1>x8's Classroom Log System</h1>
+      <p class="audit">Audit Log</p>
+    </div>
     <input type="password" id="pwdInput" placeholder="Password">
     <button id="pwdBtn">Enter</button>
     <p id="pwdMsg"></p>
   </div>
 
-  <!-- Hidden content -->
+  <!-- Hidden content (unlocked area) -->
   <div id="searchContent" style="display:none;">
     <div class="bg-dim" aria-hidden="true"></div>
 
-    <div class="intro">
-      <h1>x8's Classroom Log</h1>
+    <!-- same intro, but we reuse it -->
+    <div class="intro" id="mainIntro">
+      <h1>x8's Classroom Log System</h1>
       <p class="audit">Audit Log</p>
-      <p class="enter-hint">click anywhere to enter</p>
     </div>
 
     <div class="sidebar">
@@ -192,4 +195,3 @@
 
   <script src="search.js"></script>
 </body>
-</html>
