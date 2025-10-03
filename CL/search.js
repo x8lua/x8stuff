@@ -102,3 +102,26 @@ function showResult(query) {
 }
 
 btn.addEventListener("click", () => {
+  const query = input.value.trim();
+  showResult(query);
+});
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") btn.click();
+});
+
+document.body.addEventListener("click", () => {
+  if (!document.body.classList.contains("entered")) {
+    document.body.classList.add("entered");
+  }
+});
+
+// populate sidebar
+for (const date in logs) {
+  const li = document.createElement("li");
+  li.textContent = date;
+  li.addEventListener("click", () => {
+    input.value = date;
+    showResult(date);
+  });
+  dateList.appendChild(li);
+}
