@@ -202,3 +202,23 @@ body.entered .sidebar {
   transform: translateX(0);
 }
 
+body {
+  background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+  position: relative;
+}
+
+/* overlay that fades in when entered */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0);   /* transparent at start */
+  transition: background 1s ease;
+  z-index: -1; /* keeps it behind everything */
+}
+
+body.entered::after {
+  background: rgba(0,0,0,0.7); /* dark overlay */
+}
+
