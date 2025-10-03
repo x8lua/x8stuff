@@ -12,20 +12,30 @@
       color: #fff;
     }
 
-    /* INTRO header */
-    .intro {
+    /* INTRO (now independent from lock screen) */
+    #mainIntro {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      color: #00fff7;
       transition: all 1s ease-in-out;
+      color: #00fff7;
+      z-index: 11;
     }
-    .intro h1 {
+    #mainIntro h1 {
       font-size: 1.5rem;
       margin-bottom: 5px;
       text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
     }
-    .intro .audit {
+    #mainIntro .audit {
       font-size: 0.8rem;
       color: #ccc;
+    }
+    body.entered #mainIntro {
+      top: 20px;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
     }
 
     /* LOCK SCREEN */
@@ -38,9 +48,9 @@
       align-items: center;
       justify-content: center;
       z-index: 10;
-      transition: background 1s ease, opacity 1s ease;
+      transition: opacity 1s ease;
     }
-    .pwd-area { margin-top: 20px; }
+    .pwd-area { margin-top: 120px; }
     .pwd-area input {
       padding: 6px 10px;
       border: 2px solid #00fff7;
@@ -64,25 +74,13 @@
       border-color: #ff00ff;
       color: #fff;
     }
-
-    /* Wrong password effect */
-    .lock-screen.shake {
-      animation: shake 0.4s;
-    }
+    .lock-screen.shake { animation: shake 0.4s; }
     @keyframes shake {
       0%,100% { transform: translateX(0); }
       20% { transform: translateX(-10px); }
       40% { transform: translateX(10px); }
       60% { transform: translateX(-6px); }
       80% { transform: translateX(6px); }
-    }
-
-    /* when unlocked: move intro to top */
-    body.entered #mainIntro {
-      position: absolute;
-      top: 20px; left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.8rem;
     }
 
     /* sidebar */
@@ -167,16 +165,13 @@
   </style>
 </head>
 <body>
-  <!-- Password Gate -->
-  <div class="lock-screen" id="lockScreen">
- <body>
-  <!-- Title intro OUTSIDE lock screen -->
+  <!-- Title (always visible, tweens up) -->
   <div class="intro" id="mainIntro">
     <h1>x8's Classroom Log System</h1>
     <p class="audit">Audit Log</p>
   </div>
 
-  <!-- Lock Screen -->
+  <!-- Password Gate -->
   <div class="lock-screen" id="lockScreen">
     <div class="pwd-area">
       <input type="password" id="pwdInput" placeholder="Password">
@@ -197,7 +192,6 @@
       <button id="searchBtn">Search</button>
     </div>
   </div>
-q
 
   <script>
     let wrongCount = 0;
@@ -215,25 +209,24 @@ q
         const data = await res.json();
 
         if (data.ok) {
-          // hide password inputs
+          // hide password area
           document.querySelector(".pwd-area").style.display = "none";
-          lockScreen.style.background = "transparent";
+
+          // fade lock screen out
+          lockScreen.style.opacity = "0";
+          lockScreen.style.pointerEvents = "none";
 
           // show search content
           document.getElementById("searchContent").style.display = "block";
-
-          // allow clicks through lock-screen, fade it away
-          lockScreen.style.pointerEvents = "none";
-          lockScreen.style.opacity = "0";
 
           // trigger tween up
           document.body.classList.add("entered");
         } else {
           wrongCount++;
           document.getElementById("pwdMsg").textContent = `Wrong password (attempts: ${wrongCount})`;
-          // trigger shake effect
+          // shake effect
           lockScreen.classList.remove("shake");
-          void lockScreen.offsetWidth; // restart animation
+          void lockScreen.offsetWidth;
           lockScreen.classList.add("shake");
         }
       } catch (err) {
@@ -288,7 +281,7 @@ q
     btn.addEventListener("click", () => showResult(input.value.trim()));
     input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 
-    // populate sidebar
+    // sidebar
     for (const date in logs) {
       const li = document.createElement("li");
       li.textContent = date;
