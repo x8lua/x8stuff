@@ -1,1 +1,89 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x8's stuff</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0d0d0d;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: 'Press Start 2P', monospace;
+      color: #00fff7;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-align: center;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff, 0 0 40px #00fff7;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff; }
+      to { text-shadow: 0 0 20px #ff00ff, 0 0 40px #00fff7; }
+    }
+
+    .volume-control {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(20, 20, 20, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #00fff7;
+      box-shadow: 0 0 10px #00fff7;
+    }
+
+    .volume-control label {
+      font-size: 0.7rem;
+      color: #fff;
+    }
+
+    input[type=range] {
+      accent-color: #00fff7;
+    }
+  </style>
+</head>
+<body>
+  <h1>x8's stuff</h1>
+
+  <audio id="bg-audio" src="/lobby.mp3" autoplay loop></audio>
+
+  <div class="volume-control">
+    <label for="volume">vol</label>
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+  </div>
+
+  <script>
+    const audio = document.getElementById("bg-audio");
+    const volumeSlider = document.getElementById("volume");
+
+    // ensure audio plays on user interaction (for browsers that block autoplay)
+    document.body.addEventListener("click", () => {
+      audio.play().catch(() => {});
+    }, { once: true });
+
+    // link volume slider
+    volumeSlider.addEventListener("input", (e) => {
+      audio.volume = e.target.value;
+    });
+  </script>
+</body>
+</html>
