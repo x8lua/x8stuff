@@ -3,35 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 - Page Not Found</title>
+  <title>404 - Not Found</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
+      background: #0d0d0d;
+      color: #00fff7;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       height: 100vh;
-      margin: 0;
-      background: #0d0d0d;
-      color: #fff;
-      text-align: center;
+      font-family: 'Press Start 2P', monospace;
+      overflow: hidden;
     }
+
     h1 {
-      font-size: 5rem;
-      margin: 0;
-      color: cyan;
+      font-size: 6rem;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #00fff7, 0 0 40px #ff00ff;
+      animation: glitch 1.5s infinite;
     }
+
+    p {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #fff;
+    }
+
     a {
-      color: cyan;
+      margin-top: 30px;
+      color: #ff00ff;
       text-decoration: none;
-      margin-top: 1rem;
+      font-size: 0.9rem;
+      border: 1px solid #ff00ff;
+      padding: 10px 20px;
+      transition: all 0.2s ease-in-out;
     }
-  </style>
-</head>
-<body>
-  <h1>404</h1>
-  <p>this page doesn’t exist...</p>
-  <a href="/">go home</a>
-</body>
-</html>
+
+    a:hover {
+      background: #ff00ff;
+      color: #0d0d0d;
+      box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px #ff00ff, -2px -2px #00fff7; }
+      25% { text-shadow: -2px 2px #ff00ff, 2px -2px #00fff7; }
+      50% { text-shadow: 2px -2px #ff00ff, -2px 2px #00fff7; }
+      75% { text-shadow: -2px -2px #ff00ff, 2px 2px #00fff7; }
+      100% { text-shadow: 2px 2px #ff00ff, -2px -2px #00fff7; }
+    }
+
+    .scanlines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      poi
