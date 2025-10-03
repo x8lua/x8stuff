@@ -29,20 +29,56 @@
       object-fit: cover;
     }
 
-    h1 {
+    .content {
       position: relative;
       z-index: 10;
-      top: 40%;
+      top: 30%;
       text-align: center;
-      font-size: 3rem;
       color: #00fff7;
+    }
+
+    h1 {
+      font-size: 3rem;
       text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff, 0 0 40px #00fff7;
       animation: glow 2s infinite alternate;
+    }
+
+    p {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #fff;
+      text-shadow: 0 0 5px #000;
     }
 
     @keyframes glow {
       from { text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff; }
       to { text-shadow: 0 0 20px #ff00ff, 0 0 40px #00fff7; }
+    }
+
+    .log-button {
+      display: inline-block;
+      margin-top: 25px;
+      padding: 15px 30px;
+      font-size: 0.9rem;
+      color: #0d0d0d;
+      background: #00fff7;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff, 0 0 40px #00fff7;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    .log-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #ff00ff, 0 0 40px #00fff7, 0 0 60px #ff00ff;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
     }
 
     .volume-control {
@@ -75,7 +111,11 @@
     <img src="/pics/lobby.jpg" alt="background">
   </div>
 
-  <h1>x8's stuff</h1>
+  <div class="content">
+    <h1>x8's stuff</h1>
+    <p>the picture on the background is my school btw :3</p>
+    <a href="/CL/search.html" class="log-button">Classroom Log</a>
+  </div>
 
   <audio id="bg-audio" src="/lobby.mp3" autoplay loop></audio>
 
