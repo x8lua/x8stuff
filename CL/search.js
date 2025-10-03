@@ -1,8 +1,8 @@
 // only store the keys (YYDDMM), don't hardcode extensions
 const logs = {
-  "251001": "2025-10-01",
-  "251002": "2025-10-02",
-  "251003": "2025-10-03"
+  "250929": "250929",
+  "250930": "250930",
+  "251003": "251003"
 };
 
 const resultsDiv = document.getElementById("results");
