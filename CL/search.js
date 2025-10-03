@@ -78,7 +78,7 @@ const taglines = [
 let currentLine = 0;
 let charIndex = 0;
 let isDeleting = false;
-const speed = 60; // typing speed
+const speed = 30; // typing speed
 const pause = 1500; // pause at end of line
 
 const twElem = document.getElementById("typewriterText");
