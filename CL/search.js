@@ -1,4 +1,3 @@
-// --- PASSWORD GATE ---
 async function checkPassword() {
   const input = document.getElementById("pwdInput").value.trim();
 
@@ -11,8 +10,12 @@ async function checkPassword() {
     const data = await res.json();
 
     if (data.ok) {
+      // hide lock screen, show main page
       document.getElementById("lockScreen").style.display = "none";
       document.getElementById("searchContent").style.display = "block";
+
+      // trigger transition
+      document.body.classList.add("entered");
     } else {
       document.getElementById("pwdMsg").textContent = "Wrong password.";
     }
@@ -20,6 +23,7 @@ async function checkPassword() {
     document.getElementById("pwdMsg").textContent = "Server error: " + err.message;
   }
 }
+
 document.getElementById("pwdBtn").addEventListener("click", checkPassword);
 document.getElementById("pwdInput").addEventListener("keydown", e => {
   if (e.key === "Enter") checkPassword();
