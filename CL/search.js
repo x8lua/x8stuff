@@ -1,4 +1,4 @@
-// only store the keys (YYDDMM), don't hardcode extensions
+// only store the keys (YYMMDD) -> we derive the file paths
 const logs = {
   "250929": "250929",
   "250930": "250930",
@@ -11,12 +11,33 @@ const btn = document.getElementById("searchBtn");
 const dateList = document.getElementById("dateList");
 
 function showResult(query) {
-  if (logs[query]) {
-    resultsDiv.innerHTML = `<img src="${logs[query]}" alt="Audit log for ${query}">`;
-  } else {
+  const base = logs[query];
+  if (!base) {
     resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+    resultsDiv.classList.add("show");
+    return;
   }
-  resultsDiv.classList.add("show");
+
+  // try jpg first, then png
+  const jpg = `/logs/${base}.jpg`;
+  const png = `/logs/${base}.png`;
+
+  const img = new Image();
+  img.alt = `Audit log for ${query}`;
+  img.onload = () => {
+    resultsDiv.innerHTML = "";
+    resultsDiv.appendChild(img);
+    resultsDiv.classList.add("show");
+  };
+  img.onerror = () => {
+    // second attempt with png
+    img.onerror = () => {
+      resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+      resultsDiv.classList.add("show");
+    };
+    img.src = png;
+  };
+  img.src = jpg; // kick off: prefer jpg
 }
 
 btn.addEventListener("click", () => {
@@ -34,10 +55,10 @@ document.body.addEventListener("click", () => {
   }
 });
 
-// populate sidebar list
+// sidebar population
 for (const date in logs) {
   const li = document.createElement("li");
-  li.textContent = date; // shows 250929 etc
+  li.textContent = date; // e.g., 250929
   li.addEventListener("click", () => {
     input.value = date;
     showResult(date);
