@@ -169,10 +169,15 @@
 <body>
   <!-- Password Gate -->
   <div class="lock-screen" id="lockScreen">
-    <div class="intro" id="mainIntro">
-      <h1>x8's Classroom Log System</h1>
-      <p class="audit">Audit Log</p>
-    </div>
+ <body>
+  <!-- Title intro OUTSIDE lock screen -->
+  <div class="intro" id="mainIntro">
+    <h1>x8's Classroom Log System</h1>
+    <p class="audit">Audit Log</p>
+  </div>
+
+  <!-- Lock Screen -->
+  <div class="lock-screen" id="lockScreen">
     <div class="pwd-area">
       <input type="password" id="pwdInput" placeholder="Password">
       <button id="pwdBtn">Enter</button>
@@ -192,6 +197,7 @@
       <button id="searchBtn">Search</button>
     </div>
   </div>
+q
 
   <script>
     let wrongCount = 0;
