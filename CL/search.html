@@ -3,10 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <title>x8's Classroom Log</title>
-  <link rel="stylesheet" href="search.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+      margin: 0;
+      font-family: 'Press Start 2P', monospace;
+      color: #fff;
+    }
+
+    /* password lock screen */
+    .lock-screen {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.85);
+      color: #00fff7;
+      padding: 20px;
+      border: 2px solid #00fff7;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 20px #ff00ff;
+      z-index: 10;
+    }
+    .lock-screen input { margin: 10px 0; padding: 6px; }
+    .lock-screen button {
+      background: #00fff7; border: none; padding: 6px 12px; cursor: pointer;
+    }
+    .lock-screen button:hover { background: #ff00ff; color: white; }
+
+    /* overlay */
+    .bg-dim {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background 1s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body.entered .bg-dim { background: rgba(0,0,0,0.7); }
+
+    /* intro */
+    .intro {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      transition: all 1s ease-in-out;
+      color: #00fff7;
+      z-index: 1;
+    }
+    .intro h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
+    }
+    .intro .audit {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-bottom: 5px;
+    }
+    .intro .enter-hint {
+      font-size: 0.7rem;
+      margin-top: 6px;
+      text-shadow: 0 0 6px #00fff7;
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    /* typewriter */
+    .typewriter {
+      font-size: 0.6rem;
+      color: #00fff7;
+      text-shadow: 0 0 5px #ff00ff;
+      height: 1em;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid #00fff7;
+      animation: blinkCursor 0.8s infinite;
+    }
+    @keyframes blinkCursor {
+      0% { border-color: transparent; }
+      50% { border-color: #00fff7; }
+      100% { border-color: transparent; }
+    }
+
+    /* sidebar */
+    .sidebar {
+      position: fixed; right: 0; top: 60px;
+      width: 200px;
+      background: rgba(10,10,10,0.85);
+      border-left: 2px solid #00fff7;
+      box-shadow: -2px 0 10px #00fff7;
+      padding: 15px;
+      color: #00fff7;
+      font-size: 0.7rem;
+      text-align: left;
+      max-height: 80%;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.8s ease;
+    }
+    .sidebar h2 {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px #ff00ff;
+    }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li {
+      margin: 8px 0; padding: 6px;
+      background: #111;
+      border: 1px solid #00fff7;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .sidebar li:hover {
+      background: #00fff7; color: #0d0d0d;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #ff00ff;
+    }
+    body.entered .sidebar { opacity:1; transform: translateX(0); }
+
+    /* results */
+    .results {
+      margin: 120px auto 20px;
+      width: 90%; max-width: 700px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .results.show { opacity: 1; }
+    .results img {
+      max-width: 100%;
+      border: 2px solid #00fff7;
+      box-shadow: 0 0 15px #00fff7;
+      border-radius: 6px;
+      background: #111;
+    }
+
+    /* search bar */
+    .search-area {
+      margin: 20px auto;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    body.entered .search-area { opacity:1; pointer-events:auto; }
+  </style>
 </head>
 <body>
-  <!-- Password Gate -->
+  <!-- password -->
   <div class="lock-screen" id="lockScreen">
     <h2>Enter Password</h2>
     <input type="password" id="pwdInput" placeholder="Password">
@@ -14,7 +162,7 @@
     <p id="pwdMsg"></p>
   </div>
 
-  <!-- Hidden content (revealed after login) -->
+  <!-- hidden content -->
   <div id="searchContent" style="display:none;">
     <div class="bg-dim" aria-hidden="true"></div>
 
@@ -38,6 +186,75 @@
     </div>
   </div>
 
-  <script src="search.js"></script>
+  <script>
+    // PASSWORD CHECK
+    async function checkPassword() {
+      const input = document.getElementById("pwdInput").value.trim();
+      try {
+        const res = await fetch("/api/check-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: input })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById("lockScreen").style.display = "none";
+          document.getElementById("searchContent").style.display = "block";
+        } else {
+          document.getElementById("pwdMsg").textContent = "Wrong password.";
+        }
+      } catch (err) {
+        document.getElementById("pwdMsg").textContent = "Server error.";
+      }
+    }
+    document.getElementById("pwdBtn").addEventListener("click", checkPassword);
+    document.getElementById("pwdInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPassword();
+    });
+
+    // TYPEWRITER
+    const taglines = [
+      "keeping track of what each class covered today.",
+      "a daily record of lessons and activities.",
+      "the timeline of every subject in this classroom.",
+      "logs that show exactly what was taught and when.",
+      "simple entries that capture each lesson’s focus."
+    ];
+    let currentLine=0,charIndex=0,isDeleting=false;
+    const speed=35,pause=1000;
+    const twElem=document.getElementById("typewriterText");
+    function typewriter(){
+      const line=taglines[currentLine];
+      if(isDeleting){charIndex--;twElem.textContent=line.substring(0,charIndex);
+        if(charIndex===0){isDeleting=false;currentLine=(currentLine+1)%taglines.length;}
+      } else {
+        charIndex++;twElem.textContent=line.substring(0,charIndex);
+        if(charIndex===line.length){isDeleting=true;setTimeout(typewriter,pause);return;}
+      }
+      setTimeout(typewriter,speed);
+    }
+    window.addEventListener("load",()=>{typewriter();});
+
+    // CLASSROOM LOG SEARCH
+    const logs={"250929":"250929","250930":"250930","251003":"251003"};
+    const resultsDiv=document.getElementById("results");
+    const input=document.getElementById("searchInput");
+    const btn=document.getElementById("searchBtn");
+    const dateList=document.getElementById("dateList");
+
+    function showResult(query){
+      const base=logs[query];
+      if(!base){resultsDiv.innerHTML=`<p>No results found for ${query}</p>`;resultsDiv.classList.add("show");return;}
+      const jpg=`/logs/${base}.jpg`;const png=`/logs/${base}.png`;
+      const img=new Image();img.alt=`Audit log for ${query}`;
+      img.onload=()=>{resultsDiv.innerHTML="";resultsDiv.appendChild(img);resultsDiv.classList.add("show");};
+      img.onerror=()=>{img.onerror=()=>{resultsDiv.innerHTML=`<p>Image not found for ${query}</p>`;resultsDiv.classList.add("show");};img.src=png;};
+      img.src=jpg;
+    }
+    btn.addEventListener("click",()=>{showResult(input.value.trim());});
+    input.addEventListener("keydown",e=>{if(e.key==="Enter")btn.click();});
+    document.body.addEventListener("click",()=>{if(!document.body.classList.contains("entered")){document.body.classList.add("entered");}});
+    for(const date in logs){const li=document.createElement("li");li.textContent=date;li.addEventListener("click",()=>{input.value=date;showResult(date);});dateList.appendChild(li);}
+  </script>
 </body>
 </html>
