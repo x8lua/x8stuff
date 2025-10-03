@@ -4,143 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>x8's Classroom Log</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body, html {
-      height: 100%;
-      width: 100%;
-      font-family: 'Press Start 2P', monospace;
-      background: #0d0d0d;
-      color: #00fff7;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    .intro {
-      text-align: center;
-      transition: all 1s ease-in-out;
-    }
-
-    .intro h1 {
-      font-size: 2rem;
-      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-      margin-bottom: 20px;
-    }
-
-    .intro p {
-      font-size: 0.8rem;
-      color: #fff;
-      margin: 5px 0;
-    }
-
-    .header {
-      position: fixed;
-      top: -100px;
-      width: 100%;
-      text-align: center;
-      padding: 20px;
-      background: rgba(10, 10, 10, 0.8);
-      box-shadow: 0 0 10px #00fff7;
-      transition: all 1s ease-in-out;
-    }
-
-    .header h1 {
-      font-size: 1rem;
-      margin: 0;
-    }
-
-    .header p {
-      font-size: 0.6rem;
-      margin: 0;
-      color: #ccc;
-    }
-
-    .search-area {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 1s ease;
-      margin-top: 100px;
-      text-align: center;
-    }
-
-    .search-area input {
-      padding: 10px;
-      font-family: inherit;
-      font-size: 0.8rem;
-      background: #111;
-      color: #00fff7;
-      border: 1px solid #00fff7;
-      border-radius: 6px;
-      width: 300px;
-      margin-right: 10px;
-      box-shadow: 0 0 10px #00fff7 inset;
-    }
-
-    .search-area button {
-      padding: 10px 15px;
-      font-family: inherit;
-      font-size: 0.8rem;
-      background: #00fff7;
-      color: #0d0d0d;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff00ff;
-      transition: transform 0.2s ease;
-    }
-
-    .search-area button:hover {
-      transform: scale(1.1);
-    }
-
-    /* active state */
-    body.entered .intro {
-      opacity: 0;
-      transform: scale(0.5);
-    }
-
-    body.entered .header {
-      top: 0;
-    }
-
-    body.entered .search-area {
-      opacity: 1;
-      pointer-events: auto;
-    }
-  </style>
+  <link rel="stylesheet" href="search.css"> <!-- optional if you want to split CSS too -->
 </head>
 <body>
-  <!-- Intro / Landing -->
   <div class="intro">
     <h1>x8's Classroom Log</h1>
-    <p>i call it Audit log btw</p>
-    <p>click anywhere to enter</p>
+    <p class="audit">Audit Log</p>
+    <p class="enter-hint">click anywhere to enter</p>
   </div>
 
-  <!-- Header (after shrink) -->
-  <div class="header">
-    <h1>x8's Classroom Log</h1>
-    <p>Audit log</p>
-  </div>
+  <div class="results" id="results"></div>
 
-  <!-- Search Interface -->
   <div class="search-area">
-    <input type="text" placeholder="Search logs..." />
-    <button>Search</button>
+    <input type="text" id="searchInput" placeholder="Search by date (YYYY-MM-DD)" />
+    <button id="searchBtn">Search</button>
   </div>
 
-  <script>
-    document.body.addEventListener("click", () => {
-      if (!document.body.classList.contains("entered")) {
-        document.body.classList.add("entered");
-      }
-    });
-  </script>
+  <!-- external JS -->
+  <script src="search.js"></script>
 </body>
 </html>
