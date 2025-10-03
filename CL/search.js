@@ -1,8 +1,8 @@
 // map each date to your log image
 const logs = {
-  "2025-09-29": "/logs/2025-09-29.png",
-  "2025-09-30": "/logs/2025-09-30.png",
-  "2025-10-03": "/logs/2025-10-03.png"
+  "2025-09-29": "/logs/2025-09-29.jpg",
+  "2025-09-30": "/logs/2025-09-30.jpg",
+  "2025-10-03": "/logs/2025-10-03.jpg"
 };
 
 const resultsDiv = document.getElementById("results");
