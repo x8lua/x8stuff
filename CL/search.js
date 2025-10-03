@@ -8,28 +8,11 @@ const logs = {
 const resultsDiv = document.getElementById("results");
 const input = document.getElementById("searchInput");
 const btn = document.getElementById("searchBtn");
-
-// format check: YYDDMM
-function normalizeDate(query) {
-  if (/^\d{6}$/.test(query)) {
-    return query;
-  }
-  return null;
-}
+const dateList = document.getElementById("dateList");
 
 function showResult(query) {
-  const dateKey = normalizeDate(query);
-  if (dateKey && logs[dateKey]) {
-    // try both png and jpg
-    const base = logs[dateKey];
-    const pngPath = `/logs/${base}.png`;
-    const jpgPath = `/logs/${base}.jpg`;
-
-    // default try jpg first, fallback png
-    resultsDiv.innerHTML = `
-      <img src="${jpgPath}" 
-           alt="Audit log for ${dateKey}" 
-           onerror="this.onerror=null; this.src='${pngPath}';">`;
+  if (logs[query]) {
+    resultsDiv.innerHTML = `<img src="${logs[query]}" alt="Audit log for ${query}">`;
   } else {
     resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
   }
@@ -50,3 +33,14 @@ document.body.addEventListener("click", () => {
     document.body.classList.add("entered");
   }
 });
+
+// populate sidebar list
+for (const date in logs) {
+  const li = document.createElement("li");
+  li.textContent = date; // shows 250929 etc
+  li.addEventListener("click", () => {
+    input.value = date;
+    showResult(date);
+  });
+  dateList.appendChild(li);
+}
