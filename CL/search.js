@@ -1,3 +1,4 @@
+// --- PASSWORD GATE ---
 async function checkPassword() {
   const input = document.getElementById("pwdInput").value.trim();
 
@@ -10,11 +11,18 @@ async function checkPassword() {
     const data = await res.json();
 
     if (data.ok) {
-      // hide lock screen, show main page
-      document.getElementById("lockScreen").style.display = "none";
+      // hide password inputs, but keep the intro text
+      document.getElementById("pwdInput").style.display = "none";
+      document.getElementById("pwdBtn").style.display = "none";
+      document.getElementById("pwdMsg").style.display = "none";
+
+      // fade out lockscreen background
+      document.getElementById("lockScreen").style.background = "transparent";
+
+      // show search content
       document.getElementById("searchContent").style.display = "block";
 
-      // trigger transition
+      // trigger tween of the intro
       document.body.classList.add("entered");
     } else {
       document.getElementById("pwdMsg").textContent = "Wrong password.";
@@ -71,13 +79,7 @@ function showResult(query) {
 btn.addEventListener("click", () => showResult(input.value.trim()));
 input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 
-document.body.addEventListener("click", () => {
-  if (!document.body.classList.contains("entered")) {
-    document.body.classList.add("entered");
-  }
-});
-
-// sidebar list
+// populate sidebar list
 for (const date in logs) {
   const li = document.createElement("li");
   li.textContent = date;
