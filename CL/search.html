@@ -318,5 +318,50 @@
       dateList.appendChild(li);
     }
   </script>
+
+  <script>
+  let auth0Client;
+
+  async function initAuth0() {
+    auth0Client = await createAuth0Client({
+      domain: "x8stuff.us.auth0.com",       // your domain
+      client_id: "YOUR_CLIENT_ID_HERE",     // your client id
+      authorizationParams: {
+        redirect_uri: window.location.origin + "/CL/search.html"
+      }
+    });
+
+    // handle login callback
+    if (window.location.search.includes("code=") && window.location.search.includes("state=")) {
+      await auth0Client.handleRedirectCallback();
+      window.history.replaceState({}, document.title, "/CL/search.html");
+    }
+
+    const isAuthenticated = await auth0Client.isAuthenticated();
+
+    if (!isAuthenticated) {
+      // redirect to Auth0 login
+      await auth0Client.loginWithRedirect();
+    } else {
+      // logged in, show content
+      const user = await auth0Client.getUser();
+      document.body.innerHTML = `
+        <h1>welcome, ${user.name}</h1>
+        <a href="#" onclick="logout()">logout</a>
+      `;
+    }
+  }
+
+  function logout() {
+    auth0Client.logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    });
+  }
+
+  initAuth0();
+</script>
+
 </body>
 </html>
