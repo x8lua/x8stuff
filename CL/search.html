@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>x8's Classroom Log System</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest"></script>
 
   <style>
     body {
@@ -117,10 +116,13 @@
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
 
-    #signIn { display: none; text-align: center; margin-top: 20%; }
-    audio { display: none; }
+    #app {
+      margin-top: 100px;
+      text-align: center;
+    }
     .tips { position: absolute; bottom: 20px; text-align:center; font-size:0.6rem; color:#aaa; width:100%; }
     .tips span { color:#00fff7; }
+    audio { display: none; }
   </style>
 </head>
 
@@ -130,13 +132,8 @@
     <p class="audit">Audit Log</p>
   </div>
 
-  <!-- Sign-in UI -->
-  <div id="signIn">
-    <sign-in></sign-in>
-    <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
-  </div>
+  <div id="app"></div>
 
-  <!-- Hidden content -->
   <div id="searchContent" style="display:none;">
     <div class="sidebar">
       <h2>Available Dates</h2>
@@ -149,29 +146,22 @@
     </div>
   </div>
 
+  <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
+
   <audio id="bgMusic" loop>
     <source src="/CL/XP.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- Clerk -->
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_Y2xvc2luZy1zdGlua2J1Zy04Ny5jbGVyay5hY2NvdW50cy5kZXYk"
+    src="https://closing-stinkbug-87.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
   <script>
-    // === Clerk Config ===
-    window.Clerk = window.Clerk || {};
-    window.Clerk.load({
-      publishableKey: "pk_test_Y2xvc2luZy1zdGlua2J1Zy04Ny5jbGVyay5hY2NvdW50cy5kZXYk",
-      frontendApi: "https://closing-stinkbug-87.clerk.accounts.dev"
-    });
-
-    let musicStarted = false;
-    const bgMusic = document.getElementById("bgMusic");
-    function startMusic() {
-      if (!musicStarted) {
-        bgMusic.volume = 0.4;
-        bgMusic.play().catch(err => console.log("autoplay blocked:", err));
-        musicStarted = true;
-      }
-    }
-    document.body.addEventListener("click", startMusic, { once: true });
-
     const logs = { "250929": "250929", "250930": "250930", "251003": "251003" };
     const resultsDiv = document.getElementById("results");
     const input = document.getElementById("searchInput");
@@ -217,22 +207,52 @@
       dateList.appendChild(li);
     }
 
-    // === CLERK AUTH ===
-    Clerk.addListener(async ({ user }) => {
-      if (user) {
-        const email = user.primaryEmailAddress.emailAddress;
-        if (email === "luaqax@gmail.com") {
-          document.getElementById("signIn").style.display = "none";
-          document.getElementById("searchContent").style.display = "block";
-          document.body.classList.add("entered");
-          startMusic();
-        } else {
-          document.body.innerHTML = "<h2 style='color:red;text-align:center'>Access Denied</h2>";
-        }
-      } else {
-        document.getElementById("signIn").style.display = "block";
+    // Background music
+    const bgMusic = document.getElementById("bgMusic");
+    let musicStarted = false;
+    function startMusic() {
+      if (!musicStarted) {
+        bgMusic.volume = 0.4;
+        bgMusic.play().catch(() => {});
+        musicStarted = true;
       }
+    }
+    document.body.addEventListener("click", startMusic, { once: true });
+
+    // Clerk setup
+    window.addEventListener("load", async function () {
+      await Clerk.load();
+
+      console.log("ClerkJS is loaded");
+
+      if (Clerk.isSignedIn) {
+        handleSignedIn();
+      } else {
+        showSignIn();
+      }
+
+      Clerk.addListener((event) => {
+        if (event.user) handleSignedIn();
+      });
     });
+
+    function showSignIn() {
+      document.getElementById("app").innerHTML = `<div id="sign-in"></div>`;
+      Clerk.mountSignIn(document.getElementById("sign-in"));
+    }
+
+    async function handleSignedIn() {
+      const user = Clerk.user;
+      if (user && user.primaryEmailAddress.emailAddress === "luaqax@gmail.com") {
+        document.getElementById("app").innerHTML = `<div id="user-button"></div>`;
+        Clerk.mountUserButton(document.getElementById("user-button"));
+        document.getElementById("searchContent").style.display = "block";
+        document.body.classList.add("entered");
+        startMusic();
+      } else {
+        document.getElementById("app").innerHTML = `<h2 style="color:red;text-align:center;">Access Denied</h2>`;
+      }
+    }
   </script>
 </body>
 </html>
