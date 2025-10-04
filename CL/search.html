@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>x8's Classroom Log System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
   <style>
     body {
       background: url("/CL/search.jpg") center center / cover no-repeat fixed;
@@ -13,59 +14,66 @@
       overflow: hidden;
     }
 
-    /* intro text */
+    /* Intro section */
     #mainIntro {
       position: absolute;
-      top: 40%;
+      top: 30%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       color: #00fff7;
       text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-      z-index: 1;
+      z-index: 2;
       transition: all 1s ease-in-out;
     }
+
     #mainIntro h1 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       margin-bottom: 5px;
     }
+
     #mainIntro .audit {
       font-size: 0.7rem;
       color: #ccc;
+      margin-bottom: 30px;
+      display: block;
     }
+
     body.entered #mainIntro {
       top: 20px;
       transform: translateX(-50%);
       font-size: 0.8rem;
     }
 
-    /* clerk container */
+    /* Clerk box placement */
     #app {
       position: absolute;
-      top: 50%;
+      top: calc(30% + 110px); /* under title */
       left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
+      transform: translate(-50%, 0);
+      z-index: 3;
       animation: fadeIn 1.5s ease forwards;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -40%); }
-      to { opacity: 1; transform: translate(-50%, -50%); }
+      from { opacity: 0; transform: translate(-50%, -10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
 
-    /* hidden content */
+    /* Hidden content after login */
     #searchContent {
       display: none;
       text-align: center;
       color: #00fff7;
     }
 
-    /* sidebar */
+    /* Sidebar */
     .sidebar {
-      position: fixed; right: 0; top: 60px;
+      position: fixed;
+      right: 0;
+      top: 60px;
       width: 200px;
-      background: rgba(10,10,10,0.85);
+      background: rgba(10, 10, 10, 0.85);
       border-left: 2px solid #00fff7;
       box-shadow: -2px 0 10px #00fff7;
       padding: 15px;
@@ -78,21 +86,38 @@
       transform: translateX(100%);
       transition: all 0.8s ease;
     }
-    body.entered .sidebar { opacity:1; transform:translateX(0); }
 
-    .sidebar h2 { font-size: 0.8rem; margin-bottom: 10px; text-shadow: 0 0 5px #ff00ff; }
-    .sidebar ul { list-style: none; padding: 0; }
+    body.entered .sidebar {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .sidebar h2 {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px #ff00ff;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
     .sidebar li {
-      margin: 8px 0; padding: 6px;
+      margin: 8px 0;
+      padding: 6px;
       background: #111;
       border: 1px solid #00fff7;
-      border-radius: 4px; cursor: pointer;
+      border-radius: 4px;
+      cursor: pointer;
       transition: background 0.3s, transform 0.2s;
     }
+
     .sidebar li:hover {
-      background:#00fff7; color:#0d0d0d;
-      transform:scale(1.05);
-      box-shadow:0 0 10px #ff00ff;
+      background: #00fff7;
+      color: #0d0d0d;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #ff00ff;
     }
 
     .search-area {
@@ -102,6 +127,7 @@
       pointer-events: none;
       transition: opacity 0.8s ease;
     }
+
     .search-area input {
       padding: 6px 10px;
       border: 2px solid #00fff7;
@@ -111,6 +137,7 @@
       font-family: inherit;
       width: 160px;
     }
+
     .search-area button {
       margin-left: 8px;
       padding: 6px 12px;
@@ -121,12 +148,17 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
     .search-area button:hover {
       background: #ff00ff;
       border-color: #ff00ff;
       color: #fff;
     }
-    body.entered .search-area { opacity: 1; pointer-events: auto; }
+
+    body.entered .search-area {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
     .results {
       margin: 120px auto 20px;
@@ -136,7 +168,11 @@
       opacity: 0;
       transition: opacity 0.5s ease;
     }
-    .results.show { opacity: 1; }
+
+    .results.show {
+      opacity: 1;
+    }
+
     .results img {
       max-width: 100%;
       border: 2px solid #00fff7;
@@ -144,20 +180,37 @@
       border-radius: 6px;
       background: #111;
     }
+
+    /* footer tips */
+    .tips {
+      position: absolute;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      color: #aaa;
+      text-align: center;
+      z-index: 4;
+    }
+
+    .tips span {
+      color: #00fff7;
+      cursor: pointer;
+    }
   </style>
 </head>
-<body>
 
-  <!-- intro text -->
+<body>
+  <!-- Intro -->
   <div id="mainIntro">
     <h1>x8's Classroom Log System</h1>
-    <p class="audit">Audit Log</p>
+    <span class="audit">Audit Log</span>
   </div>
 
-  <!-- clerk mount -->
+  <!-- Clerk mount -->
   <div id="app"></div>
 
-  <!-- hidden content (after login) -->
+  <!-- Hidden content -->
   <div id="searchContent">
     <div class="sidebar">
       <h2>Available Dates</h2>
@@ -168,6 +221,11 @@
       <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
       <button id="searchBtn">Search</button>
     </div>
+  </div>
+
+  <!-- Footer tip -->
+  <div class="tips">
+    Want to get access to Classroom Log System? <span>Contact x8</span>
   </div>
 
   <!-- Clerk integration -->
@@ -182,7 +240,7 @@
   <script>
     const clerkAppearance = {
       variables: {
-        colorBackground: "rgba(0, 0, 0, 0.6)",
+        colorBackground: "rgba(0,0,0,0.6)",
         colorPrimary: "#00fff7",
         colorText: "#ffffff",
         colorInputBackground: "#111",
@@ -190,14 +248,10 @@
         colorInputBorder: "#00fff7",
         fontFamily: "'Press Start 2P', monospace",
         fontSize: "12px",
-        borderRadius: "10px"
+        borderRadius: "8px"
       },
       elements: {
         rootBox: {
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
           boxShadow: "0 0 25px #00fff7, 0 0 40px #ff00ff",
           border: "2px solid #00fff7",
           backdropFilter: "blur(6px)",
@@ -222,12 +276,8 @@
           textShadow: "0 0 10px #00fff7, 0 0 20px #ff00ff",
           marginBottom: "10px"
         },
-        headerSubtitle: {
-          color: "#aaa"
-        },
-        footerActionLink: {
-          color: "#ff00ff"
-        }
+        headerSubtitle: { color: "#aaa" },
+        footerActionLink: { color: "#ff00ff" }
       }
     };
 
