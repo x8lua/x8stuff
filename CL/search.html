@@ -4,6 +4,79 @@
   <meta charset="UTF-8" />
   <title>x8's Classroom Log System</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+      font-family: 'Press Start 2P', monospace;
+      color: #00fff7;
+      overflow: hidden;
+    }
+
+    /* translucent overlay for dark mode */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 0;
+    }
+
+    #mainIntro {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: #00fff7;
+      z-index: 2;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
+    }
+
+    #mainIntro h1 {
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+    }
+    #mainIntro .audit {
+      font-size: 0.7rem;
+      color: #ccc;
+    }
+
+    #app {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      text-align: center;
+    }
+
+    .tips {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      color: #aaa;
+      text-align: center;
+      z-index: 4;
+    }
+    .tips span {
+      color: #00fff7;
+    }
+  </style>
+</head>
+<body>
+  <div id="mainIntro">
+    <h1>x8's Classroom Log System</h1>
+    <p class="audit">Audit Log</p>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="tips">
+    Want to get access to Classroom Log System? <span>Contact x8</span>
+  </div>
 
   <!-- Clerk SDK -->
   <script
@@ -14,247 +87,25 @@
     type="text/javascript"
   ></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Press Start 2P', monospace;
-      color: #fff;
-      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
-      overflow-x: hidden;
-    }
-
-    /* main intro */
-    #mainIntro {
-      text-align: center;
-      color: #00fff7;
-      transition: all 1s ease-in-out;
-      position: relative;
-      top: 40vh;
-      z-index: 2;
-    }
-    #mainIntro h1 {
-      font-size: 1.6rem;
-      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-      margin-bottom: 5px;
-    }
-    #mainIntro .audit {
-      font-size: 0.8rem;
-      color: #ccc;
-    }
-
-    /* Clerk box center */
-    #app {
-      margin-top: 20px;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    /* user button */
-    #user-button {
-      position: fixed;
-      top: 20px;
-      right: 25px;
-      z-index: 10;
-    }
-
-    /* sidebar */
-    .sidebar {
-      position: fixed;
-      right: 0;
-      top: 80px;
-      width: 200px;
-      background: rgba(10,10,10,0.85);
-      border-left: 2px solid #00fff7;
-      box-shadow: -2px 0 10px #00fff7;
-      padding: 15px;
-      color: #00fff7;
-      font-size: 0.7rem;
-      text-align: left;
-      max-height: 80%;
-      overflow-y: auto;
-      display: none;
-    }
-    .sidebar h2 { font-size: 0.8rem; margin-bottom: 10px; text-shadow: 0 0 5px #ff00ff; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li {
-      margin: 8px 0; padding: 6px;
-      background: #111; border: 1px solid #00fff7;
-      border-radius: 4px; cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .sidebar li:hover {
-      background:#00fff7; color:#0d0d0d;
-      transform:scale(1.05);
-      box-shadow:0 0 10px #ff00ff;
-    }
-
-    /* search bar */
-    .search-area {
-      margin: 25px auto;
-      text-align: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.8s ease;
-    }
-    .search-area input {
-      padding: 6px 10px;
-      border: 2px solid #00fff7;
-      border-radius: 4px;
-      background: #111;
-      color: #00fff7;
-      font-family: inherit;
-      width: 160px;
-    }
-    .search-area button {
-      margin-left: 8px;
-      padding: 6px 12px;
-      border: 2px solid #00fff7;
-      background: #00fff7;
-      color: #111;
-      font-family: inherit;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .search-area button:hover {
-      background: #ff00ff;
-      border-color: #ff00ff;
-      color: #fff;
-    }
-
-    /* results */
-    .results {
-      margin: 120px auto 20px;
-      width: 90%; max-width: 700px;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .results.show { opacity: 1; }
-    .results img {
-      max-width: 100%;
-      border: 2px solid #00fff7;
-      box-shadow: 0 0 15px #00fff7;
-      border-radius: 6px;
-      background: #111;
-    }
-
-    /* footer */
-    .tips {
-      position: absolute;
-      bottom: 20px;
-      font-size: 0.6rem;
-      color: #aaa;
-      text-align: center;
-      width: 100%;
-    }
-    .tips span { color: #00fff7; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <div id="mainIntro">
-    <h1>x8's Classroom Log System</h1>
-    <p class="audit">Audit Log</p>
-    <div id="app"></div>
-  </div>
-
-  <div id="searchContent" style="display:none;">
-    <div class="sidebar">
-      <h2>Available Dates</h2>
-      <ul id="dateList"></ul>
-    </div>
-
-    <div class="search-area" id="searchArea">
-      <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
-      <button id="searchBtn">Search</button>
-    </div>
-
-    <div class="results" id="results"></div>
-  </div>
-
-  <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
-
-  <audio id="bgMusic" loop autoplay>
-    <source src="/CL/XP.mp3" type="audio/mpeg" />
-  </audio>
-
   <script>
-    // logs
-    const logs = { "250929": "250929", "250930": "250930", "251003": "251003" };
+    window.addEventListener("load", async function () {
+      await Clerk.load();
 
-    function showResult(query) {
-      const base = logs[query];
-      const resultsDiv = document.getElementById("results");
-      if (!base) {
-        resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
-        resultsDiv.classList.add("show");
-        return;
-      }
-      const img = new Image();
-      img.alt = `Audit log for ${query}`;
-      img.onload = () => { resultsDiv.innerHTML = ""; resultsDiv.appendChild(img); resultsDiv.classList.add("show"); };
-      img.onerror = () => {
-        resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
-        resultsDiv.classList.add("show");
-      };
-      img.src = `/logs/${base}.jpg`;
-    }
+      // session end every reload (forces re-login)
+      await Clerk.session?.end();
 
-    function populateDates() {
-      const dateList = document.getElementById("dateList");
-      dateList.innerHTML = "";
-      for (const date in logs) {
-        const li = document.createElement("li");
-        li.textContent = date;
-        li.addEventListener("click", () => {
-          document.getElementById("searchInput").value = date;
-          showResult(date);
-        });
-        dateList.appendChild(li);
-      }
-    }
-
-    document.getElementById("searchBtn").addEventListener("click", () => showResult(document.getElementById("searchInput").value.trim()));
-    document.getElementById("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") showResult(e.target.value.trim()); });
-  </script>
-
-  <script>
-    const clerkAppearance = {
-      variables: { colorPrimary: "#00fff7" },
-      elements: { formButtonPrimary: { backgroundColor: "#00fff7", color: "#000" } }
-    };
-
-    window.addEventListener("load", async () => {
-      await Clerk.load({
-        signInForceRedirectUrl: "/CL/search.html",
-        afterSignOutUrl: "/CL/search.html",
-        sessionDurationMinutes: 0
+      Clerk.addListener(async () => {
+        if (!Clerk.isSignedIn) {
+          document.getElementById("app").innerHTML = `<div id="sign-in"></div>`;
+          Clerk.mountSignIn(document.getElementById("sign-in"));
+        } else {
+          document.getElementById("app").innerHTML = `<div id="user-button"></div>`;
+          Clerk.mountUserButton(document.getElementById("user-button"));
+          // redirect to search page
+          window.location.href = "/CL/search.html";
+        }
       });
-
-      if (Clerk.isSignedIn) handleSignedIn();
-      else {
-        document.getElementById("app").innerHTML = `<div id="sign-in"></div>`;
-        Clerk.mountSignIn(document.getElementById("sign-in"), { appearance: clerkAppearance, redirectUrl: "/CL/search.html" });
-      }
-
-      Clerk.addListener(e => { if (e.user) handleSignedIn(); });
     });
-
-    function handleSignedIn() {
-      const user = Clerk.user;
-      if (user && user.primaryEmailAddress.emailAddress === "luaqax@gmail.com") {
-        document.getElementById("app").innerHTML = `<div id="user-button"></div>`;
-        Clerk.mountUserButton(document.getElementById("user-button"), { appearance: clerkAppearance });
-        document.getElementById("searchContent").style.display = "block";
-        document.querySelector(".sidebar").style.display = "block";
-        document.querySelector(".search-area").style.opacity = "1";
-        document.querySelector(".search-area").style.pointerEvents = "auto";
-        populateDates();
-      } else {
-        document.getElementById("app").innerHTML = `<h2 style="color:red;">Access Denied</h2>`;
-      }
-    }
   </script>
 </body>
 </html>
