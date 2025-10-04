@@ -173,7 +173,7 @@
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
 
-    /* hide audio element */
+    /* hide audio */
     audio { display: none; }
   </style>
 </head>
@@ -207,13 +207,14 @@
     </div>
   </div>
 
-  <!-- Hidden audio -->
+  <!-- Background Music -->
   <audio id="bgMusic" loop>
     <source src="/CL/XP.mp3" type="audio/mpeg">
   </audio>
 
   <script>
     let wrongCount = 0;
+    let musicStarted = false;
 
     async function checkPassword() {
       const input = document.getElementById("pwdInput").value.trim();
@@ -233,11 +234,6 @@
           lockScreen.style.pointerEvents = "none";
           document.getElementById("searchContent").style.display = "block";
           document.body.classList.add("entered");
-
-          // play music after unlock
-          const bgMusic = document.getElementById("bgMusic");
-          bgMusic.volume = 0.5;
-          bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
         } else {
           wrongCount++;
           document.getElementById("pwdMsg").textContent = `Wrong password (attempts: ${wrongCount})`;
@@ -250,8 +246,22 @@
       }
     }
 
-    document.getElementById("pwdBtn").addEventListener("click", checkPassword);
+    // start music on any interaction
+    function startMusic() {
+      if (!musicStarted) {
+        const bgMusic = document.getElementById("bgMusic");
+        bgMusic.volume = 0.5;
+        bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+        musicStarted = true;
+      }
+    }
+
+    document.getElementById("pwdBtn").addEventListener("click", () => {
+      startMusic();
+      checkPassword();
+    });
     document.getElementById("pwdInput").addEventListener("keydown", e => {
+      startMusic();
       if (e.key === "Enter") checkPassword();
     });
 
