@@ -5,75 +5,68 @@
   <title>x8's Classroom Log System</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 
+  <!-- Clerk SDK -->
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="pk_test_Y2xvc2luZy1zdGlua2J1Zy04Ny5jbGVyay5hY2NvdW50cy5kZXYk"
+    src="https://closing-stinkbug-87.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+
   <style>
     body {
-      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
       margin: 0;
       font-family: 'Press Start 2P', monospace;
       color: #fff;
-      overflow: hidden;
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+      overflow-x: hidden;
     }
 
-    /* Intro section */
+    /* main intro */
     #mainIntro {
-      position: absolute;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       text-align: center;
       color: #00fff7;
-      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-      z-index: 2;
       transition: all 1s ease-in-out;
+      position: relative;
+      top: 40vh;
+      z-index: 2;
     }
-
     #mainIntro h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
       margin-bottom: 5px;
     }
-
     #mainIntro .audit {
-      font-size: 0.7rem;
-      color: #ccc;
-      margin-bottom: 30px;
-      display: block;
-    }
-
-    body.entered #mainIntro {
-      top: 20px;
-      transform: translateX(-50%);
       font-size: 0.8rem;
+      color: #ccc;
     }
 
-    /* Clerk box placement */
+    /* Clerk box center */
     #app {
-      position: absolute;
-      top: calc(30% + 110px); /* under title */
-      left: 50%;
-      transform: translate(-50%, 0);
-      z-index: 3;
-      animation: fadeIn 1.5s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -10px); }
-      to { opacity: 1; transform: translate(-50%, 0); }
-    }
-
-    /* Hidden content after login */
-    #searchContent {
-      display: none;
+      margin-top: 20px;
       text-align: center;
-      color: #00fff7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
     }
 
-    /* Sidebar */
+    /* user button */
+    #user-button {
+      position: fixed;
+      top: 20px;
+      right: 25px;
+      z-index: 10;
+    }
+
+    /* sidebar */
     .sidebar {
       position: fixed;
       right: 0;
-      top: 60px;
+      top: 80px;
       width: 200px;
-      background: rgba(10, 10, 10, 0.85);
+      background: rgba(10,10,10,0.85);
       border-left: 2px solid #00fff7;
       box-shadow: -2px 0 10px #00fff7;
       padding: 15px;
@@ -82,52 +75,29 @@
       text-align: left;
       max-height: 80%;
       overflow-y: auto;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.8s ease;
+      display: none;
     }
-
-    body.entered .sidebar {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .sidebar h2 {
-      font-size: 0.8rem;
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px #ff00ff;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
+    .sidebar h2 { font-size: 0.8rem; margin-bottom: 10px; text-shadow: 0 0 5px #ff00ff; }
+    .sidebar ul { list-style: none; padding: 0; }
     .sidebar li {
-      margin: 8px 0;
-      padding: 6px;
-      background: #111;
-      border: 1px solid #00fff7;
-      border-radius: 4px;
-      cursor: pointer;
+      margin: 8px 0; padding: 6px;
+      background: #111; border: 1px solid #00fff7;
+      border-radius: 4px; cursor: pointer;
       transition: background 0.3s, transform 0.2s;
     }
-
     .sidebar li:hover {
-      background: #00fff7;
-      color: #0d0d0d;
-      transform: scale(1.05);
-      box-shadow: 0 0 10px #ff00ff;
+      background:#00fff7; color:#0d0d0d;
+      transform:scale(1.05);
+      box-shadow:0 0 10px #ff00ff;
     }
 
+    /* search bar */
     .search-area {
-      margin: 20px auto;
+      margin: 25px auto;
       text-align: center;
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
       transition: opacity 0.8s ease;
     }
-
     .search-area input {
       padding: 6px 10px;
       border: 2px solid #00fff7;
@@ -137,7 +107,6 @@
       font-family: inherit;
       width: 160px;
     }
-
     .search-area button {
       margin-left: 8px;
       padding: 6px 12px;
@@ -148,31 +117,21 @@
       cursor: pointer;
       border-radius: 4px;
     }
-
     .search-area button:hover {
       background: #ff00ff;
       border-color: #ff00ff;
       color: #fff;
     }
 
-    body.entered .search-area {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
+    /* results */
     .results {
       margin: 120px auto 20px;
-      width: 90%;
-      max-width: 700px;
+      width: 90%; max-width: 700px;
       text-align: center;
       opacity: 0;
       transition: opacity 0.5s ease;
     }
-
-    .results.show {
-      opacity: 1;
-    }
-
+    .results.show { opacity: 1; }
     .results img {
       max-width: 100%;
       border: 2px solid #00fff7;
@@ -181,130 +140,119 @@
       background: #111;
     }
 
-    /* footer tips */
+    /* footer */
     .tips {
       position: absolute;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 20px;
       font-size: 0.6rem;
       color: #aaa;
       text-align: center;
-      z-index: 4;
+      width: 100%;
     }
-
-    .tips span {
-      color: #00fff7;
-      cursor: pointer;
-    }
+    .tips span { color: #00fff7; cursor: pointer; }
   </style>
 </head>
-
 <body>
-  <!-- Intro -->
   <div id="mainIntro">
     <h1>x8's Classroom Log System</h1>
-    <span class="audit">Audit Log</span>
+    <p class="audit">Audit Log</p>
+    <div id="app"></div>
   </div>
 
-  <!-- Clerk mount -->
-  <div id="app"></div>
-
-  <!-- Hidden content -->
-  <div id="searchContent">
+  <div id="searchContent" style="display:none;">
     <div class="sidebar">
       <h2>Available Dates</h2>
       <ul id="dateList"></ul>
     </div>
-    <div class="results" id="results"></div>
-    <div class="search-area">
+
+    <div class="search-area" id="searchArea">
       <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
       <button id="searchBtn">Search</button>
     </div>
+
+    <div class="results" id="results"></div>
   </div>
 
-  <!-- Footer tip -->
-  <div class="tips">
-    Want to get access to Classroom Log System? <span>Contact x8</span>
-  </div>
+  <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
 
-  <!-- Clerk integration -->
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_test_Y2xvc2luZy1zdGlua2J1Zy04Ny5jbGVyay5hY2NvdW50cy5kZXYk"
-    src="https://closing-stinkbug-87.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-    type="text/javascript">
+  <audio id="bgMusic" loop autoplay>
+    <source src="/CL/XP.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    // logs
+    const logs = { "250929": "250929", "250930": "250930", "251003": "251003" };
+
+    function showResult(query) {
+      const base = logs[query];
+      const resultsDiv = document.getElementById("results");
+      if (!base) {
+        resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+        resultsDiv.classList.add("show");
+        return;
+      }
+      const img = new Image();
+      img.alt = `Audit log for ${query}`;
+      img.onload = () => { resultsDiv.innerHTML = ""; resultsDiv.appendChild(img); resultsDiv.classList.add("show"); };
+      img.onerror = () => {
+        resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+        resultsDiv.classList.add("show");
+      };
+      img.src = `/logs/${base}.jpg`;
+    }
+
+    function populateDates() {
+      const dateList = document.getElementById("dateList");
+      dateList.innerHTML = "";
+      for (const date in logs) {
+        const li = document.createElement("li");
+        li.textContent = date;
+        li.addEventListener("click", () => {
+          document.getElementById("searchInput").value = date;
+          showResult(date);
+        });
+        dateList.appendChild(li);
+      }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", () => showResult(document.getElementById("searchInput").value.trim()));
+    document.getElementById("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") showResult(e.target.value.trim()); });
   </script>
 
   <script>
     const clerkAppearance = {
-      variables: {
-        colorBackground: "rgba(0,0,0,0.6)",
-        colorPrimary: "#00fff7",
-        colorText: "#ffffff",
-        colorInputBackground: "#111",
-        colorInputText: "#00fff7",
-        colorInputBorder: "#00fff7",
-        fontFamily: "'Press Start 2P', monospace",
-        fontSize: "12px",
-        borderRadius: "8px"
-      },
-      elements: {
-        rootBox: {
-          boxShadow: "0 0 25px #00fff7, 0 0 40px #ff00ff",
-          border: "2px solid #00fff7",
-          backdropFilter: "blur(6px)",
-          padding: "20px",
-          borderRadius: "12px"
-        },
-        formButtonPrimary: {
-          backgroundColor: "#00fff7",
-          color: "#111",
-          fontWeight: "bold",
-          border: "2px solid #00fff7",
-          transition: "all 0.2s ease-in-out",
-          textShadow: "0 0 10px #ff00ff"
-        },
-        formButtonPrimaryHover: {
-          backgroundColor: "#ff00ff",
-          borderColor: "#ff00ff",
-          color: "#fff"
-        },
-        headerTitle: {
-          color: "#00fff7",
-          textShadow: "0 0 10px #00fff7, 0 0 20px #ff00ff",
-          marginBottom: "10px"
-        },
-        headerSubtitle: { color: "#aaa" },
-        footerActionLink: { color: "#ff00ff" }
-      }
+      variables: { colorPrimary: "#00fff7" },
+      elements: { formButtonPrimary: { backgroundColor: "#00fff7", color: "#000" } }
     };
 
-    window.addEventListener("load", async function () {
-      await Clerk.load();
+    window.addEventListener("load", async () => {
+      await Clerk.load({
+        signInForceRedirectUrl: "/CL/search.html",
+        afterSignOutUrl: "/CL/search.html",
+        sessionDurationMinutes: 0
+      });
 
-      if (Clerk.isSignedIn) {
-        handleSignedIn();
-      } else {
+      if (Clerk.isSignedIn) handleSignedIn();
+      else {
         document.getElementById("app").innerHTML = `<div id="sign-in"></div>`;
-        Clerk.mountSignIn(document.getElementById("sign-in"), { appearance: clerkAppearance });
+        Clerk.mountSignIn(document.getElementById("sign-in"), { appearance: clerkAppearance, redirectUrl: "/CL/search.html" });
       }
 
-      Clerk.addListener((event) => {
-        if (event.user) handleSignedIn();
-      });
+      Clerk.addListener(e => { if (e.user) handleSignedIn(); });
     });
 
-    async function handleSignedIn() {
+    function handleSignedIn() {
       const user = Clerk.user;
       if (user && user.primaryEmailAddress.emailAddress === "luaqax@gmail.com") {
         document.getElementById("app").innerHTML = `<div id="user-button"></div>`;
         Clerk.mountUserButton(document.getElementById("user-button"), { appearance: clerkAppearance });
         document.getElementById("searchContent").style.display = "block";
-        document.body.classList.add("entered");
+        document.querySelector(".sidebar").style.display = "block";
+        document.querySelector(".search-area").style.opacity = "1";
+        document.querySelector(".search-area").style.pointerEvents = "auto";
+        populateDates();
       } else {
-        document.getElementById("app").innerHTML = `<h2 style="color:red;text-align:center;">Access Denied</h2>`;
+        document.getElementById("app").innerHTML = `<h2 style="color:red;">Access Denied</h2>`;
       }
     }
   </script>
