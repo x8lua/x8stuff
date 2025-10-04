@@ -6,17 +6,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     body {
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
       margin: 0;
       font-family: 'Press Start 2P', monospace;
-      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
-      color: #00fff7;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      color: #fff;
+      overflow-x: hidden;
     }
 
     /* dark overlay */
@@ -24,36 +18,51 @@
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.7);
       z-index: 0;
     }
 
-    /* title area */
+    /* INTRO (tweens up after login) */
     #mainIntro {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
+      transition: all 1s ease-in-out;
       color: #00fff7;
-      z-index: 2;
-      text-shadow: 0 0 10px #00fff7, 0 0 25px #ff00ff;
-      margin-bottom: 20px;
+      z-index: 11;
     }
     #mainIntro h1 {
       font-size: 1.5rem;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
     }
     #mainIntro .audit {
       font-size: 0.8rem;
       color: #ccc;
     }
-
-    /* clerk login container */
-    #app-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2;
-      flex-grow: 1;
+    body.entered #mainIntro {
+      top: 20px;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
     }
 
+    /* Login screen (Clerk) */
+    #app-container {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: opacity 1s ease;
+    }
+    #app-container.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
     #app {
       display: flex;
       justify-content: center;
@@ -68,25 +77,152 @@
       color: #aaa;
       z-index: 2;
       text-align: center;
-      margin-bottom: 15px;
+      margin-top: 20px;
     }
     .tips span {
       color: #00fff7;
     }
+    body.entered .tips {
+      display: none;
+    }
+
+    /* sidebar */
+    .sidebar {
+      position: fixed; right: 0; top: 60px;
+      width: 200px;
+      background: rgba(10,10,10,0.85);
+      border-left: 2px solid #00fff7;
+      box-shadow: -2px 0 10px #00fff7;
+      padding: 15px;
+      color: #00fff7;
+      font-size: 0.7rem;
+      text-align: left;
+      max-height: 80%; overflow-y: auto;
+      opacity: 0; transform: translateX(100%);
+      transition: all 0.8s ease;
+      z-index: 5;
+    }
+    .sidebar h2 { 
+      font-size: 0.8rem; 
+      margin-bottom: 10px; 
+      text-shadow: 0 0 5px #ff00ff; 
+    }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li {
+      margin: 8px 0; padding: 6px;
+      background: #111; border: 1px solid #00fff7;
+      border-radius: 4px; cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .sidebar li:hover {
+      background:#00fff7; color:#0d0d0d;
+      transform:scale(1.05);
+      box-shadow:0 0 10px #ff00ff;
+    }
+    body.entered .sidebar { 
+      opacity:1; 
+      transform:translateX(0); 
+    }
+
+    /* results */
+    .results {
+      margin: 120px auto 20px;
+      width: 90%; max-width: 700px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: relative;
+      z-index: 3;
+    }
+    .results.show { opacity: 1; }
+    .results img {
+      max-width: 100%;
+      border: 2px solid #00fff7;
+      box-shadow: 0 0 15px #00fff7;
+      border-radius: 6px;
+      background: #111;
+    }
+    .results p {
+      color: #00fff7;
+      text-shadow: 0 0 10px #00fff7;
+    }
+
+    /* search area */
+    .search-area {
+      margin: 20px auto;
+      text-align: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.8s ease;
+      position: relative;
+      z-index: 3;
+    }
+    .search-area input {
+      padding: 6px 10px;
+      border: 2px solid #00fff7;
+      border-radius: 4px;
+      background: #111;
+      color: #00fff7;
+      font-family: inherit;
+      width: 160px;
+    }
+    .search-area button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      border: 2px solid #00fff7;
+      background: #00fff7;
+      color: #111;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .search-area button:hover {
+      background: #ff00ff;
+      border-color: #ff00ff;
+      color: #fff;
+    }
+    body.entered .search-area { 
+      opacity: 1; 
+      pointer-events: auto; 
+    }
+
+    /* User button positioning */
+    #user-button-container {
+      position: fixed;
+      top: 20px;
+      right: 220px;
+      z-index: 20;
+    }
   </style>
 </head>
 <body>
+  <!-- Title (always visible, tweens up) -->
   <div id="mainIntro">
     <h1>x8's Classroom Log System</h1>
     <p class="audit">Audit Log</p>
   </div>
 
+  <!-- Clerk Login -->
   <div id="app-container">
     <div id="app"></div>
+    <div class="tips">
+      Want to get access to Classroom Log System? <span>Contact x8</span>
+    </div>
   </div>
 
-  <div class="tips">
-    Want to get access to Classroom Log System? <span>Contact x8</span>
+  <!-- User button (appears after login) -->
+  <div id="user-button-container"></div>
+
+  <!-- Search Content (hidden until login) -->
+  <div id="searchContent" style="display:none;">
+    <div class="sidebar">
+      <h2>Available Dates</h2>
+      <ul id="dateList"></ul>
+    </div>
+    <div class="results" id="results"></div>
+    <div class="search-area">
+      <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
+      <button id="searchBtn">Search</button>
+    </div>
   </div>
 
   <script
@@ -98,26 +234,40 @@
   </script>
 
   <script>
+    // --- LOG SEARCH DATA ---
+    const logs = {
+      "250929": "250929",
+      "250930": "250930",
+      "251003": "251003"
+    };
+
+    // --- CLERK AUTH ---
     window.addEventListener("load", async function () {
       await Clerk.load();
 
       const app = document.getElementById("app");
+      const appContainer = document.getElementById("app-container");
+      const userButtonContainer = document.getElementById("user-button-container");
 
       // Listen for auth state changes
       Clerk.addListener(({ user }) => {
         if (user) {
-          // User is signed in - show content or user button
-          app.innerHTML = `<div id="user-button"></div>`;
+          // User is signed in - show search interface
+          appContainer.classList.add("hide");
+          
+          // Mount user button in fixed position
+          userButtonContainer.innerHTML = `<div id="user-button"></div>`;
           Clerk.mountUserButton(document.getElementById("user-button"));
           
-          // Hide the title and tips once logged in
-          document.getElementById("mainIntro").style.display = "none";
-          document.querySelector(".tips").style.display = "none";
+          // Show search content
+          document.getElementById("searchContent").style.display = "block";
+          document.body.classList.add("entered");
           
-          // You can add your logged-in content here
-          // For example: load search functionality, show data, etc.
+          // Initialize search functionality
+          initializeSearch();
         } else {
           // User is not signed in - show login
+          appContainer.classList.remove("hide");
           app.innerHTML = `<div id="sign-in"></div>`;
           Clerk.mountSignIn(document.getElementById("sign-in"), {
             appearance: {
@@ -139,6 +289,58 @@
         }
       });
     });
+
+    // --- SEARCH FUNCTIONALITY ---
+    function initializeSearch() {
+      const resultsDiv = document.getElementById("results");
+      const input = document.getElementById("searchInput");
+      const btn = document.getElementById("searchBtn");
+      const dateList = document.getElementById("dateList");
+
+      function showResult(query) {
+        const base = logs[query];
+        if (!base) {
+          resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+          resultsDiv.classList.add("show");
+          return;
+        }
+        const jpg = `/logs/${base}.jpg`;
+        const png = `/logs/${base}.png`;
+
+        const img = new Image();
+        img.alt = `Audit log for ${query}`;
+        img.onload = () => {
+          resultsDiv.innerHTML = "";
+          resultsDiv.appendChild(img);
+          resultsDiv.classList.add("show");
+        };
+        img.onerror = () => {
+          img.onerror = () => {
+            resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+            resultsDiv.classList.add("show");
+          };
+          img.src = png;
+        };
+        img.src = jpg;
+      }
+
+      btn.addEventListener("click", () => showResult(input.value.trim()));
+      input.addEventListener("keydown", e => { 
+        if (e.key === "Enter") btn.click(); 
+      });
+
+      // Build sidebar with available dates
+      dateList.innerHTML = "";
+      for (const date in logs) {
+        const li = document.createElement("li");
+        li.textContent = date;
+        li.addEventListener("click", () => {
+          input.value = date;
+          showResult(date);
+        });
+        dateList.appendChild(li);
+      }
+    }
   </script>
 </body>
 </html>
