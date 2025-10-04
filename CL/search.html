@@ -1,253 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>x8's Classroom Log</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>x8's Classroom Log System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     body {
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
       margin: 0;
-      background: url("/CL/search.jpg") no-repeat center center / cover;
       font-family: 'Press Start 2P', monospace;
-      color: #00fff7;
-      overflow-x: hidden;
-      transition: background 1s ease-in-out;
+      color: #fff;
     }
 
-    .lock-screen, .search-section {
+    /* INTRO */
+    #mainIntro {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      transition: all 1s ease-in-out;
+      color: #00fff7;
+      z-index: 11;
+    }
+    #mainIntro h1 {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
+    }
+    #mainIntro .audit {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+    body.entered #mainIntro {
+      top: 20px;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+    }
+
+    /* LOCK SCREEN */
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-      transition: opacity 0.6s ease;
+      z-index: 10;
+      transition: opacity 1s ease;
     }
-
-    .search-section {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    body.entered .lock-screen {
-      display: none;
-    }
-
-    body.entered .search-section {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    #mainIntro {
-      transition: all 0.8s ease-in-out;
-    }
-
-    body.entered #mainIntro {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
-    }
-
-    .intro h1 {
-      font-size: 1.5rem;
-      text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
-    }
-
-    .audit {
-      font-size: 0.8rem;
-      color: #ccc;
-      margin-bottom: 20px;
-    }
-
-    .password-box {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .password-box input {
-      padding: 10px;
-      font-size: 1rem;
-      border: none;
-      outline: none;
-      background: #111;
-      color: #0ff;
+    .pwd-area { margin-top: 120px; }
+    .pwd-area input {
+      padding: 6px 10px;
+      border: 2px solid #00fff7;
       border-radius: 4px;
-      text-align: center;
+      background: #111;
+      color: #00fff7;
+      font-family: inherit;
     }
-
-    .password-box button {
+    .pwd-area button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      border: 2px solid #00fff7;
       background: #00fff7;
-      color: #000;
-      font-weight: bold;
-      border: none;
-      padding: 10px 20px;
+      color: #111;
+      font-family: inherit;
       cursor: pointer;
+      border-radius: 4px;
     }
-
-    .password-box.shake {
-      animation: shake 0.3s ease;
+    .pwd-area button:hover {
+      background: #ff00ff;
+      border-color: #ff00ff;
+      color: #fff;
     }
-
+    .lock-screen.shake { animation: shake 0.4s; }
     @keyframes shake {
-      0% { transform: translateX(-6px); }
-      25% { transform: translateX(6px); }
-      50% { transform: translateX(-6px); }
-      75% { transform: translateX(6px); }
-      100% { transform: translateX(0); }
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
     }
 
+    /* footer tips */
     .tips {
       position: absolute;
-      bottom: 10px;
-      width: 100%;
-      font-size: 10px;
-      color: #ccc;
+      bottom: 20px;
+      font-size: 0.6rem;
+      color: #aaa;
       text-align: center;
     }
+    .tips span { color: #00fff7; }
 
-    .search-ui {
-      margin-top: 100px;
-      text-align: center;
-    }
-
-    .search-ui input {
-      padding: 10px;
-      width: 200px;
-      font-size: 0.9rem;
-      margin-right: 10px;
-      background: #111;
-      color: #0ff;
-      border: none;
-      border-radius: 4px;
-      outline: none;
-    }
-
-    .search-ui button {
-      padding: 10px 20px;
-      font-weight: bold;
-      background: #00fff7;
-      color: #000;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    #results {
-      margin-top: 30px;
-    }
-
-    #results img {
-      width: 90%;
-      max-width: 600px;
-      border: 2px solid #0ff;
-      border-radius: 8px;
-    }
-
+    /* sidebar */
     .sidebar {
-      position: absolute;
-      right: 20px;
-      top: 100px;
-      text-align: left;
+      position: fixed; right: 0; top: 60px;
+      width: 200px;
+      background: rgba(10,10,10,0.85);
+      border-left: 2px solid #00fff7;
+      box-shadow: -2px 0 10px #00fff7;
+      padding: 15px;
       color: #00fff7;
-      background: rgba(0,0,0,0.4);
-      padding: 10px;
-      border-radius: 8px;
+      font-size: 0.7rem;
+      text-align: left;
+      max-height: 80%; overflow-y: auto;
+      opacity: 0; transform: translateX(100%);
+      transition: all 0.8s ease;
     }
-
-    .sidebar h3 {
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
+    .sidebar h2 { font-size: 0.8rem; margin-bottom: 10px; text-shadow: 0 0 5px #ff00ff; }
+    .sidebar ul { list-style: none; padding: 0; }
     .sidebar li {
-      cursor: pointer;
-      margin-bottom: 4px;
-      font-size: 10px;
-      text-decoration: underline;
+      margin: 8px 0; padding: 6px;
+      background: #111; border: 1px solid #00fff7;
+      border-radius: 4px; cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .sidebar li:hover {
+      background:#00fff7; color:#0d0d0d;
+      transform:scale(1.05);
+      box-shadow:0 0 10px #ff00ff;
+    }
+    body.entered .sidebar { opacity:1; transform:translateX(0); }
+
+    /* results */
+    .results {
+      margin: 120px auto 20px;
+      width: 90%; max-width: 700px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .results.show { opacity: 1; }
+    .results img {
+      max-width: 100%;
+      border: 2px solid #00fff7;
+      box-shadow: 0 0 15px #00fff7;
+      border-radius: 6px;
+      background: #111;
     }
 
-    .sidebar li:hover {
-      color: #ff00ff;
+    /* search area */
+    .search-area {
+      margin: 20px auto;
+      text-align: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    .search-area input {
+      padding: 6px 10px;
+      border: 2px solid #00fff7;
+      border-radius: 4px;
+      background: #111;
+      color: #00fff7;
+      font-family: inherit;
+      width: 160px;
+    }
+    .search-area button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      border: 2px solid #00fff7;
+      background: #00fff7;
+      color: #111;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .search-area button:hover {
+      background: #ff00ff;
+      border-color: #ff00ff;
+      color: #fff;
+    }
+    body.entered .search-area { opacity: 1; pointer-events: auto; }
+
+    /* audio player */
+    audio {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      z-index: 20;
     }
   </style>
 </head>
 <body>
+  <!-- Title -->
+  <div class="intro" id="mainIntro">
+    <h1>x8's Classroom Log System</h1>
+    <p class="audit">Audit Log</p>
+  </div>
 
-  <!-- Audio -->
-  <audio id="bgMusic" loop>
+  <!-- Password Gate -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="pwd-area">
+      <input type="password" id="pwdInput" placeholder="Password">
+      <button id="pwdBtn">Enter</button>
+      <p id="pwdMsg"></p>
+    </div>
+    <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
+  </div>
+
+  <!-- Hidden content -->
+  <div id="searchContent" style="display:none;">
+    <div class="sidebar">
+      <h2>Available Dates</h2>
+      <ul id="dateList"></ul>
+    </div>
+    <div class="results" id="results"></div>
+    <div class="search-area">
+      <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
+      <button id="searchBtn">Search</button>
+    </div>
+  </div>
+
+  <!-- Background Music -->
+  <audio id="bgMusic" loop controls>
     <source src="/CL/XP.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Lock screen -->
-  <div class="lock-screen">
-    <div class="intro" id="mainIntro">
-      <h1>x8's Classroom Log System</h1>
-      <div class="audit">Audit Log</div>
-    </div>
-    <div class="password-box" id="pwdBox">
-      <input type="password" id="pwdInput" placeholder="Enter password..." />
-      <button id="enterBtn">Enter</button>
-    </div>
-    <div class="tips">Want to get access to Classroom Log System? Contact x8</div>
-  </div>
-
-  <!-- Main UI -->
-  <div class="search-section">
-    <div class="search-ui">
-      <input type="text" id="searchInput" placeholder="Enter date (yyddmm)">
-      <button id="searchBtn">Search</button>
-      <div id="results"></div>
-    </div>
-    <div class="sidebar">
-      <h3>Available Dates</h3>
-      <ul id="dateList"></ul>
-    </div>
-  </div>
-
   <script>
-    const correctPwd = "x8AuditLog";
-    let wrongAttempts = 0;
+    let wrongCount = 0;
 
-    const body = document.body;
-    const pwdInput = document.getElementById("pwdInput");
-    const enterBtn = document.getElementById("enterBtn");
-    const pwdBox = document.getElementById("pwdBox");
-    const bgMusic = document.getElementById("bgMusic");
+    async function checkPassword() {
+      const input = document.getElementById("pwdInput").value.trim();
+      const lockScreen = document.getElementById("lockScreen");
 
-    enterBtn.onclick = () => {
-      const val = pwdInput.value.trim();
-      if (val === correctPwd) {
-        body.classList.add("entered");
-        bgMusic.volume = 0.5;
-        bgMusic.play().catch(() => {});
-      } else {
-        wrongAttempts++;
-        pwdBox.classList.add("shake");
-        setTimeout(() => pwdBox.classList.remove("shake"), 300);
-        pwdInput.value = "";
-        pwdInput.placeholder = `Wrong password (${wrongAttempts})`;
+      try {
+        const res = await fetch("/api/check-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: input })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          document.querySelector(".pwd-area").style.display = "none";
+          lockScreen.style.opacity = "0";
+          lockScreen.style.pointerEvents = "none";
+          document.getElementById("searchContent").style.display = "block";
+          document.body.classList.add("entered");
+
+          // play background music
+          const bgMusic = document.getElementById("bgMusic");
+          bgMusic.volume = 0.5;
+          bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+        } else {
+          wrongCount++;
+          document.getElementById("pwdMsg").textContent = `Wrong password (attempts: ${wrongCount})`;
+          lockScreen.classList.remove("shake");
+          void lockScreen.offsetWidth;
+          lockScreen.classList.add("shake");
+        }
+      } catch (err) {
+        document.getElementById("pwdMsg").textContent = "Server error: " + err.message;
       }
-    };
+    }
 
-    pwdInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") enterBtn.click();
+    document.getElementById("pwdBtn").addEventListener("click", checkPassword);
+    document.getElementById("pwdInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPassword();
     });
 
-    // Logs
+    // --- LOG SEARCH ---
     const logs = {
-      "250929": "logs/250929.jpg",
-      "250930": "logs/250930.jpg",
-      "251003": "logs/251003.jpg"
+      "250929": "250929",
+      "250930": "250930",
+      "251003": "251003"
     };
 
     const resultsDiv = document.getElementById("results");
@@ -256,29 +274,42 @@
     const dateList = document.getElementById("dateList");
 
     function showResult(query) {
-      if (logs[query]) {
-        resultsDiv.innerHTML = `<img src="${logs[query]}" alt="Audit log for ${query}">`;
-      } else {
+      const base = logs[query];
+      if (!base) {
         resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+        resultsDiv.classList.add("show");
+        return;
       }
+      const jpg = `/logs/${base}.jpg`;
+      const png = `/logs/${base}.png`;
+
+      const img = new Image();
+      img.alt = `Audit log for ${query}`;
+      img.onload = () => {
+        resultsDiv.innerHTML = "";
+        resultsDiv.appendChild(img);
+        resultsDiv.classList.add("show");
+      };
+      img.onerror = () => {
+        img.onerror = () => {
+          resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+          resultsDiv.classList.add("show");
+        };
+        img.src = png;
+      };
+      img.src = jpg;
     }
 
-    btn.addEventListener("click", () => {
-      const query = input.value.trim();
-      showResult(query);
-    });
-
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") btn.click();
-    });
+    btn.addEventListener("click", () => showResult(input.value.trim()));
+    input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 
     for (const date in logs) {
       const li = document.createElement("li");
       li.textContent = date;
-      li.onclick = () => {
+      li.addEventListener("click", () => {
         input.value = date;
         showResult(date);
-      };
+      });
       dateList.appendChild(li);
     }
   </script>
