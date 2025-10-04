@@ -25,9 +25,9 @@
     /* INTRO (tweens up after login) */
     #mainIntro {
       position: fixed;
-      top: 40%;
+      top: 60px;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       text-align: center;
       transition: all 1s ease-in-out;
       color: #00fff7;
@@ -56,6 +56,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding-top: 80px;
       z-index: 10;
       transition: opacity 1s ease;
     }
@@ -69,21 +70,28 @@
       align-items: center;
       z-index: 5;
       width: 100%;
+      margin-bottom: 20px;
     }
 
     /* contact footer */
     .tips {
       font-size: 0.6rem;
       color: #aaa;
-      z-index: 2;
+      z-index: 12;
       text-align: center;
-      margin-top: 20px;
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: opacity 1s ease;
     }
     .tips span {
       color: #00fff7;
+      cursor: pointer;
     }
     body.entered .tips {
-      display: none;
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* sidebar */
