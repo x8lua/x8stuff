@@ -12,7 +12,7 @@
       color: #fff;
     }
 
-    /* INTRO (now independent from lock screen) */
+    /* INTRO */
     #mainIntro {
       position: fixed;
       top: 40%;
@@ -82,6 +82,16 @@
       60% { transform: translateX(-6px); }
       80% { transform: translateX(6px); }
     }
+
+    /* footer tips */
+    .tips {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.6rem;
+      color: #aaa;
+      text-align: center;
+    }
+    .tips span { color: #00fff7; }
 
     /* sidebar */
     .sidebar {
@@ -162,10 +172,19 @@
       color: #fff;
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
+
+    /* audio control */
+    audio {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      z-index: 20;
+    }
   </style>
 </head>
 <body>
-  <!-- Title (always visible, tweens up) -->
+  <!-- Title -->
   <div class="intro" id="mainIntro">
     <h1>x8's Classroom Log System</h1>
     <p class="audit">Audit Log</p>
@@ -178,6 +197,7 @@
       <button id="pwdBtn">Enter</button>
       <p id="pwdMsg"></p>
     </div>
+    <div class="tips">Want to get access to Classroom Log System? <span>Contact x8</span></div>
   </div>
 
   <!-- Hidden content -->
@@ -192,6 +212,12 @@
       <button id="searchBtn">Search</button>
     </div>
   </div>
+
+  <!-- Background Music -->
+  <audio autoplay loop controls>
+    <source src="/CL/XP.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
   <script>
     let wrongCount = 0;
@@ -209,22 +235,14 @@
         const data = await res.json();
 
         if (data.ok) {
-          // hide password area
           document.querySelector(".pwd-area").style.display = "none";
-
-          // fade lock screen out
           lockScreen.style.opacity = "0";
           lockScreen.style.pointerEvents = "none";
-
-          // show search content
           document.getElementById("searchContent").style.display = "block";
-
-          // trigger tween up
           document.body.classList.add("entered");
         } else {
           wrongCount++;
           document.getElementById("pwdMsg").textContent = `Wrong password (attempts: ${wrongCount})`;
-          // shake effect
           lockScreen.classList.remove("shake");
           void lockScreen.offsetWidth;
           lockScreen.classList.add("shake");
@@ -281,7 +299,6 @@
     btn.addEventListener("click", () => showResult(input.value.trim()));
     input.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
 
-    // sidebar
     for (const date in logs) {
       const li = document.createElement("li");
       li.textContent = date;
