@@ -173,14 +173,8 @@
     }
     body.entered .search-area { opacity: 1; pointer-events: auto; }
 
-    /* audio player */
-    audio {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 150px;
-      z-index: 20;
-    }
+    /* hide audio element */
+    audio { display: none; }
   </style>
 </head>
 <body>
@@ -213,8 +207,8 @@
     </div>
   </div>
 
-  <!-- Background Music -->
-  <audio id="bgMusic" loop controls>
+  <!-- Hidden audio -->
+  <audio id="bgMusic" loop>
     <source src="/CL/XP.mp3" type="audio/mpeg">
   </audio>
 
@@ -240,7 +234,7 @@
           document.getElementById("searchContent").style.display = "block";
           document.body.classList.add("entered");
 
-          // play background music
+          // play music after unlock
           const bgMusic = document.getElementById("bgMusic");
           bgMusic.volume = 0.5;
           bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
