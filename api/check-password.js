@@ -1,6 +1,6 @@
 export default function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(200).json({ ok: false, msg: "use POST" });
+    return res.status(405).json({ ok: false, msg: "use POST" });
   }
 
   const { password } = req.body;
@@ -9,6 +9,6 @@ export default function handler(req, res) {
   if (password === correct) {
     return res.status(200).json({ ok: true });
   } else {
-    return res.status(401).json({ ok: false, msg: `expected ${correct}` });
+    return res.status(401).json({ ok: false, msg: "invalid password" });
   }
 }
