@@ -5,27 +5,28 @@
   <title>x8's Classroom Log System</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: 'Press Start 2P', monospace;
-      color: #fff;
+      background: url("/CL/search.jpg") center center / cover no-repeat fixed;
+      color: #00fff7;
       overflow-x: hidden;
     }
 
+    /* dark overlay for readability */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.8);
       z-index: 0;
     }
 
     #mainIntro {
-      position: fixed;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: relative;
+      margin-top: 60px;
       text-align: center;
       color: #00fff7;
       text-shadow: 0 0 10px #00fff7, 0 0 20px #ff00ff;
@@ -43,16 +44,16 @@
     .sidebar {
       position: fixed;
       right: 0;
-      top: 100px;
+      top: 120px;
       width: 200px;
-      background: rgba(10,10,10,0.85);
+      background: rgba(10, 10, 10, 0.85);
       border-left: 2px solid #00fff7;
       box-shadow: -2px 0 10px #00fff7;
       padding: 15px;
       color: #00fff7;
       font-size: 0.7rem;
       text-align: left;
-      max-height: 80%;
+      max-height: 70%;
       overflow-y: auto;
       z-index: 3;
     }
@@ -64,6 +65,7 @@
     .sidebar ul {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
     .sidebar li {
       margin: 8px 0;
@@ -82,7 +84,7 @@
     }
 
     .results {
-      margin: 120px auto 20px;
+      margin: 140px auto 20px;
       width: 90%;
       max-width: 700px;
       text-align: center;
@@ -130,3 +132,98 @@
       background: #ff00ff;
       border-color: #ff00ff;
       color: #fff;
+    }
+
+    .tips {
+      font-size: 0.6rem;
+      color: #aaa;
+      z-index: 4;
+      text-align: center;
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .tips span {
+      color: #00fff7;
+    }
+  </style>
+</head>
+<body>
+  <div id="mainIntro">
+    <h1>x8's Classroom Log System</h1>
+    <p class="audit">Audit Log</p>
+  </div>
+
+  <div class="sidebar">
+    <h2>Available Dates</h2>
+    <ul id="dateList"></ul>
+  </div>
+
+  <div class="results" id="results"><p>Welcome! Choose a date or search below.</p></div>
+
+  <div class="search-area">
+    <input type="text" id="searchInput" placeholder="Search (YYMMDD)" />
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <div class="tips">
+    Want to get access to Classroom Log System? <span>Contact x8</span>
+  </div>
+
+  <script>
+    const logs = {
+      "250929": "250929",
+      "250930": "250930",
+      "251003": "251003",
+      "251006": "251006",
+      "251008": "251008"
+    };
+
+    const resultsDiv = document.getElementById("results");
+    const input = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+    const dateList = document.getElementById("dateList");
+
+    function showResult(query) {
+      const base = logs[query];
+      if (!base) {
+        resultsDiv.innerHTML = `<p>No results found for ${query}</p>`;
+        return;
+      }
+      const jpg = `/logs/${base}.jpg`;
+      const png = `/logs/${base}.png`;
+
+      const img = new Image();
+      img.alt = `Audit log for ${query}`;
+      img.onload = () => {
+        resultsDiv.innerHTML = "";
+        resultsDiv.appendChild(img);
+      };
+      img.onerror = () => {
+        img.onerror = () => {
+          resultsDiv.innerHTML = `<p>Image not found for ${query}</p>`;
+        };
+        img.src = png;
+      };
+      img.src = jpg;
+    }
+
+    btn.addEventListener("click", () => showResult(input.value.trim()));
+    input.addEventListener("keydown", e => { 
+      if (e.key === "Enter") btn.click(); 
+    });
+
+    // Build sidebar
+    for (const date in logs) {
+      const li = document.createElement("li");
+      li.textContent = date;
+      li.addEventListener("click", () => {
+        input.value = date;
+        showResult(date);
+      });
+      dateList.appendChild(li);
+    }
+  </script>
+</body>
+</html>
