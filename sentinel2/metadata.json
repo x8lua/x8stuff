@@ -1,0 +1,5 @@
+{
+  "name": "Roblox Sentinel",
+  "description": "A tool to search for Roblox users, verify their identity via profile details, and add them to a local blacklist.",
+  "requestFramePermissions": []
+}
