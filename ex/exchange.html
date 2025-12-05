@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人民幣兌澳門元換算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fdf2f2',
+                            100: '#fde8e8',
+                            500: '#ef4444', // Red for CNY association
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        
+        <!-- Header -->
+        <div class="bg-brand-600 p-6 text-white text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
+                <i class="fas fa-yen-sign text-9xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold relative z-10 tracking-wide">匯率換算</h1>
+            <p class="text-brand-100 text-sm relative z-10 mt-2 font-light">
+                人民幣 (CNY) <i class="fas fa-arrow-right mx-1 text-xs"></i> 澳門元 (MOP)
+            </p>
+        </div>
+
+        <!-- Converter Form -->
+        <div class="p-6 space-y-6">
+            
+            <!-- Amount Input -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2">輸入金額 (RMB)</label>
+                <div class="relative group">
+                    <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg font-bold">¥</span>
+                    <input type="number" id="amount" 
+                        class="w-full pl-10 pr-4 py-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-brand-500 focus:ring-0 outline-none transition-all text-2xl font-bold text-gray-800 placeholder-gray-300"
+                        placeholder="1000" inputmode="decimal">
+                </div>
+            </div>
+
+            <!-- Fixed Currency Display -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold">CN</div>
+                    <div>
+                        <div class="font-bold text-gray-700">人民幣</div>
+                        <div class="text-xs text-gray-400">CNY</div>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right text-gray-300"></i>
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">MO</div>
+                    <div class="text-right">
+                        <div class="font-bold text-gray-700">澳門元</div>
+                        <div class="text-xs text-gray-400">MOP</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Convert Button -->
+            <button id="convertBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.97] flex items-center justify-center gap-2 text-lg">
+                <span>計算匯率</span>
+            </button>
+            
+            <p class="text-center text-xs text-gray-400">
+                *計算結果包含 1.03 倍率
+            </p>
+
+        </div>
+
+        <!-- Results Area -->
+        <div id="resultContainer" class="hidden bg-slate-50 border-t border-gray-100">
+            
+            <!-- Loading State -->
+            <div id="loading" class="hidden flex flex-col items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-brand-600"></div>
+                <span class="text-sm text-gray-500 mt-3 font-medium">正在更新即時匯率...</span>
+            </div>
+
+            <!-- Error State -->
+            <div id="error" class="hidden text-center py-6 text-red-500 text-sm px-4">
+                <i class="fas fa-wifi mb-2 text-xl"></i><br>
+                <span id="errorText">無法連接伺服器，請檢查網絡。</span>
+            </div>
+
+            <!-- Success State -->
+            <div id="success" class="hidden p-6 fade-in">
+                
+                <!-- Main Result -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-brand-600"></div>
+                    <p class="text-xs text-gray-500 mb-1 font-bold tracking-wider">兌換總額 (MOP)</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-gray-900" id="finalResult">0.00</span>
+                        <span class="text-sm font-medium text-gray-400">澳門元</span>
+                    </div>
+                </div>
+
+                <!-- Rate Details -->
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between items-center text-gray-600">
+                        <span>即時市場匯率:</span>
+                        <span class="font-mono font-medium" id="marketRate">...</span>
+                    </div>
+                    <div class="flex justify-between items-center text-gray-600">
+                        <span>計算倍率:</span>
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-bold">x 1.03</span>
+                    </div>
+                    <div class="border-t border-gray-200 my-2 pt-2 flex justify-between items-center text-gray-400 text-xs">
+                        <span>原始金額:</span>
+                        <span id="originalAmount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Endpoint (Using Exchange Rate API for better MOP support)
+        const API_URL = 'https://open.er-api.com/v6/latest/CNY';
+        
+        // DOM Elements
+        const amountInput = document.getElementById('amount');
+        const convertBtn = document.getElementById('convertBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const loading = document.getElementById('loading');
+        const success = document.getElementById('success');
+        const error = document.getElementById('error');
+        
+        // Output Elements
+        const finalResult = document.getElementById('finalResult');
+        const marketRate = document.getElementById('marketRate');
+        const originalAmount = document.getElementById('originalAmount');
+
+        // Main Function
+        async function calculateExchange() {
+            const amount = parseFloat(amountInput.value);
+
+            // Validation
+            if (isNaN(amount) || amount <= 0) {
+                alert("請輸入有效的金額");
+                amountInput.focus();
+                return;
+            }
+
+            // UI State: Loading
+            resultContainer.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            success.classList.add('hidden');
+            error.classList.add('hidden');
+            
+            // Scroll to bottom smoothly to show loader
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                // Fetch Data
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (data.result !== "success") throw new Error("API Error");
+
+                const rate = data.rates.MOP; // Get CNY -> MOP rate
+
+                // Calculations
+                // 1. Convert at market rate
+                const marketValue = amount * rate;
+                
+                // 2. Apply 1.03 multiplier as requested
+                const finalValue = marketValue * 1.03;
+
+                // Update DOM
+                finalResult.textContent = formatNumber(finalValue);
+                marketRate.textContent = `1 CNY = ${rate.toFixed(4)} MOP`;
+                originalAmount.textContent = `¥ ${formatNumber(amount)}`;
+
+                // UI State: Success
+                loading.classList.add('hidden');
+                success.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+            }
+        }
+
+        // Helper: Format number with commas
+        function formatNumber(num) {
+            return new Intl.NumberFormat('zh-MO', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        // Event Listeners
+        convertBtn.addEventListener('click', calculateExchange);
+
+        amountInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateExchange();
+        });
+
+    </script>
+</body>
+</html>
+
