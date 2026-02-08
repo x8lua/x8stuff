@@ -38,6 +38,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 @keyframes gtxt{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .s1-name{font-size:clamp(2rem,5vw,4rem);font-weight:600;margin-top:.8rem;opacity:.85;letter-spacing:.15em}
 .s1-sub{font-size:clamp(1rem,2vw,1.6rem);margin-top:1.2rem;opacity:.5;font-weight:400;letter-spacing:.2em}
+.s1-credit{position:fixed;bottom:16px;left:20px;font-size:.7rem;opacity:.25;font-weight:400;z-index:200}
 /* SLIDE 2 */
 .s2-wrap{display:flex;align-items:center;gap:clamp(2.5rem,5vw,5rem);padding:0 7vw;max-width:1500px;width:100%;z-index:10}
 .s2-photo{width:clamp(260px,28vw,420px);height:clamp(340px,36vw,540px);border-radius:30px;background:linear-gradient(135deg,#ff9a9e,#a18cd1,#96e6a1,#ffecd2);background-size:200% 200%;animation:gtxt 5s ease infinite;padding:5px;flex-shrink:0}
@@ -74,7 +75,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
   <div class="s1-wrap">
     <div class="s1-emoji">🎂</div>
     <h1 class="s1-title">生日快樂</h1>
-    <div class="s1-name">親愛的老師</div>
+    <div class="s1-name">親愛的Cherry</div>
     <div class="s1-sub">全班同學獻上最真摯的祝福</div>
   </div>
 </div>
@@ -84,7 +85,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
     <div class="s2-photo"><div class="s2-inner"><img src="https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/cherry.jpg" alt="老師"></div></div>
     <div class="s2-text">
       <h2>最棒的老師</h2>
-      <p>感謝您每一天的悉心教導與無私付出。您不僅傳授了知識，更教會了我們做人的道理。在這個特別的日子裡，我們想對您說一聲：謝謝您，老師！</p>
+      <p>多謝你用笑容陪伴我哋，明明自己好容易落淚，仲一直包容住我哋嘅不懂事，但係我哋心目中你係最靚嘅。我哋成日欠功課、犯錯、成績唔夠好，令您操心難過，真係對唔住。以後我哋一齊努力，一齊前進！祝您天天開心，平安喜樂！</p>
       <div class="s2-sig">— 全班同學 敬上 ♥</div>
     </div>
   </div>
@@ -92,6 +93,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 <!-- Slide 3: Card Wall -->
 <div id="slide-3" class="slide"><div id="stage"></div><div id="backdrop"></div></div>
 <div id="finale"><h1>生日快樂！🎂</h1></div>
+<div class="s1-credit">This website was made by x8</div>
 <div id="nav">
   <button id="prev-btn" disabled>‹</button>
   <div class="page-ind"><span id="page-num">1</span> / 3</div>
@@ -280,6 +282,11 @@ var cards = messages.map(function(msg,i){
     return {el:c,pos:pos};
 });
 
+// Sound effects
+var sfxAppear = new Audio('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/swoosh.mp3');
+var sfxLand = new Audio('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/swoosh2.mp3');
+function playSfx(src){ var a=src.cloneNode(); a.volume=0.7; a.play(); }
+
 function startWall(){
     var master=gsap.timeline({delay:.4});
     cards.forEach(function(item,i){
@@ -288,11 +295,12 @@ function startWall(){
         var rot=(Math.random()*10-5), tl=gsap.timeline();
         gsap.set(el,{x:ox,y:oy,scale:2.5,opacity:0});
 
-        tl.call(function(){el.style.zIndex=60;});
+        tl.call(function(){el.style.zIndex=60; playSfx(sfxAppear);});
         tl.to(backdrop,{opacity:1,duration:.2,ease:'power1.in'},'<');
         tl.to(el,{scale:1.5,opacity:1,duration:.7,ease:'back.out(1.7)',boxShadow:'0 0 50px rgba(255,255,255,.3),0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]});
         tl.to(el,{duration:2.5});
         tl.to(backdrop,{opacity:0,duration:.2,ease:'power1.out'});
+        tl.call(function(){ playSfx(sfxLand); });
         tl.to(el,{x:0,y:0,scale:1,rotation:rot,duration:.8,ease:'back.out(2)',
             boxShadow:'0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]+',inset 0 0 20px rgba(255,255,255,.03)',
             onComplete:function(){el.dataset.landed='1'; jellyBounce(el);}
