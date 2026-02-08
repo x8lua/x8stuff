@@ -282,11 +282,6 @@ var cards = messages.map(function(msg,i){
     return {el:c,pos:pos};
 });
 
-// Sound effects
-var sfxAppear = new Audio('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/swoosh.mp3');
-var sfxLand = new Audio('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/swoosh2.mp3');
-function playSfx(src){ var a=src.cloneNode(); a.volume=0.7; a.play(); }
-
 function startWall(){
     var master=gsap.timeline({delay:.4});
     cards.forEach(function(item,i){
@@ -295,12 +290,11 @@ function startWall(){
         var rot=(Math.random()*10-5), tl=gsap.timeline();
         gsap.set(el,{x:ox,y:oy,scale:2.5,opacity:0});
 
-        tl.call(function(){el.style.zIndex=60; playSfx(sfxAppear);});
+        tl.call(function(){el.style.zIndex=60;});
         tl.to(backdrop,{opacity:1,duration:.2,ease:'power1.in'},'<');
         tl.to(el,{scale:1.5,opacity:1,duration:.7,ease:'back.out(1.7)',boxShadow:'0 0 50px rgba(255,255,255,.3),0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]});
         tl.to(el,{duration:2.5});
         tl.to(backdrop,{opacity:0,duration:.2,ease:'power1.out'});
-        tl.call(function(){ playSfx(sfxLand); });
         tl.to(el,{x:0,y:0,scale:1,rotation:rot,duration:.8,ease:'back.out(2)',
             boxShadow:'0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]+',inset 0 0 20px rgba(255,255,255,.03)',
             onComplete:function(){el.dataset.landed='1'; jellyBounce(el);}
