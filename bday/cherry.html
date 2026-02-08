@@ -10,6 +10,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft YaHei','PingFang SC',sans-serif;color:#fff;background:#0a0a1a}
+/* BG IMAGE */
+.bg-img{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;background:url('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/bg.jpeg') center 15%/cover no-repeat;opacity:.5}
 /* MESH GRADIENT */
 .mesh-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;overflow:hidden}
 .blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.35;will-change:transform}
@@ -38,8 +40,9 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 .s1-sub{font-size:clamp(1rem,2vw,1.6rem);margin-top:1.2rem;opacity:.5;font-weight:400;letter-spacing:.2em}
 /* SLIDE 2 */
 .s2-wrap{display:flex;align-items:center;gap:clamp(2.5rem,5vw,5rem);padding:0 7vw;max-width:1500px;width:100%;z-index:10}
-.s2-photo{width:clamp(220px,24vw,360px);height:clamp(220px,24vw,360px);border-radius:30px;background:linear-gradient(135deg,#ff9a9e,#a18cd1,#96e6a1,#ffecd2);background-size:200% 200%;animation:gtxt 5s ease infinite;padding:5px;flex-shrink:0}
-.s2-inner{width:100%;height:100%;border-radius:26px;background:rgba(15,15,30,.8);backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:center;font-size:5rem}
+.s2-photo{width:clamp(260px,28vw,420px);height:clamp(340px,36vw,540px);border-radius:30px;background:linear-gradient(135deg,#ff9a9e,#a18cd1,#96e6a1,#ffecd2);background-size:200% 200%;animation:gtxt 5s ease infinite;padding:5px;flex-shrink:0}
+.s2-inner{width:100%;height:100%;border-radius:26px;background:rgba(15,15,30,.8);backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:center;font-size:5rem;overflow:hidden}
+.s2-inner img{width:100%;height:100%;object-fit:cover}
 .s2-text{flex:1}
 .s2-text h2{font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:700;margin-bottom:1.2rem;background:linear-gradient(90deg,#ff9a9e,#ffecd2,#a18cd1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gtxt 4s ease infinite}
 .s2-text p{font-size:clamp(1.2rem,2vw,1.7rem);line-height:1.9;opacity:.78;font-weight:400}
@@ -58,6 +61,8 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 </style>
 </head>
 <body>
+<!-- Background image -->
+<div class="bg-img"></div>
 <!-- Mesh gradient background blobs -->
 <div class="mesh-bg">
   <div class="blob b1"></div><div class="blob b2"></div>
@@ -76,7 +81,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 <!-- Slide 2: Tribute -->
 <div id="slide-2" class="slide">
   <div class="s2-wrap">
-    <div class="s2-photo"><div class="s2-inner">📸</div></div>
+    <div class="s2-photo"><div class="s2-inner"><img src="https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/cherry.jpg" alt="老師"></div></div>
     <div class="s2-text">
       <h2>最棒的老師</h2>
       <p>感謝您每一天的悉心教導與無私付出。您不僅傳授了知識，更教會了我們做人的道理。在這個特別的日子裡，我們想對您說一聲：謝謝您，老師！</p>
