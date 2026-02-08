@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Teacher!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #121212;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #stage { position: relative; width: 100vw; height: 100vh; }
+        .card {
+            position: absolute;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+        .card .message { font-size: 2rem; font-weight: 600; color: #1a1a2e; line-height: 1.3; }
+        .card .student-name {
+            font-size: 1.4rem; color: #2d2d44;
+            margin-top: 0.8rem; font-style: italic; opacity: 0.8;
+        }
+        #finale {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none; opacity: 0; z-index: 100;
+        }
+        #finale h1 {
+            font-size: 8rem; color: #fff;
+            text-shadow: 0 0 40px rgba(255,107,107,0.8), 0 0 80px rgba(255,107,107,0.4);
+            font-family: 'Georgia', serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="stage"></div>
+    <div id="finale"><h1>Happy Birthday!</h1></div>
+    <script>
+    // =============================================
+    // STUDENT MESSAGES — Edit this array easily!
+    // =============================================
+    const messages = [
+        { name: "Student 1",  text: "Hi" },
+        { name: "Student 2",  text: "Hello" },
+        { name: "Student 3",  text: "Happy Birthday!" },
+        { name: "Student 4",  text: "You're the best teacher ever!" },
+        { name: "Student 5",  text: "Thank you for everything!" },
+        { name: "Student 6",  text: "Wishing you an amazing day!" },
+        { name: "Student 7",  text: "You inspire us every day!" },
+        { name: "Student 8",  text: "Have a wonderful birthday!" },
+        { name: "Student 9",  text: "We appreciate you so much!" },
+        { name: "Student 10", text: "Best wishes on your special day!" },
+        { name: "Student 11", text: "You make learning fun!" },
+        { name: "Student 12", text: "Cheers to you, Teacher!" },
+        { name: "Student 13", text: "Hope all your wishes come true!" },
+        { name: "Student 14", text: "You're one in a million!" },
+        { name: "Student 15", text: "Enjoy your special day!" },
+    ];
+
+    // =============================================
+    // CONFIGURATION
+    // =============================================
+    const CARD_COLORS = [
+        "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
+        "#DDA0DD", "#F7DC6F", "#BB8FCE", "#85C1E9", "#F8B500",
+        "#98D8C8", "#FF8A5C", "#EA8685", "#78E08F", "#E056A0"
+    ];
+
+    const total = messages.length;
+    const COLS = total <= 4 ? 2 : total <= 9 ? 3 : total <= 12 ? 4 : 5;
+    const ROWS = Math.ceil(total / COLS);
+
+    // Pixel-based sizes from viewport dimensions
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const gapX = vw * 0.015;
+    const gapY = vh * 0.02;
+    const cardW = (vw - (COLS + 1) * gapX) / COLS;
+    const cardH = (vh - (ROWS + 1) * gapY) / ROWS;
+    const centerX = (vw - cardW) / 2;
+    const centerY = (vh - cardH) / 2;
+
+    const stage  = document.getElementById("stage");
+    const finale = document.getElementById("finale");
+
+    function getGridPos(index) {
+        var col = index % COLS;
+        var row = Math.floor(index / COLS);
+        return {
+            x: gapX + col * (cardW + gapX),
+            y: gapY + row * (cardH + gapY)
+        };
+    }
+
+    function randomRotation() {
+        return Math.random() * 6 - 3;
+    }
+
+    // --- Create cards at their FINAL grid positions ---
+    var cards = messages.map(function (msg, i) {
+        var pos = getGridPos(i);
+        var card = document.createElement("div");
+        card.className = "card";
+        card.style.width  = cardW + "px";
+        card.style.height = cardH + "px";
+        card.style.left   = pos.x + "px";
+        card.style.top    = pos.y + "px";
+        card.style.backgroundColor = CARD_COLORS[i % CARD_COLORS.length];
+        card.innerHTML =
+            '<div class="message">' + msg.text + '</div>' +
+            '<div class="student-name">&mdash; ' + msg.name + '</div>';
+        stage.appendChild(card);
+        return { el: card, pos: pos };
+    });
+
+    // =============================================
+    // ANIMATION SEQUENCE (using GSAP transforms)
+    // =============================================
+    var master = gsap.timeline({ delay: 0.8 });
+
+    cards.forEach(function (item, i) {
+        var el  = item.el;
+        var pos = item.pos;
+        var offsetX = centerX - pos.x;
+        var offsetY = centerY - pos.y;
+        var rot = randomRotation();
+        var tl  = gsap.timeline();
+
+        // Place card at center via transform offset, hidden
+        gsap.set(el, { x: offsetX, y: offsetY, scale: 2.5, opacity: 0 });
+
+        // 1) Entrance — fade in + scale down to readable size at center
+        tl.to(el, { scale: 1.2, opacity: 1, duration: 0.8, ease: "back.out(1.4)" });
+
+        // 2) Pause — hold at center so the message can be read
+        tl.to(el, { duration: 2.5 });
+
+        // 3) Tween to grid — fly to final position
+        tl.to(el, {
+            x: 0, y: 0, scale: 1, rotation: rot,
+            duration: 0.9, ease: "power2.inOut"
+        });
+
+        master.add(tl, i > 0 ? "-=0.3" : 0);
+    });
+
+    // =============================================
+    // FINALE — Happy Birthday + Confetti
+    // =============================================
+    master.call(function () {
+        gsap.to(finale, { opacity: 1, duration: 1, ease: "power2.in" });
+        gsap.fromTo(finale.querySelector("h1"),
+            { scale: 0.3 },
+            { scale: 1, duration: 1.2, ease: "elastic.out(1, 0.4)" }
+        );
+
+        // Continuous confetti streams from both sides
+        var end = Date.now() + 5000;
+        (function frame() {
+            confetti({ particleCount: 4, angle: 60,  spread: 80,
+                       origin: { x: 0, y: 0.7 },
+                       colors: ["#FF6B6B","#4ECDC4","#FFEAA7","#BB8FCE","#F7DC6F"] });
+            confetti({ particleCount: 4, angle: 120, spread: 80,
+                       origin: { x: 1, y: 0.7 },
+                       colors: ["#FF6B6B","#4ECDC4","#FFEAA7","#BB8FCE","#F7DC6F"] });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        })();
+
+        // Big center burst after a short delay
+        setTimeout(function () {
+            confetti({ particleCount: 200, spread: 160,
+                       origin: { x: 0.5, y: 0.5 },
+                       colors: ["#FF6B6B","#4ECDC4","#FFEAA7","#BB8FCE","#F7DC6F","#DDA0DD"] });
+        }, 500);
+    });
+    </script>
+</body>
+</html>
