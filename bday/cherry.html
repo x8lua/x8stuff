@@ -60,10 +60,12 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 #finale{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;pointer-events:none;opacity:0;z-index:300}
 #finale h1{font-size:clamp(4rem,10vw,8rem);color:#fff;text-shadow:0 0 40px rgba(255,154,158,.6),0 0 80px rgba(161,140,209,.4)}
 /* MOBILE NOTICE */
-#mobile-notice{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,10,26,.95);display:none;justify-content:center;align-items:center;z-index:500;cursor:pointer;backdrop-filter:blur(10px)}
-#mobile-notice.show{display:flex}
+#mobile-notice{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,10,26,.95);display:flex;justify-content:center;align-items:center;z-index:500;backdrop-filter:blur(10px)}
+#mobile-notice.hide{display:none}
 .notice-box{background:rgba(255,255,255,.15);backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.3);border-radius:25px;padding:clamp(1.5rem,4vw,2.5rem);max-width:500px;margin:0 20px;text-align:center;box-shadow:0 0 40px rgba(255,154,158,.3)}
-.notice-box p{font-size:clamp(1rem,2.5vw,1.3rem);line-height:1.6;opacity:.9}
+.notice-box p{font-size:clamp(1rem,2.5vw,1.3rem);line-height:1.6;opacity:.9;margin-bottom:1.5rem}
+.notice-btn{background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;border-radius:50px;padding:clamp(.8rem,2vw,1rem) clamp(2rem,5vw,3rem);font-size:clamp(1rem,2vw,1.2rem);font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:.3s;box-shadow:0 4px 15px rgba(255,154,158,.4)}
+.notice-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(255,154,158,.6)}
 </style>
 </head>
 <body>
@@ -76,7 +78,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 </div>
 <div id="floaters"></div>
 <!-- Mobile Notice -->
-<div id="mobile-notice"><div class="notice-box"><p>📱 發現你是手機端，使用電腦打開效果會更好</p></div></div>
+<div id="mobile-notice"><div class="notice-box"><p id="notice-text">📱 發現你是手機端，使用電腦打開效果會更好</p><button class="notice-btn" onclick="startExperience()">開始</button></div></div>
 <!-- Slide 1: Opener -->
 <div id="slide-1" class="slide active">
   <div class="s1-wrap">
@@ -107,15 +109,29 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
   <button id="next-btn">›</button>
 </div>
 <script>
-<script>
 // =============================================
 // MOBILE DETECTION & NOTICE
 // =============================================
 var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-if(isMobile){
-    var notice = document.getElementById('mobile-notice');
-    notice.classList.add('show');
-    notice.onclick = function(){ notice.classList.remove('show'); };
+if(!isMobile){
+    document.getElementById('notice-text').textContent = '🎉 準備好了嗎？點擊開始按鈕開始體驗';
+}
+
+function startExperience(){
+    document.getElementById('mobile-notice').classList.add('hide');
+    initAnimations();
+}
+
+function initAnimations(){
+    // Slide 1 entrance animations
+    gsap.from('.s1-emoji',{scale:0,opacity:0,duration:1,delay:.3,ease:'elastic.out(1,.5)'});
+    gsap.from('.s1-title',{scale:.3,opacity:0,duration:1.2,delay:.6,ease:'back.out(1.7)'});
+    gsap.from('.s1-name',{y:50,opacity:0,duration:1,delay:1,ease:'power2.out'});
+    gsap.from('.s1-sub',{y:30,opacity:0,duration:1,delay:1.3,ease:'power2.out'});
+    // Confetti burst
+    setTimeout(function(){
+        confetti({particleCount:80,spread:100,origin:{x:.5,y:.5},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2','#fad0c4']});
+    },800);
 }
 
 // =============================================
@@ -263,18 +279,6 @@ document.addEventListener('keydown',function(e){
     if(e.key==='ArrowRight'||e.key===' ')go(cur+1);
     if(e.key==='ArrowLeft')go(cur-1);
 });
-
-// =============================================
-// SLIDE 1 — ENTRANCE + CONFETTI BURST
-// =============================================
-gsap.from('.s1-emoji',{scale:0,opacity:0,duration:1,delay:.3,ease:'elastic.out(1,.5)'});
-gsap.from('.s1-title',{scale:.3,opacity:0,duration:1.2,delay:.6,ease:'back.out(1.7)'});
-gsap.from('.s1-name',{y:50,opacity:0,duration:1,delay:1,ease:'power2.out'});
-gsap.from('.s1-sub',{y:30,opacity:0,duration:1,delay:1.3,ease:'power2.out'});
-// Confetti burst on slide 1 load
-setTimeout(function(){
-    confetti({particleCount:80,spread:100,origin:{x:.5,y:.5},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2','#fad0c4']});
-},800);
 
 // =============================================
 // SLIDE 3 — CARD WALL + JELLY EFFECT
