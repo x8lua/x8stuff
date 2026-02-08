@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday, Teacher!</title>
+    <title>生日快乐，老师！</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
@@ -13,27 +13,72 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
         }
         #stage { position: relative; width: 100vw; height: 100vh; }
+
+        #backdrop {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            opacity: 0; z-index: 50;
+            pointer-events: none;
+        }
+
         .card {
             position: absolute;
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border-radius: 8px;
             opacity: 0;
             will-change: transform, opacity;
+            z-index: 1;
+            overflow: hidden;
         }
-        .card .message { font-size: 2rem; font-weight: 600; color: #1a1a2e; line-height: 1.3; }
-        .card .student-name {
-            font-size: 1.4rem; color: #2d2d44;
-            margin-top: 0.8rem; font-style: italic; opacity: 0.8;
+        .card-name {
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 6% 8% 0;
+            font-size: clamp(0.65rem, 1.4vw, 1rem);
+            line-height: 1.2;
         }
+        .quote {
+            position: absolute;
+            top: 22%;
+            left: 5%;
+        }
+        .quote svg {
+            width: clamp(24px, 3.5vw, 48px);
+            height: auto;
+        }
+        .body-text {
+            position: absolute;
+            top: 26%;
+            left: 7%;
+            right: 5%;
+            font-weight: 900;
+            font-size: clamp(1rem, 2vw, 1.6rem);
+            line-height: 1.3;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .author {
+            position: absolute;
+            bottom: 5%;
+            left: 8%;
+            right: 5%;
+            font-weight: 700;
+            font-size: clamp(0.6rem, 1.2vw, 0.9rem);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .author svg {
+            width: 16px; height: 16px;
+            flex-shrink: 0;
+        }
+
         #finale {
             position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh;
@@ -49,37 +94,74 @@
 </head>
 <body>
     <div id="stage"></div>
+    <div id="backdrop"></div>
     <div id="finale"><h1>Happy Birthday!</h1></div>
     <script>
     // =============================================
     // STUDENT MESSAGES — Edit this array easily!
     // =============================================
     const messages = [
-        { name: "Student 1",  text: "Hi" },
-        { name: "Student 2",  text: "Hello" },
-        { name: "Student 3",  text: "Happy Birthday!" },
-        { name: "Student 4",  text: "You're the best teacher ever!" },
-        { name: "Student 5",  text: "Thank you for everything!" },
-        { name: "Student 6",  text: "Wishing you an amazing day!" },
-        { name: "Student 7",  text: "You inspire us every day!" },
-        { name: "Student 8",  text: "Have a wonderful birthday!" },
-        { name: "Student 9",  text: "We appreciate you so much!" },
-        { name: "Student 10", text: "Best wishes on your special day!" },
-        { name: "Student 11", text: "You make learning fun!" },
-        { name: "Student 12", text: "Cheers to you, Teacher!" },
-        { name: "Student 13", text: "Hope all your wishes come true!" },
-        { name: "Student 14", text: "You're one in a million!" },
-        { name: "Student 15", text: "Enjoy your special day!" },
-    ];
+    { name: "同學 1", text: "老師生日快樂啦" },
+    { name: "同學 2", text: "祝您天天開心呀" },
+    { name: "同學 3", text: "感謝您一直以來的教導" },
+    { name: "同學 4", text: "您真的係最棒的老師" },
+    { name: "同學 5", text: "謝謝老師的付出呢" },
+    { name: "同學 6", text: "祝您萬事如意" },
+    { name: "同學 7", text: "每堂課您都激勵著我們" },
+    { name: "同學 8", text: "老師生日愉快呀" },
+    { name: "同學 9", text: "我們真係好感激您" },
+    { name: "同學 10", text: "祝您心想事成啦" },
+    { name: "同學 11", text: "上您的課最有趣" },
+    { name: "同學 12", text: "敬愛的老師 乾杯" },
+    { name: "同學 13", text: "願您所有願望都成真" },
+    { name: "同學 14", text: "您真的獨一無二呀" },
+    { name: "同學 15", text: "好好享受您的特別日子啦" },
+    { name: "同學 16", text: "老師您改變了我的人生呢" },
+    { name: "同學 17", text: "世界上最好的老師 係您沒錯" },
+    { name: "同學 18", text: "多謝您一直相信我們" },
+    { name: "同學 19", text: "您的課永遠都係課室的亮點" },
+    { name: "同學 20", text: "祝老師最幸福的生日啦" },
+    { name: "同學 21", text: "我們超愛您的課 真的" },
+    { name: "同學 22", text: "您值得所有生日蛋糕 哈哈" },
+    { name: "同學 23", text: "繼續做最棒的老師吧" },
+    { name: "同學 24", text: "做您的學生真係超幸運" },
+    { name: "同學 25", text: "派對開始啦 老師生日快樂" },
+];
 
     // =============================================
     // CONFIGURATION
     // =============================================
-    const CARD_COLORS = [
-        "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
-        "#DDA0DD", "#F7DC6F", "#BB8FCE", "#85C1E9", "#F8B500",
-        "#98D8C8", "#FF8A5C", "#EA8685", "#78E08F", "#E056A0"
+    const CARD_THEMES = [
+        { bg: "#FF6B6B", light: "#FFB3B3", dark: "#A33030", text: "#4A1010" },
+        { bg: "#4ECDC4", light: "#A0E8E2", dark: "#2A7A73", text: "#133633" },
+        { bg: "#45B7D1", light: "#9EDAE8", dark: "#276D80", text: "#0F3340" },
+        { bg: "#96CEB4", light: "#C8E6D6", dark: "#4E7A5E", text: "#243A2D" },
+        { bg: "#FFEAA7", light: "#FFF4D1", dark: "#A89440", text: "#4D4310" },
+        { bg: "#DDA0DD", light: "#EECFEE", dark: "#8B5A8B", text: "#3D1F3D" },
+        { bg: "#F7DC6F", light: "#FBEDB7", dark: "#9E8A2E", text: "#4A3F0A" },
+        { bg: "#BB8FCE", light: "#DDC7E6", dark: "#6E4585", text: "#321D3E" },
+        { bg: "#85C1E9", light: "#C2E0F4", dark: "#3A7BAD", text: "#1A3750" },
+        { bg: "#F8B500", light: "#FCDA7F", dark: "#9E7300", text: "#4A3500" },
+        { bg: "#98D8C8", light: "#CCECE3", dark: "#4D8A78", text: "#1F3E33" },
+        { bg: "#FF8A5C", light: "#FFC4AD", dark: "#A34A24", text: "#4A1E08" },
+        { bg: "#EA8685", light: "#F4C2C2", dark: "#9E3E3D", text: "#4A1515" },
+        { bg: "#78E08F", light: "#BBF0C7", dark: "#3A8A4A", text: "#163E1E" },
+        { bg: "#E056A0", light: "#F0AAD0", dark: "#8A2A5E", text: "#3E0E2A" },
+        { bg: "#F9A825", light: "#FCD392", dark: "#9E6A10", text: "#4A3005" },
+        { bg: "#7EC8E3", light: "#BEE3F1", dark: "#3A7A95", text: "#1A3845" },
+        { bg: "#C39BD3", light: "#E1CDE9", dark: "#7A4E8E", text: "#351F40" },
+        { bg: "#F1948A", light: "#F8CAC4", dark: "#9E4A42", text: "#4A1D18" },
+        { bg: "#82E0AA", light: "#C0F0D4", dark: "#3E8A58", text: "#183E24" },
+        { bg: "#F0B27A", light: "#F8D8BC", dark: "#9E6A30", text: "#4A3010" },
+        { bg: "#AED6F1", light: "#D6EBF8", dark: "#4A8ABB", text: "#1E3E55" },
+        { bg: "#D7BDE2", light: "#EBDEF0", dark: "#7D5A90", text: "#362540" },
+        { bg: "#A3E4D7", light: "#D1F2EB", dark: "#4A9A88", text: "#1E4A3E" },
+        { bg: "#FAD7A0", light: "#FCEBD0", dark: "#A08040", text: "#4A3A15" },
     ];
+
+    var QUOTE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 330 307"><path fill="currentColor" d="M302.258 176.221C320.678 176.221 329.889 185.432 329.889 203.853V278.764C329.889 297.185 320.678 306.395 302.258 306.395H231.031C212.61 306.395 203.399 297.185 203.399 278.764V203.853C203.399 160.871 207.902 123.415 216.908 91.4858C226.323 59.1472 244.539 30.902 271.556 6.75027C280.562 -1.02739 288.135 -2.05076 294.275 3.68014L321.906 29.4692C328.047 35.2001 326.614 42.1591 317.608 50.3461C303.69 62.6266 292.228 80.4334 283.223 103.766C274.626 126.69 270.328 150.842 270.328 176.221H302.258ZM99.629 176.221C118.05 176.221 127.26 185.432 127.26 203.853V278.764C127.26 297.185 118.05 306.395 99.629 306.395H28.402C9.98126 306.395 0.770874 297.185 0.770874 278.764V203.853C0.770874 160.871 5.27373 123.415 14.2794 91.4858C23.6945 59.1472 41.9106 30.902 68.9277 6.75027C77.9335 -1.02739 85.5064 -2.05076 91.6467 3.68014L119.278 29.4692C125.418 35.2001 123.985 42.1591 114.98 50.3461C101.062 62.6266 89.6 80.4334 80.5942 103.766C71.9979 126.69 67.6997 150.842 67.6997 176.221H99.629Z"></path></svg>';
+
+    var HEART_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H24V24H0z" fill="none"></path><path fill="currentColor" d="M16.5 3C19.538 3 22 5.5 22 9c0 7-7.5 11-10 12.5C9.5 20 2 16 2 9c0-3.5 2.5-6 5.5-6C9.36 3 11 4 12 5c1-1 2.64-2 4.5-2z"></path></svg>';
 
     const total = messages.length;
     const COLS = total <= 4 ? 2 : total <= 9 ? 3 : total <= 12 ? 4 : 5;
@@ -95,8 +177,9 @@
     const centerX = (vw - cardW) / 2;
     const centerY = (vh - cardH) / 2;
 
-    const stage  = document.getElementById("stage");
-    const finale = document.getElementById("finale");
+    const stage    = document.getElementById("stage");
+    const finale   = document.getElementById("finale");
+    const backdrop = document.getElementById("backdrop");
 
     function getGridPos(index) {
         var col = index % COLS;
@@ -114,16 +197,20 @@
     // --- Create cards at their FINAL grid positions ---
     var cards = messages.map(function (msg, i) {
         var pos = getGridPos(i);
+        var theme = CARD_THEMES[i % CARD_THEMES.length];
         var card = document.createElement("div");
         card.className = "card";
         card.style.width  = cardW + "px";
         card.style.height = cardH + "px";
         card.style.left   = pos.x + "px";
         card.style.top    = pos.y + "px";
-        card.style.backgroundColor = CARD_COLORS[i % CARD_COLORS.length];
+        card.style.backgroundColor = theme.bg;
         card.innerHTML =
-            '<div class="message">' + msg.text + '</div>' +
-            '<div class="student-name">&mdash; ' + msg.name + '</div>';
+            '<div class="card-name" style="color:' + theme.dark + '">Message from</div>' +
+            '<div class="quote" style="color:' + theme.light + '">' + QUOTE_SVG + '</div>' +
+            '<div class="body-text" style="color:' + theme.text + '">' + msg.text + '</div>' +
+            '<div class="author" style="color:' + theme.dark + '">- ' + msg.name + ' ' +
+            '<span style="color:' + theme.light + '">' + HEART_SVG + '</span></div>';
         stage.appendChild(card);
         return { el: card, pos: pos };
     });
@@ -144,19 +231,37 @@
         // Place card at center via transform offset, hidden
         gsap.set(el, { x: offsetX, y: offsetY, scale: 2.5, opacity: 0 });
 
-        // 1) Entrance — fade in + scale down to readable size at center
-        tl.to(el, { scale: 1.2, opacity: 1, duration: 0.8, ease: "back.out(1.4)" });
+        // Fade in backdrop + bring card to front
+        tl.call(function () { el.style.zIndex = 60; });
+        tl.to(backdrop, { opacity: 1, duration: 0.3, ease: "power1.in" }, "<");
 
-        // 2) Pause — hold at center so the message can be read
-        tl.to(el, { duration: 2.5 });
-
-        // 3) Tween to grid — fly to final position
+        // 1) Entrance — fade in + scale down with glow
         tl.to(el, {
-            x: 0, y: 0, scale: 1, rotation: rot,
-            duration: 0.9, ease: "power2.inOut"
+            scale: 1.6, opacity: 1, duration: 0.9,
+            ease: "back.out(1.7)",
+            boxShadow: "0 0 60px rgba(255,255,255,0.35), 0 8px 32px rgba(0,0,0,0.4)"
         });
 
-        master.add(tl, i > 0 ? "-=0.3" : 0);
+        // 2) Gentle pulse while holding — teacher reads the message
+        tl.to(el, { scale: 1.55, duration: 1.0, ease: "sine.inOut", yoyo: true, repeat: 1 });
+
+        // 3) Pause — extra hold time
+        tl.to(el, { duration: 1.5 });
+
+        // Fade out backdrop + reset z-index
+        tl.to(backdrop, { opacity: 0, duration: 0.3, ease: "power1.out" });
+
+        // 4) Tween to grid — fly to final position with bounce
+        tl.to(el, {
+            x: 0, y: 0, scale: 1, rotation: rot,
+            duration: 1.0, ease: "back.out(1.2)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
+        });
+
+        // Reset z-index after landing
+        tl.call(function () { el.style.zIndex = 1; });
+
+        master.add(tl, i > 0 ? "-=0.2" : 0);
     });
 
     // =============================================
