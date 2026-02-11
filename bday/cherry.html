@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>生日快樂，老師！</title>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Cherry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Google+Sans:opsz,wght@17..18,400..700&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+img.emoji{height:1em;width:1em;margin:0 .05em 0 .1em;vertical-align:-.1em;display:inline}
 body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft YaHei','PingFang SC',sans-serif;color:#fff;background:#0a0a1a}
 /* BG IMAGE */
 .bg-img{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;background:url('https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/bg.jpeg') center 15%/cover no-repeat;opacity:.5}
@@ -48,14 +52,64 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 .s2-text h2{font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:700;margin-bottom:1.2rem;background:linear-gradient(90deg,#ff9a9e,#ffecd2,#a18cd1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gtxt 4s ease infinite}
 .s2-text p{font-size:clamp(1.2rem,2vw,1.7rem);line-height:1.9;opacity:.78;font-weight:400}
 .s2-sig{margin-top:1.8rem;font-size:clamp(1rem,1.5vw,1.2rem);opacity:.4;font-style:italic}
-/* SLIDE 3 */
-#slide-3{align-items:stretch;justify-content:stretch}
+/* SLIDE 3 — CHERRY BLIND BOX */
+.s3-wrap{display:flex;flex-direction:column;align-items:center;gap:clamp(1rem,2vw,1.8rem);z-index:10}
+.s3-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;background:linear-gradient(90deg,#ff9a9e,#ffecd2,#a18cd1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gtxt 4s ease infinite;margin-bottom:.5rem}
+.photo-row{display:flex;gap:clamp(16px,2vw,28px);justify-content:center;flex-wrap:wrap}
+.photo-frame{position:relative;width:clamp(180px,20vw,280px);height:clamp(240px,27vw,370px);border-radius:22px;cursor:pointer;perspective:600px;flex-shrink:0;-webkit-tap-highlight-color:transparent;user-select:none}
+.photo-frame .card-face{width:100%;height:100%;border-radius:22px;overflow:hidden;position:relative;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);backdrop-filter:blur(12px);transition:box-shadow .45s,border-color .4s;transform-style:preserve-3d}
+.photo-frame:hover .card-face{border-color:rgba(255,255,255,.4);box-shadow:0 12px 40px rgba(161,140,209,.35),0 0 20px rgba(255,154,158,.2)}
+.photo-frame::before{content:'';position:absolute;inset:-2px;border-radius:24px;background:conic-gradient(from var(--angle,0deg),#ff9a9e,#a18cd1,#96e6a1,#ffecd2,#ff9a9e);z-index:-1;opacity:0;transition:opacity .4s;animation:borderSpin 4s linear infinite}
+.photo-frame:hover::before{opacity:.6}
+@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes borderSpin{to{--angle:360deg}}
+/* Locked chest placeholder */
+.chest-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:clamp(3rem,5vw,4.5rem);background:linear-gradient(135deg,rgba(255,154,158,.15),rgba(161,140,209,.2),rgba(150,230,161,.1));border-radius:22px;position:relative}
+.chest-img::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.03) 10px,rgba(255,255,255,.03) 20px);border-radius:22px}
+/* Revealed photo (hidden initially) */
+.photo-img{width:100%;height:100%;object-fit:cover;display:none;border-radius:22px}
+/* Progress bar */
+.chest-progress{position:absolute;bottom:0;left:0;right:0;height:6px;background:rgba(0,0,0,.4);border-radius:0 0 22px 22px;overflow:hidden;z-index:5}
+.chest-bar{height:100%;width:0%;background:linear-gradient(90deg,#ff9a9e,#a18cd1,#96e6a1);border-radius:0 0 22px 22px;transition:width .2s ease}
+/* Click counter */
+.chest-counter{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.2rem,2vw,1.6rem);font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);z-index:5;pointer-events:none;opacity:.8}
+/* Label */
+.photo-frame.unlocked .chest-progress{display:none}
+.photo-frame.unlocked .chest-counter{display:none}
+.photo-frame.unlocked .chest-img{display:none}
+.photo-frame.unlocked .photo-img{display:block}
+/* Shake on click */
+@keyframes chestShake{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-4px) rotate(-2deg)}30%{transform:translateX(4px) rotate(2deg)}45%{transform:translateX(-3px) rotate(-1.5deg)}60%{transform:translateX(3px) rotate(1.5deg)}75%{transform:translateX(-2px) rotate(-1deg)}90%{transform:translateX(2px) rotate(1deg)}}
+.shake .card-face{animation:chestShake .4s ease}
+/* Shuffle state */
+.photo-frame.shuffling{position:fixed!important;z-index:20;filter:blur(3px);transition:none}
+.photo-frame.shuffling .card-face{animation:none!important}
+.s3-subtitle{font-size:clamp(.9rem,1.5vw,1.1rem);opacity:.5;font-weight:400;letter-spacing:.1em;margin-top:-.5rem}
+/* Stagger float animation */
+.photo-frame:nth-child(1){--float-delay:0s}
+.photo-frame:nth-child(2){--float-delay:.4s}
+.photo-frame:nth-child(3){--float-delay:.8s}
+.photo-frame:nth-child(4){--float-delay:.2s}
+.photo-frame:nth-child(5){--float-delay:.6s}
+.photo-frame:not(.unlocked) .card-face{animation:photoFloat 4s ease-in-out var(--float-delay) infinite}
+@keyframes photoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.photo-frame:hover:not(.unlocked) .card-face{animation:none}
+/* Locked card */
+.photo-frame.locked .card-face{animation:none!important;filter:grayscale(.5) brightness(.7)}
+.photo-frame.locked{cursor:not-allowed;pointer-events:none}
+.locked-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:8px;border-radius:22px;background:rgba(0,0,0,.3);backdrop-filter:blur(2px)}
+.locked-overlay .lock-icon{font-size:clamp(2.5rem,4vw,3.5rem);filter:drop-shadow(0 0 10px rgba(255,154,158,.4));transition:transform .3s}
+.locked-overlay .lock-text{font-size:clamp(.7rem,1.2vw,.9rem);opacity:.7;text-align:center;padding:0 12px;font-weight:600;letter-spacing:.05em}
+/* Secret reveal */
+.secret-phrase{position:fixed;bottom:8%;left:0;right:0;text-align:center;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.5);z-index:15;padding:0 5%;line-height:1.8;letter-spacing:.1em;background:linear-gradient(90deg,#ff9a9e,#ffecd2,#a18cd1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gtxt 4s ease infinite}
+/* SLIDE 4 */
+#slide-4{align-items:stretch;justify-content:stretch}
 #stage{position:relative;width:100vw;height:100vh}
 #backdrop{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,10,26,.75);opacity:0;z-index:50;pointer-events:none}
 .card{position:absolute;border-radius:25px;opacity:0;will-change:transform,opacity;z-index:1;overflow:hidden;background:rgba(255,255,255,.1);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1.5px solid rgba(255,255,255,.2)}
-.card-label{font-weight:600;padding:8% 10% 0;font-size:clamp(.5rem,1.1vw,.8rem);opacity:.6;letter-spacing:.05em}
-.card-msg{position:absolute;top:30%;left:8%;right:8%;font-weight:700;font-size:clamp(.9rem,1.8vw,1.35rem);line-height:1.35;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical}
-.card-author{position:absolute;bottom:7%;left:10%;right:8%;font-weight:600;font-size:clamp(.5rem,1vw,.75rem);opacity:.55;display:flex;align-items:center;gap:5px}
+.card-label{font-weight:600;padding:8% 10% 0;font-size:clamp(.65rem,1.4vw,1rem);opacity:.6;letter-spacing:.05em}
+.card-msg{position:absolute;top:25%;left:8%;right:8%;font-weight:700;font-size:clamp(.9rem,1.8vw,1.4rem);line-height:1.4;color:#fff;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;line-clamp:5;-webkit-box-orient:vertical}
+.card-author{position:absolute;bottom:7%;left:10%;right:8%;font-weight:600;font-size:clamp(.65rem,1.3vw,1rem);opacity:.55;display:flex;align-items:center;gap:5px}
 /* FINALE */
 #finale{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;pointer-events:none;opacity:0;z-index:300}
 #finale h1{font-size:clamp(4rem,10vw,8rem);color:#fff;text-shadow:0 0 40px rgba(255,154,158,.6),0 0 80px rgba(161,140,209,.4)}
@@ -66,6 +120,14 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
 .notice-box p{font-size:clamp(1rem,2.5vw,1.3rem);line-height:1.6;opacity:.9;margin-bottom:1.5rem}
 .notice-btn{background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;border-radius:50px;padding:clamp(.8rem,2vw,1rem) clamp(2rem,5vw,3rem);font-size:clamp(1rem,2vw,1.2rem);font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:.3s;box-shadow:0 4px 15px rgba(255,154,158,.4)}
 .notice-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(255,154,158,.6)}
+/* INTRO */
+#intro{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0a1a;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:600}
+.intro-content{display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.9)}
+.intro-title{font-size:clamp(3.5rem,10vw,8rem);font-weight:700;letter-spacing:.03em;color:#fff;font-family:'Google Sans','Product Sans',sans-serif;font-style:italic;padding-left:.03em}
+.intro-line{width:clamp(60px,8vw,120px);height:1.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);margin:clamp(.6rem,1.2vw,1rem) 0}
+.intro-sub{font-size:clamp(.7rem,1.4vw,1.1rem);font-weight:400;letter-spacing:.35em;color:rgba(255,255,255,.35);text-transform:uppercase;font-family:'Google Sans','Product Sans',sans-serif}
+.intro-btn{margin-top:clamp(2rem,4vw,3.5rem);opacity:0;pointer-events:none}
+.intro-hint{margin-top:clamp(1.5rem,3vw,2.5rem);font-size:clamp(.7rem,1.2vw,.95rem);color:rgba(255,255,255,.25);letter-spacing:.15em;opacity:0;font-family:'LXGW WenKai TC',cursive}
 </style>
 </head>
 <body>
@@ -77,6 +139,15 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
   <div class="blob b3"></div><div class="blob b4"></div>
 </div>
 <div id="floaters"></div>
+<!-- Intro -->
+<div id="intro" style="cursor:pointer">
+  <div class="intro-content">
+    <div class="intro-title">x8</div>
+    <div class="intro-line"></div>
+    <div class="intro-sub">production</div>
+  </div>
+  <div class="intro-hint">點擊任意位置開始</div>
+</div>
 <!-- Mobile Notice -->
 <div id="mobile-notice"><div class="notice-box"><p id="notice-text">📱 發現你是手機端，使用電腦打開效果會更好</p><button class="notice-btn" onclick="startExperience()">開始</button></div></div>
 <!-- Slide 1: Opener -->
@@ -99,16 +170,93 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:'Quicksand','Microsoft
     </div>
   </div>
 </div>
-<!-- Slide 3: Card Wall -->
-<div id="slide-3" class="slide"><div id="stage"></div><div id="backdrop"></div></div>
+<!-- Slide 3: Photo Gallery -->
+<div id="slide-3" class="slide">
+  <div class="s3-wrap">
+    <h2 class="s3-title">Cherry 盲盒 🎁</h2>
+    <p class="s3-subtitle" id="s3-sub">正在打亂中...</p>
+    <div class="photo-row">
+      <div class="photo-frame" data-clicks="0" data-need="6">
+        <div class="card-face">
+          <div class="chest-img">🎁</div>
+          <img class="photo-img" src="https://i.ibb.co/ZRc4KHt0/3dfa6711c82e57e7276da544f066ce9f.jpg" alt="照片 1">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+        </div>
+      </div>
+      <div class="photo-frame" data-clicks="0" data-need="6">
+        <div class="card-face">
+          <div class="chest-img">🎁</div>
+          <img class="photo-img" src="https://i.ibb.co/ZRc4KHt0/3dfa6711c82e57e7276da544f066ce9f.jpg" alt="照片 2">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+        </div>
+      </div>
+      <div class="photo-frame" data-clicks="0" data-need="6">
+        <div class="card-face">
+          <div class="chest-img">🎁</div>
+          <img class="photo-img" src="https://i.ibb.co/ZRc4KHt0/3dfa6711c82e57e7276da544f066ce9f.jpg" alt="照片 3">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+        </div>
+      </div>
+    </div>
+    <div class="photo-row">
+      <div class="photo-frame" data-clicks="0" data-need="6">
+        <div class="card-face">
+          <div class="chest-img">🎁</div>
+          <img class="photo-img" src="https://i.ibb.co/ZRc4KHt0/3dfa6711c82e57e7276da544f066ce9f.jpg" alt="照片 4">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+        </div>
+      </div>
+      <div class="photo-frame" data-clicks="0" data-need="6">
+        <div class="card-face">
+          <div class="chest-img">🎁</div>
+          <img class="photo-img" src="https://i.ibb.co/ZRc4KHt0/3dfa6711c82e57e7276da544f066ce9f.jpg" alt="照片 5">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+        </div>
+      </div>
+      <div class="photo-frame locked" data-clicks="0" data-need="6" data-locked="true">
+        <div class="card-face">
+          <div class="chest-img">🔒</div>
+          <img class="photo-img" src="" alt="照片 6">
+          <div class="chest-progress"><div class="chest-bar"></div></div>
+          <div class="chest-counter">點擊 6 次開啟</div>
+          <div class="locked-overlay">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-text">開啟所有盲盒後解鎖</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Slide 4: Card Wall -->
+<div id="slide-4" class="slide"><div id="stage"></div><div id="backdrop"></div></div>
 <div id="finale"><h1>生日快樂！🎂</h1></div>
 <div class="s1-credit">This website was made by x8</div>
 <div id="nav">
   <button id="prev-btn" disabled>‹</button>
-  <div class="page-ind"><span id="page-num">1</span> / 3</div>
+  <div class="page-ind"><span id="page-num">1</span> / 4</div>
   <button id="next-btn">›</button>
 </div>
 <script>
+// =============================================
+// INTRO
+// =============================================
+gsap.to('.intro-content',{opacity:1,scale:1,duration:1.8,delay:.5,ease:'power2.out'});
+gsap.to('.intro-hint',{opacity:1,duration:.8,delay:3,ease:'power2.out'});
+document.getElementById('intro').addEventListener('click',function(){
+    dismissIntro();
+});
+function dismissIntro(){
+    gsap.to('#intro',{opacity:0,duration:.8,ease:'power2.in',onComplete:function(){
+        document.getElementById('intro').style.display='none';
+    }});
+}
+
 // =============================================
 // MOBILE DETECTION & NOTICE
 // =============================================
@@ -138,31 +286,19 @@ function initAnimations(){
 // MESSAGES — Edit this array easily!
 // =============================================
 var messages = [
-  {name:"同學 1", text:"⚠️ 留言還在趕路中..."},
-  {name:"同學 2", text:"📝 正在努力打字中..."},
-  {name:"同學 3", text:"🚧 祝詞施工中，敬請期待"},
-  {name:"同學 4", text:"✨ 秘密驚喜加載中 0%"},
-  {name:"同學 5", text:"🕒 Still adding... please wait"},
-  {name:"同學 6", text:"🤫 這裡有一句超感人的話（還沒寫）"},
-  {name:"同學 7", text:"🛠️ 內容優化中，稍後見"},
-  {name:"同學 8", text:"📥 尚未收到該同學的訊號"},
-  {name:"同學 9", text:"🚫 Not done yet! 🚧"},
-  {name:"同學 10", text:"🌈 充滿愛的內容正在生成"},
-  {name:"同學 11", text:"✍️ 正在構思一段偉大的祝福"},
-  {name:"同學 12", text:"⏳ 倒數計時，內容即將揭曉"},
-  {name:"同學 13", text:"🎨 正在幫這張卡片上色"},
-  {name:"同學 14", text:"💬 下載留言失敗，重試中..."},
-  {name:"同學 15", text:"🦄 這裡將會出現神奇的文字"},
-  {name:"同學 16", text:"📌 佔位符：老師您真的辛苦了（待補）"},
-  {name:"同學 17", text:"🧩 拼圖中，還差這一塊留言"},
-  {name:"同學 18", text:"🔥 正在熱力製作留言中"},
-  {name:"同學 19", text:"💾 儲存空間不足（開玩笑的，還沒寫）"},
-  {name:"同學 20", text:"🚀 留言正在飛往伺服器的路上"},
-  {name:"同學 21", text:"💎 寶貴的建議正在打磨"},
-  {name:"同學 22", text:"🥤 喝口水，留言馬上就到"},
-  {name:"同學 23", text:"🍭 甜美留言準備中..."},
-  {name:"同學 24", text:"💤 該同學可能在睡覺，留言待補"},
-  {name:"同學 25", text:"🎊 Final placeholder - 準備派對中！"}
+  {name:"Ken", text:"永葆青春"},
+  {name:"Hong", text:"身體健康"},
+  {name:"19", text:"多謝你"},
+  {name:"陳志僖", text:"生日快樂"},
+  {name:"歐文狄", text:"Miss Chan 生日快樂，不要再經常哭"},
+  {name:"x8", text:"Cherry happy bday !!11!!"},
+  {name:"soso", text:"Cherry 生日快樂 💋💋"},
+  {name:"桐", text:"祝你生日快樂！願新的一歲平安喜樂，萬事順遂，所有美好如期而至～ 🎂"},
+  {name:"盧珈延", text:"生日快樂 🎂🎂"},
+  {name:"Kiki", text:"🍒 生日快樂 🎂！願你天天好心情，少少氣 ٩(๑`^´๑)۶、多多笑 (>^ω^<)，越活越少女！(^O^)"},
+  {name:"Echo", text:"Happy for your 18years old Birthday,wish you in the coming year have a happier life ,don’t cry~,but also wish you have more salaries in coming year"},
+  {name:"Anderson", text:"希望下年都仲係你教"},
+  {name:"瑤.", text:"💖Happy birthday💖天天開心"},
 ];
 
 // Pastel glow colors for glass card borders
@@ -201,25 +337,26 @@ for (var f = 0; f < 18; f++) {
 // =============================================
 // SLIDE MANAGEMENT
 // =============================================
-var cur = 0, slides = [document.getElementById('slide-1'),document.getElementById('slide-2'),document.getElementById('slide-3')];
-var busy = false, s3Init = false;
+var cur = 0, slides = [document.getElementById('slide-1'),document.getElementById('slide-2'),document.getElementById('slide-3'),document.getElementById('slide-4')];
+var busy = false, s4Init = false, s3Init = false;
 var prevBtn = document.getElementById('prev-btn'), nextBtn = document.getElementById('next-btn'), pageNum = document.getElementById('page-num');
 
-function updNav() { prevBtn.disabled=cur===0||busy; nextBtn.disabled=cur===2||busy; pageNum.textContent=cur+1; }
+function updNav() { prevBtn.disabled=cur===0||busy; nextBtn.disabled=cur===3||busy; pageNum.textContent=cur+1; }
 
 function finishGo(from, to) {
     slides[from].classList.remove('active');
     gsap.set(slides[from],{visibility:'hidden',opacity:1,zIndex:2,x:0,scale:1,rotationY:0});
     // Reset inner elements of old slide
-    gsap.set(slides[from].querySelectorAll('.s1-wrap,.s1-emoji,.s1-title,.s1-name,.s1-sub,.s2-photo,.s2-text,.s2-wrap'),
+    gsap.set(slides[from].querySelectorAll('.s1-wrap,.s1-emoji,.s1-title,.s1-name,.s1-sub,.s2-photo,.s2-text,.s2-wrap,.photo-frame'),
         {x:0,y:0,scale:1,opacity:1,rotation:0,filter:'blur(0px)'});
     slides[to].classList.add('active'); gsap.set(slides[to],{zIndex:3});
     cur=to; busy=false; updNav();
-    if(to===2&&!s3Init){s3Init=true;startWall();}
+    if(to===2&&!s3Init){s3Init=true;animatePhotos();}
+    if(to===3&&!s4Init){s4Init=true;startWall();}
 }
 
 function go(idx) {
-    if (busy||idx===cur||idx<0||idx>2) return;
+    if (busy||idx===cur||idx<0||idx>3) return;
     busy = true;
     var from=cur, to=idx;
     slides[to].style.visibility='visible'; slides[to].style.zIndex=4;
@@ -254,7 +391,7 @@ function go(idx) {
         tl.to('.s1-name',{y:0,opacity:1,duration:.7,ease:'power2.out'},'<.15');
         tl.to('.s1-sub',{y:0,opacity:1,duration:.6,ease:'power2.out'},'<.1');
     }
-    // ---- Slide 2 → 3 : Split & fly away ----
+    // ---- Slide 2 → 3 : Photo gallery ----
     else if (from===1 && to===2) {
         var tl=gsap.timeline({onComplete:function(){finishGo(1,2);}});
         tl.to('.s2-photo',{x:-VW*.5,opacity:0,scale:.6,rotation:-15,duration:.8,ease:'power3.in'},'<');
@@ -262,7 +399,7 @@ function go(idx) {
         gsap.set(slides[2],{opacity:0,scale:1.1});
         tl.to(slides[2],{opacity:1,scale:1,duration:.7,ease:'power2.out'},'>.05');
     }
-    // ---- Slide 3 → 2 : Zoom out & reassemble ----
+    // ---- Slide 3 → 2 : Back to tribute ----
     else if (from===2 && to===1) {
         var tl=gsap.timeline({onComplete:function(){finishGo(2,1);}});
         tl.to(slides[2],{opacity:0,scale:.9,duration:.6,ease:'power2.in'});
@@ -270,6 +407,28 @@ function go(idx) {
         gsap.set('.s2-text',{x:VW*.4,opacity:0});
         tl.to('.s2-photo',{x:0,opacity:1,rotation:0,duration:.9,ease:'back.out(1.3)'},'>.05');
         tl.to('.s2-text',{x:0,opacity:1,duration:.9,ease:'power3.out'},'<.15');
+    }
+    // ---- Slide 3 → 4 : Photos scatter to card wall ----
+    else if (from===2 && to===3) {
+        var tl=gsap.timeline({onComplete:function(){finishGo(2,3);}});
+        // Remove secret phrase immediately
+        document.querySelectorAll('.secret-phrase').forEach(function(sp){sp.remove();});
+        // Reset moved cards
+        var allF=slides[2].querySelectorAll('.photo-frame');
+        allF.forEach(function(f){gsap.set(f,{clearProps:'x,y,scale,opacity'});});
+        var frames=slides[2].querySelectorAll('.photo-frame');
+        frames.forEach(function(f,i){
+            tl.to(f,{y:-VH*.3,opacity:0,scale:.5,rotation:(Math.random()-.5)*40,duration:.5,ease:'power2.in'},i*.06);
+        });
+        gsap.set(slides[3],{opacity:0,scale:1.1});
+        tl.to(slides[3],{opacity:1,scale:1,duration:.7,ease:'power2.out'},'>.05');
+    }
+    // ---- Slide 4 → 3 : Card wall back to photos ----
+    else if (from===3 && to===2) {
+        var tl=gsap.timeline({onComplete:function(){finishGo(3,2);}});
+        tl.to(slides[3],{opacity:0,scale:.9,duration:.6,ease:'power2.in'});
+        gsap.set(slides[2],{opacity:0,scale:1.05});
+        tl.to(slides[2],{opacity:1,scale:1,duration:.7,ease:'power2.out'},'>.05');
     }
 }
 
@@ -281,7 +440,205 @@ document.addEventListener('keydown',function(e){
 });
 
 // =============================================
-// SLIDE 3 — CARD WALL + JELLY EFFECT
+// SLIDE 3 — CHERRY BLIND BOX
+// =============================================
+// Cherry blind box images — shuffled randomly
+var cherryBase='https://raw.githubusercontent.com/x8lua/x8stuff/main/bday/cherry/';
+var cherryImages=[1,2,3,4,5];
+for(var si=cherryImages.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=cherryImages[si];cherryImages[si]=cherryImages[sj];cherryImages[sj]=tmp;}
+
+function animatePhotos(){
+    // Assign images
+    var allFrames=Array.from(document.querySelectorAll('.photo-frame'));
+    var lockedFrame=document.querySelector('.photo-frame[data-locked="true"]');
+    var regularFrames=allFrames.filter(function(f){return f.dataset.locked!=='true';});
+    var ri=0;
+    regularFrames.forEach(function(f){
+        f.querySelector('.photo-img').src=cherryBase+cherryImages[ri]+'.jpg';
+        ri++;
+    });
+    lockedFrame.querySelector('.photo-img').src=cherryBase+'6.jpg';
+    // Shuffle only regular cards, locked stays bottom-right
+    for(var si=regularFrames.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tmp=regularFrames[si];regularFrames[si]=regularFrames[sj];regularFrames[sj]=tmp;}
+    var rows=document.querySelectorAll('.photo-row');
+    rows[0].innerHTML='';rows[1].innerHTML='';
+    regularFrames.forEach(function(f,i){ (i<3?rows[0]:rows[1]).appendChild(f); });
+    rows[1].appendChild(lockedFrame); // always last
+    // Animate entrance
+    var frames=Array.from(document.querySelectorAll('.photo-frame'));
+    frames.forEach(function(f){
+        gsap.set(f,{opacity:0,y:80,scale:.6,rotation:(Math.random()-.5)*30});
+    });
+    frames.forEach(function(f,i){
+        gsap.to(f,{
+            opacity:1,y:0,scale:1,rotation:0,
+            duration:1,delay:i*.15,
+            ease:'elastic.out(1,.6)',
+            onComplete:function(){ if(f.dataset.locked!=='true') setupChest(f); }
+        });
+    });
+    setTimeout(function(){document.getElementById('s3-sub').textContent='點擊盲盒開啟！🔒 解鎖全部以開啟神秘盲盒';},frames.length*.15*1000+500);
+}
+
+function setupChest(frame){
+    frame.addEventListener('click',function(){
+        if(frame.classList.contains('unlocked')) return;
+        var clicks=parseInt(frame.dataset.clicks)+1;
+        var need=parseInt(frame.dataset.need);
+        frame.dataset.clicks=clicks;
+        // Update progress bar
+        var pct=Math.min((clicks/need)*100,100);
+        frame.querySelector('.chest-bar').style.width=pct+'%';
+        // Update counter text
+        var remaining=need-clicks;
+        if(remaining>0){
+            frame.querySelector('.chest-counter').textContent='還差 '+remaining+' 次！';
+        }
+        // Shake animation
+        frame.classList.remove('shake');
+        void frame.offsetWidth; // force reflow
+        frame.classList.add('shake');
+        // Scale bump
+        gsap.to(frame,{scale:1.08,duration:.1,yoyo:true,repeat:1,ease:'power2.out'});
+        // Unlocked!
+        if(clicks>=need){
+            frame.querySelector('.chest-counter').textContent='開啟中...';
+            if(frame.dataset.locked==='true'){
+                revealSecretPhoto(frame);
+            } else {
+                // Normal unlock sequence
+                gsap.to(frame,{scale:1.2,duration:.3,ease:'power2.in',onComplete:function(){
+                    frame.classList.add('unlocked');
+                    gsap.fromTo(frame,{boxShadow:'0 0 0px rgba(255,154,158,0)'},{boxShadow:'0 0 60px rgba(255,154,158,.7),0 0 120px rgba(161,140,209,.5)',duration:.5,yoyo:true,repeat:1});
+                    gsap.to(frame,{scale:1,duration:.6,ease:'elastic.out(1,.5)'});
+                    var rect=frame.getBoundingClientRect();
+                    var cx=(rect.left+rect.width/2)/window.innerWidth;
+                    var cy=(rect.top+rect.height/2)/window.innerHeight;
+                    confetti({particleCount:40,spread:70,origin:{x:cx,y:cy},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2']});
+                    setTimeout(function(){checkAllUnlocked();},800);
+                }});
+            }
+        }
+    });
+}
+
+function checkAllUnlocked(){
+    var frames=document.querySelectorAll('.photo-frame:not([data-locked="true"])');
+    var allDone=true;
+    frames.forEach(function(f){if(!f.classList.contains('unlocked'))allDone=false;});
+    if(allDone) unlockSecretCard();
+}
+
+function unlockSecretCard(){
+    var locked=document.querySelector('.photo-frame[data-locked="true"]');
+    if(!locked||locked.classList.contains('unlocking')) return;
+    locked.classList.add('unlocking');
+    var overlay=locked.querySelector('.locked-overlay');
+    var lockIcon=overlay.querySelector('.lock-icon');
+    var lockText=overlay.querySelector('.lock-text');
+    var tl=gsap.timeline();
+    // Glow pulse
+    tl.to(locked,{boxShadow:'0 0 40px rgba(255,154,158,.8),0 0 80px rgba(161,140,209,.5)',duration:.5,ease:'power2.in'});
+    // Shake intensely
+    tl.to(locked.querySelector('.card-face'),{keyframes:[
+        {x:-6,rotation:-3,duration:.05},{x:6,rotation:3,duration:.05},
+        {x:-5,rotation:-2.5,duration:.05},{x:5,rotation:2.5,duration:.05},
+        {x:-4,rotation:-2,duration:.05},{x:4,rotation:2,duration:.05},
+        {x:-3,rotation:-1.5,duration:.05},{x:3,rotation:1.5,duration:.05},
+        {x:0,rotation:0,duration:.05}
+    ]});
+    // Lock icon grows and shatters
+    tl.to(lockIcon,{scale:2,duration:.3,ease:'power2.in'});
+    tl.to(lockIcon,{scale:0,rotation:360,opacity:0,duration:.5,ease:'back.in(2)'});
+    tl.to(lockText,{opacity:0,y:20,duration:.3,ease:'power2.in'},'<');
+    // Overlay fades
+    tl.to(overlay,{opacity:0,duration:.4,ease:'power2.out'});
+    // Remove locked state, enable interaction
+    tl.call(function(){
+        locked.classList.remove('locked');
+        locked.classList.remove('unlocking');
+        overlay.style.display='none';
+        locked.style.pointerEvents='';
+        locked.style.cursor='pointer';
+        locked.querySelector('.card-face').style.filter='';
+        locked.querySelector('.chest-img').textContent='🎁';
+        setupChest(locked);
+    });
+    // Bounce
+    tl.fromTo(locked,{scale:1.15},{scale:1,duration:.8,ease:'elastic.out(1,.4)'});
+    // Big confetti burst
+    tl.call(function(){
+        var rect=locked.getBoundingClientRect();
+        var cx=(rect.left+rect.width/2)/window.innerWidth;
+        var cy=(rect.top+rect.height/2)/window.innerHeight;
+        confetti({particleCount:100,spread:120,origin:{x:cx,y:cy},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2','#fad0c4','#c7b6ff']});
+    },'<');
+    tl.call(function(){document.getElementById('s3-sub').textContent='🎉 神秘盲盒已解鎖！快點擊開啟！';});
+}
+
+function revealSecretPhoto(frame){
+    if(frame.classList.contains('revealing')) return;
+    frame.classList.add('revealing');
+    var otherFrames=Array.from(document.querySelectorAll('.photo-frame:not([data-locked="true"])'));
+    var tl=gsap.timeline();
+    // Hide title & subtitle
+    tl.to('.s3-title',{opacity:0,y:-30,duration:.5,ease:'power2.in'},'<');
+    tl.to('#s3-sub',{opacity:0,duration:.4},'<');
+    // Move cards to left/right sides (still visible as small thumbnails)
+    var leftCards=otherFrames.slice(0,3);
+    var rightCards=otherFrames.slice(3);
+    leftCards.forEach(function(f,i){
+        var r=f.getBoundingClientRect();
+        var tx=VW*0.08;
+        var ty=VH*(0.2+i*0.24);
+        tl.to(f,{x:tx-(r.left+r.width/2),y:ty-(r.top+r.height/2),scale:.4,opacity:.45,duration:.9,ease:'power2.out'},i*.06);
+    });
+    rightCards.forEach(function(f,i){
+        var r=f.getBoundingClientRect();
+        var tx=VW*0.92;
+        var ty=VH*(0.28+i*0.28);
+        tl.to(f,{x:tx-(r.left+r.width/2),y:ty-(r.top+r.height/2),scale:.4,opacity:.45,duration:.9,ease:'power2.out'},i*.06);
+    });
+    // Hide progress/counter on secret card
+    frame.querySelector('.chest-counter').style.display='none';
+    frame.querySelector('.chest-progress').style.display='none';
+    // Calculate offset to center
+    var rect=frame.getBoundingClientRect();
+    var dx=(VW/2)-(rect.left+rect.width/2);
+    var dy=(VH*0.36)-(rect.top+rect.height/2);
+    // Center and scale up
+    tl.to(frame,{x:dx,y:dy,scale:1.6,duration:1,ease:'power2.out'},'+=.15');
+    // Reveal photo
+    tl.call(function(){ frame.classList.add('unlocked'); });
+    // Glow burst
+    tl.fromTo(frame,
+        {boxShadow:'0 0 0 rgba(255,154,158,0)'},
+        {boxShadow:'0 0 80px rgba(255,154,158,.6),0 0 150px rgba(161,140,209,.4)',duration:1,ease:'power2.out'}
+    );
+    // Show phrase
+    var phrase=document.createElement('div');
+    phrase.className='secret-phrase';
+    phrase.textContent='一樣的聖五，不一樣的身份，但一樣是我們最愛的 Cherry';
+    document.body.appendChild(phrase);
+    gsap.set(phrase,{opacity:0,y:30});
+    tl.to(phrase,{opacity:1,y:0,duration:1.2,ease:'power2.out'},'+=.2');
+    // Big confetti
+    tl.call(function(){
+        confetti({particleCount:150,spread:160,origin:{x:.5,y:.5},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2','#fad0c4','#c7b6ff']});
+    },'+=.3');
+    // Side confetti streams
+    tl.call(function(){
+        var end=Date.now()+3000;
+        (function burst(){
+            confetti({particleCount:3,angle:60,spread:60,origin:{x:0,y:.6},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2']});
+            confetti({particleCount:3,angle:120,spread:60,origin:{x:1,y:.6},colors:['#ff9a9e','#a18cd1','#96e6a1','#ffecd2']});
+            if(Date.now()<end)requestAnimationFrame(burst);
+        })();
+    });
+}
+
+// =============================================
+// SLIDE 4 — CARD WALL + JELLY EFFECT
 // =============================================
 var total=messages.length, COLS=5, ROWS=Math.ceil(total/COLS);
 var gapX=VW*.012, gapY=VH*.015;
@@ -327,7 +684,7 @@ function startWall(){
         tl.call(function(){el.style.zIndex=60;});
         tl.to(backdrop,{opacity:1,duration:.2,ease:'power1.in'},'<');
         tl.to(el,{scale:1.5,opacity:1,duration:.7,ease:'back.out(1.7)',boxShadow:'0 0 50px rgba(255,255,255,.3),0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]});
-        tl.to(el,{duration:2.5});
+        tl.to(el,{duration:5});
         tl.to(backdrop,{opacity:0,duration:.2,ease:'power1.out'});
         tl.to(el,{x:0,y:0,scale:1,rotation:rot,duration:.8,ease:'back.out(2)',
             boxShadow:'0 0 20px '+GLOW_COLORS[i%GLOW_COLORS.length]+',inset 0 0 20px rgba(255,255,255,.03)',
@@ -360,6 +717,7 @@ function startWall(){
         },500);
     });
 }
+twemoji.parse(document.body);
 </script>
 </body>
 </html>
