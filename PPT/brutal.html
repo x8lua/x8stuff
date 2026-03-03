@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>衣原體感染 // CLASSIFIED</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Bebas+Neue&family=Share+Tech+Mono&family=Anton&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--blood:#C0001A;--red:#FF0022;--dark-red:#3D0008;--concrete:#1A1A1A;--ash:#2C2C2C;--bone:#E8E0D0;--yellow:#FFD000;--white:#F5F0E8;--dim:#888070;--black:#0A0A0A;}
+html,body{width:100%;height:100%;background:var(--black);font-family:'Noto Sans TC',sans-serif;overflow:hidden;cursor:crosshair;}
+body::before{content:'';position:fixed;inset:0;z-index:8999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(0,0,0,0.18) 3px,rgba(0,0,0,0.18) 4px);}
+@keyframes glitch1{0%,94%,100%{clip-path:inset(0 0 100% 0);transform:translateX(0)}95%{clip-path:inset(20% 0 60% 0);transform:translateX(-4px)}97%{clip-path:inset(70% 0 5% 0);transform:translateX(-2px)}99%{clip-path:inset(40% 0 30% 0);transform:translateX(-3px)}}
+@keyframes glitch2{0%,93%,100%{clip-path:inset(0 0 100% 0);transform:translateX(0)}94%{clip-path:inset(30% 0 50% 0);transform:translateX(6px);color:var(--yellow)}96%{clip-path:inset(60% 0 10% 0);transform:translateX(-5px)}}
+@keyframes flicker{0%,97%,100%{opacity:1}98%{opacity:0.2}99%{opacity:1}}
+@keyframes redPulse{0%,100%{box-shadow:0 0 0 var(--blood)}50%{box-shadow:0 0 28px var(--blood),inset 0 0 18px rgba(192,0,26,0.1)}}
+@keyframes fadeSlam{from{opacity:0;transform:scale(1.04) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,49%,100%{opacity:1}50%,99%{opacity:0}}
+@keyframes marquee{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.deck{width:100vw;height:100vh;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;}
+.slide.active{opacity:1;pointer-events:all;}
+.slide.enter{animation:fadeSlam 0.4s cubic-bezier(0.25,0.46,0.45,0.94) forwards;}
+.ticker{position:fixed;bottom:0;left:0;right:0;height:36px;background:var(--blood);z-index:500;display:flex;align-items:center;overflow:hidden;border-top:2px solid var(--red);}
+.ticker-label{font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;background:var(--black);color:var(--blood);padding:0 1rem;height:100%;display:flex;align-items:center;border-right:2px solid var(--red);white-space:nowrap;flex-shrink:0;}
+.ticker-track{display:flex;align-items:center;white-space:nowrap;animation:marquee 22s linear infinite;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--black);letter-spacing:0.12em;font-weight:700;}
+.nav{position:fixed;top:0;left:0;right:0;height:44px;z-index:500;display:flex;align-items:center;background:var(--black);border-bottom:2px solid var(--blood);padding:0 1.5rem;gap:1.5rem;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--blood);letter-spacing:0.15em;flex:1;}
+.nav-dots{display:flex;gap:6px;align-items:center;}
+.dot{width:8px;height:8px;background:var(--ash);border:1px solid var(--dim);cursor:crosshair;transition:background 0.2s;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+.dot.active{background:var(--red);border-color:var(--red);box-shadow:0 0 8px var(--red);}
+.nav-count{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--dim);letter-spacing:0.1em;}
+.nav-btn{background:none;border:1px solid var(--blood);color:var(--blood);cursor:crosshair;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;padding:0.15rem 0.7rem;letter-spacing:0.1em;transition:background 0.15s,color 0.15s;}
+.nav-btn:hover{background:var(--blood);color:var(--black);}
+.content{position:absolute;inset:44px 0 36px;overflow:hidden;}
+.sh{display:flex;align-items:baseline;gap:1.5rem;border-bottom:2px solid var(--blood);padding-bottom:1rem;animation:fadeSlam 0.4s both;}
+.sn{font-family:'Bebas Neue',sans-serif;font-size:5rem;line-height:1;color:var(--blood);opacity:0.22;letter-spacing:-0.05em;}
+.st{font-family:'Anton',sans-serif;font-size:clamp(2.5rem,5vw,3.8rem);color:var(--white);}
+.se{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;color:var(--blood);margin-top:0.2rem;}
+.ss{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;color:var(--dim);margin-left:auto;line-height:1.8;text-align:right;}
+
+/* S1 */
+#s1 .content{background:var(--black);display:grid;grid-template-columns:1fr 360px;}
+.s1l{display:flex;flex-direction:column;justify-content:center;padding:3rem 3.5rem 3rem 5rem;position:relative;border-right:2px solid var(--blood);}
+.s1l::before{content:'';position:absolute;top:0;left:0;bottom:0;width:6px;background:var(--red);box-shadow:4px 0 20px var(--blood);}
+.stamp{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.22em;color:var(--blood);border:1.5px solid var(--blood);display:inline-block;padding:0.3rem 0.8rem;margin-bottom:1.8rem;width:fit-content;animation:flicker 4s infinite;}
+.s1t{font-family:'Anton',sans-serif;font-size:clamp(4rem,8vw,8rem);line-height:0.88;color:var(--white);animation:slideUp 0.6s 0.2s both;}
+.s1t .k{display:block;-webkit-text-stroke:1px var(--blood);text-shadow:4px 4px 0 var(--dark-red);}
+.s1t .kr{color:var(--red);text-shadow:0 0 40px rgba(255,0,34,0.5),4px 4px 0 var(--dark-red);}
+.gw{position:relative;display:inline-block;}
+.gw::before,.gw::after{content:attr(data-text);position:absolute;top:0;left:0;font-family:inherit;font-size:inherit;width:100%;}
+.gw::before{animation:glitch1 5s infinite;color:var(--yellow);left:2px;}
+.gw::after{animation:glitch2 5s 0.1s infinite;color:var(--red);left:-2px;}
+.s1sub{font-family:'Share Tech Mono',monospace;font-size:0.82rem;letter-spacing:0.28em;color:var(--dim);margin-top:1.4rem;animation:slideUp 0.6s 0.4s both;}
+.s1div{width:100%;height:1px;margin:1.6rem 0;background:linear-gradient(to right,var(--blood),transparent);animation:slideUp 0.6s 0.5s both;}
+.s1m{animation:slideUp 0.6s 0.6s both;}
+.ml{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.3em;color:var(--blood);margin-bottom:0.5rem;}
+.mlist{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.85rem;color:var(--bone);font-weight:300;}
+.s1r{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:var(--dark-red);}
+.s1r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent 0,transparent 8px,rgba(0,0,0,0.25) 8px,rgba(0,0,0,0.25) 9px);}
+.bhz{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1.5rem;}
+.bhs{font-size:8rem;filter:drop-shadow(0 0 30px var(--red));animation:spin 12s linear infinite,flicker 3s infinite;}
+.bht{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.4em;color:var(--red);text-align:center;text-shadow:0 0 15px var(--blood);}
+.bhw{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;color:var(--dim);text-align:center;line-height:1.9;}
+
+/* S2 */
+#s2 .content{background:var(--concrete);display:grid;grid-template-rows:auto 1fr;padding:2.5rem 4rem;gap:2rem;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+.pc{border:1px solid;padding:2rem;display:flex;flex-direction:column;gap:1.5rem;position:relative;overflow:hidden;transition:transform 0.3s;animation:slideUp 0.5s both;}
+.pc:hover{transform:translateY(-4px);}
+.pc.cold{border-color:rgba(140,180,220,0.3);background:rgba(10,20,35,0.8);}
+.pc.cold::before{content:'PHASE 01';position:absolute;top:0.8rem;right:0.8rem;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:rgba(140,180,220,0.35);}
+.pc.warm{border-color:rgba(255,0,34,0.3);background:rgba(35,8,8,0.8);animation-delay:0.15s;}
+.pc.warm::before{content:'PHASE 02';position:absolute;top:0.8rem;right:0.8rem;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:rgba(255,0,34,0.35);}
+.pi{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;}
+.pi.cold{background:radial-gradient(circle,rgba(60,100,160,0.4),rgba(10,20,40,0.8));border:1.5px solid rgba(100,160,220,0.5);box-shadow:0 0 20px rgba(80,140,200,0.2);}
+.pi.warm{background:radial-gradient(circle,rgba(160,20,10,0.5),rgba(40,5,5,0.8));border:1.5px solid rgba(255,0,34,0.5);box-shadow:0 0 20px rgba(255,0,34,0.2);}
+.pn{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;}
+.pen{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;opacity:0.5;margin-top:-0.3rem;}
+.pd{font-size:0.82rem;color:var(--dim);line-height:1.9;border-top:1px solid rgba(255,255,255,0.06);padding-top:1rem;}
+
+/* S3 */
+#s3 .content{background:var(--black);display:grid;grid-template-rows:auto 1fr auto;padding:2.5rem 4rem;gap:1.5rem;}
+.rrow{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.rb{border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);padding:1.8rem 1.5rem;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0.8rem;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));transition:transform 0.3s;animation:slideUp 0.5s both;}
+.rb:hover{transform:scale(1.02);}
+.rb::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.rb.r1{animation-delay:0.2s;}.rb.r1::after{background:var(--red);}.rb.r1:hover{box-shadow:0 0 25px rgba(255,0,34,0.1);}
+.rb.r2{animation-delay:0.3s;}.rb.r2::after{background:var(--yellow);}.rb.r2:hover{box-shadow:0 0 25px rgba(255,208,0,0.1);}
+.rb.r3{animation-delay:0.4s;}.rb.r3::after{background:#4AF;}.rb.r3:hover{box-shadow:0 0 25px rgba(68,170,255,0.1);}
+.rbn{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;opacity:0.08;position:absolute;top:0.5rem;right:1rem;}
+.rbi{font-size:2rem;}
+.rbt{font-family:'Anton',sans-serif;font-size:1.4rem;color:var(--white);}
+.rbtag{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;padding:0.15rem 0.5rem;width:fit-content;border:1px solid;}
+.rb.r1 .rbtag{color:var(--red);border-color:var(--red);}
+.rb.r2 .rbtag{color:var(--yellow);border-color:var(--yellow);}
+.rb.r3 .rbtag{color:#4AF;border-color:#4AF;}
+.rbl{list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;}
+.rbl li{font-size:0.8rem;color:var(--dim);padding-left:1.2rem;position:relative;line-height:1.6;}
+.rbl li::before{content:'//';position:absolute;left:0;color:var(--blood);font-family:'Share Tech Mono',monospace;font-size:0.6rem;top:0.05rem;}
+.astrip{background:var(--blood);padding:0.7rem 1.5rem;font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:var(--black);font-weight:700;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);animation:slideUp 0.5s 0.5s both;}
+
+/* S4 */
+#s4 .content{background:var(--black);display:grid;grid-template-rows:auto auto 1fr;padding:2.5rem 4rem;gap:1.5rem;}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;animation:slideUp 0.5s 0.2s both;}
+.sb{border:1px solid rgba(255,255,255,0.06);padding:1.2rem 1.5rem;position:relative;background:rgba(255,255,255,0.02);clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);}
+.sb::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);}
+.sbig{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;color:var(--red);text-shadow:0 0 20px rgba(255,0,34,0.4);}
+.slbl{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:var(--dim);margin-top:0.3rem;line-height:1.6;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;animation:slideUp 0.5s 0.35s both;}
+.syb{border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);padding:1.2rem 1.5rem;display:flex;gap:1rem;align-items:flex-start;transition:border-color 0.3s,background 0.3s;}
+.syb:hover{border-color:rgba(192,0,26,0.4);background:rgba(192,0,26,0.04);}
+.sybn{font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;color:var(--blood);opacity:0.6;flex-shrink:0;min-width:2rem;}
+.sybt{font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:0.3rem;}
+.sybd{font-size:0.75rem;color:var(--dim);line-height:1.7;}
+
+/* S5 */
+#s5 .content{background:var(--black);display:grid;grid-template-rows:auto auto 1fr;padding:2.5rem 4rem;gap:1.5rem;}
+.bsbar{display:grid;grid-template-columns:190px 1fr;border:1px solid rgba(192,0,26,0.35);animation:redPulse 3s infinite,slideUp 0.5s 0.2s both;background:rgba(192,0,26,0.04);clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%);}
+.bpct{font-family:'Bebas Neue',sans-serif;font-size:5rem;line-height:1;color:var(--red);padding:1.5rem 2rem;border-right:1px solid rgba(192,0,26,0.3);text-shadow:0 0 30px rgba(255,0,34,0.5);display:flex;align-items:center;}
+.binfo{padding:1.5rem;display:flex;flex-direction:column;justify-content:center;gap:0.4rem;}
+.binfo strong{font-size:1.05rem;color:var(--white);display:block;}
+.binfo p{font-size:0.78rem;color:var(--dim);line-height:1.8;}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;animation:slideUp 0.5s 0.35s both;}
+.fb{border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);padding:1.2rem;display:flex;flex-direction:column;gap:0.5rem;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:border-color 0.3s,transform 0.3s;}
+.fb:hover{border-color:rgba(192,0,26,0.3);transform:translateY(-3px);}
+.fbi{font-size:1.2rem;}
+.fbt{font-size:0.88rem;font-weight:700;color:var(--white);}
+.fbd{font-size:0.73rem;color:var(--dim);line-height:1.7;}
+
+/* S6 */
+#s6 .content{background:var(--black);display:grid;grid-template-rows:auto 1fr auto;padding:2.5rem 4rem;gap:1.5rem;}
+.trow{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;animation:slideUp 0.5s 0.2s both;}
+.tp{border:1px solid;padding:1.5rem;height:100%;display:flex;flex-direction:column;gap:1rem;}
+.tp.ok{border-color:rgba(0,200,80,0.25);background:rgba(0,40,15,0.4);}
+.tp.bad{border-color:rgba(255,0,34,0.25);background:rgba(40,0,10,0.4);}
+.tpl{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;}
+.tv{height:50px;border-radius:25px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.tv.ok{background:rgba(0,50,20,0.6);border:2px solid #00CC55;box-shadow:0 0 12px rgba(0,200,80,0.2);}
+.tv.ok::after{content:'';position:absolute;width:40%;height:40%;border-radius:999px;background:rgba(0,200,80,0.3);border:1px solid rgba(0,200,80,0.6);}
+.tv.bad{border:2px solid var(--red);background:rgba(40,0,10,0.6);box-shadow:0 0 12px rgba(255,0,34,0.2);gap:3px;padding:0 15%;}
+.sc{width:18%;height:70%;background:rgba(100,0,20,0.8);border:1px solid var(--blood);border-radius:1px;}
+.tpd{font-size:0.75rem;color:var(--dim);line-height:1.7;}
+.tsep{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.tsepline{flex:1;width:2px;background:linear-gradient(to bottom,transparent,var(--blood),transparent);}
+.crow{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;animation:slideUp 0.5s 0.35s both;}
+.cb{border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);padding:1.2rem;display:flex;flex-direction:column;gap:0.5rem;transition:transform 0.3s,border-color 0.3s;}
+.cb:hover{transform:translateY(-4px);border-color:rgba(192,0,26,0.3);}
+.cbi{font-size:1.4rem;}
+.cbt{font-size:0.88rem;font-weight:700;}
+.cbd{font-size:0.73rem;color:var(--dim);line-height:1.7;}
+
+/* S7 */
+#s7 .content{background:var(--concrete);display:grid;grid-template-rows:auto auto 1fr auto;padding:2.5rem 4rem;gap:1.2rem;}
+.cbar{border:1px solid rgba(0,201,200,0.3);background:rgba(0,50,55,0.3);padding:1rem 1.5rem;text-align:center;font-size:0.88rem;font-weight:700;color:#00C9C8;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);animation:slideUp 0.5s 0.2s both;}
+.txrow{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;animation:slideUp 0.5s 0.3s both;}
+.txp{border:1px solid;padding:2rem;display:flex;flex-direction:column;gap:1rem;position:relative;overflow:hidden;}
+.txp::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.txp.a{border-color:rgba(0,201,200,0.25);background:rgba(0,20,22,0.6);}
+.txp.a::after{background:linear-gradient(to right,#00C9C8,transparent);}
+.txp.b{border-color:rgba(255,208,0,0.25);background:rgba(22,18,0,0.6);}
+.txp.b::after{background:linear-gradient(to right,var(--yellow),transparent);}
+.txbadge{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;opacity:0.5;}
+.txname{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;line-height:1;}
+.txdrug{font-size:0.9rem;font-weight:700;color:var(--bone);padding-bottom:0.8rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.txlist{list-style:none;display:flex;flex-direction:column;gap:0.5rem;}
+.txlist li{font-size:0.8rem;color:var(--dim);padding-left:1.2rem;position:relative;line-height:1.7;}
+.txlist li::before{content:'>';position:absolute;left:0;font-size:0.65rem;}
+.txp.a .txlist li::before{color:#00C9C8;}.txp.b .txlist li::before{color:var(--yellow);}
+.pp{border:1px solid rgba(192,0,26,0.4);background:rgba(192,0,26,0.06);padding:0.8rem 1.5rem;text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;color:var(--red);font-weight:700;animation:slideUp 0.5s 0.45s both;}
+
+/* S8 */
+#s8 .content{background:var(--black);display:grid;grid-template-columns:1fr 300px;gap:0;}
+.s8l{padding:2.5rem 4rem;display:flex;flex-direction:column;gap:1.5rem;border-right:1px solid rgba(255,255,255,0.06);}
+.pitems{display:flex;flex-direction:column;gap:0.8rem;flex:1;}
+.pblk{border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);padding:0.9rem 1.2rem;display:flex;gap:1rem;align-items:flex-start;clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%);transition:border-color 0.3s,transform 0.3s,background 0.3s;animation:slideUp 0.5s both;}
+.pblk:nth-child(1){animation-delay:0.2s}.pblk:nth-child(2){animation-delay:0.3s}.pblk:nth-child(3){animation-delay:0.4s}.pblk:nth-child(4){animation-delay:0.5s}.pblk:nth-child(5){animation-delay:0.6s}
+.pblk:hover{border-color:rgba(192,0,26,0.35);background:rgba(192,0,26,0.04);transform:translateX(6px);}
+.pico{font-size:1.3rem;flex-shrink:0;}
+.ptitle{font-size:0.88rem;font-weight:700;color:var(--yellow);margin-bottom:0.2rem;}
+.pdesc{font-size:0.73rem;color:var(--dim);line-height:1.6;}
+.s8close{border:1px solid rgba(255,208,0,0.3);background:rgba(255,208,0,0.06);padding:0.8rem 1.2rem;font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;color:var(--yellow);text-align:center;animation:slideUp 0.5s 0.75s both;}
+.s8r{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:2rem;background:var(--dark-red);position:relative;overflow:hidden;}
+.s8r::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,rgba(0,0,0,0.3) 6px,rgba(0,0,0,0.3) 7px);}
+.sw{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1rem;animation:slideUp 0.5s 0.4s both;}
+.se2{font-size:7rem;filter:drop-shadow(0 0 20px rgba(255,208,0,0.5));}
+.slbl2{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.4em;color:var(--yellow);text-shadow:0 0 10px var(--yellow);animation:blink 1s infinite;}
+.ssub{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;color:rgba(255,208,0,0.5);text-align:center;line-height:1.9;z-index:1;position:relative;}
+</style>
+</head>
+<body>
+<div class="ticker">
+  <div class="ticker-label">ALERT</div>
+  <div class="ticker-track">衣原體感染 // 全球最常見性病之一 // 每年超過 1.27 億新增病例 // 70% 女性感染後無症狀 // 50% 男性感染後無症狀 // 完全可治癒 — 及早檢測及早治療 // 沉默的殺手 SILENT KILLER // 衣原體感染 // 全球最常見性病之一 //&nbsp;</div>
+</div>
+<nav class="nav">
+  <div class="nav-logo">衣原體感染 // CLASSIFIED REPORT</div>
+  <div class="nav-dots" id="dots"></div>
+  <span class="nav-count" id="count">01 / 08</span>
+  <button class="nav-btn" id="prevBtn">PREV</button>
+  <button class="nav-btn" id="nextBtn">NEXT</button>
+</nav>
+<div class="deck">
+
+<div class="slide active" id="s1">
+  <div class="content">
+    <div class="s1l">
+      <div class="stamp">CLASSIFIED // BIO-THREAT REPORT</div>
+      <h1 class="s1t">
+        <span class="k gw" data-text="衣原體">衣原體</span>
+        <span class="k kr gw" data-text="感染">感染</span>
+      </h1>
+      <p class="s1sub">// 沉 默 的 殺 手 // SILENT KILLER</p>
+      <div class="s1div"></div>
+      <div class="s1m">
+        <div class="ml">// RESEARCH TEAM</div>
+        <div class="mlist"><span>林子謙</span><span>蘇楚晴</span><span>盧珈延</span><span>盧艷沁</span></div>
+      </div>
+    </div>
+    <div class="s1r">
+      <div class="bhz">
+        <div class="bhs">☣</div>
+        <div class="bht">BIO-HAZARD<br>LEVEL II</div>
+        <div class="bhw">CHLAMYDIA TRACHOMATIS<br>INTRACELLULAR PATHOGEN<br>GRAM-NEGATIVE BACTERIA</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s2">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">02</div>
+      <div><div class="st">歷史與成因</div><div class="se">HISTORY &amp; PATHOGENESIS</div></div>
+      <div class="ss">衣原體的生命週期<br>從潛伏到爆發</div>
+    </div>
+    <div class="two" style="padding:0 4rem 2rem;margin-top:2rem">
+      <div class="pc cold">
+        <div class="pi cold">🧊</div>
+        <div><div class="pn" style="color:#8CB4DC">初級體</div><div class="pen">Elementary Body / EB</div></div>
+        <div class="pd"><strong style="color:var(--bone);display:block;margin-bottom:0.5rem">休眠態 — 極具傳染性</strong>不可繁殖，但可在細胞外存活。如同潛伏的間諜，等待滲透宿主細胞。進入細胞後轉化為網狀體，建立感染工廠。</div>
+      </div>
+      <div class="pc warm">
+        <div class="pi warm">🔬</div>
+        <div><div class="pn" style="color:var(--red)">網狀體</div><div class="pen">Reticulate Body / RB</div></div>
+        <div class="pd"><strong style="color:var(--bone);display:block;margin-bottom:0.5rem">活躍態 — 大量複製</strong>在宿主細胞內瘋狂繁殖，建立感染工廠。72小時後成熟，釋放新的初級體繼續擴散感染，周而復始。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s3">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">03</div>
+      <div><div class="st">傳播方法</div><div class="se">TRANSMISSION VECTORS</div></div>
+      <div class="ss">三條感染途徑<br>每一條都可能致命</div>
+    </div>
+    <div style="padding:1.5rem 4rem 0;display:flex;flex-direction:column;gap:1.5rem">
+      <div class="rrow">
+        <div class="rb r1">
+          <div class="rbn">01</div><div class="rbi">💧</div>
+          <div class="rbt">性接觸傳播</div>
+          <div class="rbtag">PRIMARY VECTOR</div>
+          <ul class="rbl"><li>無套性行為風險最高</li><li>口交、肛交同樣可傳染</li><li>症狀輕微、極難察覺</li><li>無症狀帶菌者仍具傳染性</li></ul>
+        </div>
+        <div class="rb r2">
+          <div class="rbn">02</div><div class="rbi">🤱</div>
+          <div class="rbt">母嬰垂直傳播</div>
+          <div class="rbtag">PERINATAL</div>
+          <ul class="rbl"><li>嬰兒經產道分娩時感染</li><li>可致新生兒結膜炎</li><li>或新生兒肺炎</li><li>剖腹產可降低風險</li></ul>
+        </div>
+        <div class="rb r3">
+          <div class="rbn">03</div><div class="rbi">👁️</div>
+          <div class="rbt">眼部接觸傳播</div>
+          <div class="rbtag">OCULAR</div>
+          <ul class="rbl"><li>手接觸分泌物後觸眼</li><li>可引起結膜炎（沙眼）</li><li>嚴重可致永久失明</li><li>全球失明主要原因之一</li></ul>
+        </div>
+      </div>
+      <div class="astrip">ALERT // 衣原體不會透過空氣、共用廁所或握手傳播 — 但無症狀帶菌者同樣具傳染性，無症狀不等於無感染</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s4">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">04</div>
+      <div><div class="st">男性症狀</div><div class="se">MALE SYMPTOM PROFILE</div></div>
+      <div class="ss">感染後 1-3 週內出現<br>但 50% 男性完全無症狀</div>
+    </div>
+    <div style="padding:1.5rem 4rem 0;display:flex;flex-direction:column;gap:1.5rem">
+      <div class="srow">
+        <div class="sb"><div class="sbig">50%</div><div class="slbl">男性感染後完全無症狀</div></div>
+        <div class="sb" style="border-left:3px solid var(--yellow)"><div class="sbig" style="color:var(--yellow)">1-3週</div><div class="slbl">平均潛伏期<br>感染至症狀</div></div>
+        <div class="sb" style="border-left:3px solid #4AF"><div class="sbig" style="color:#4AF">127M</div><div class="slbl">全球每年<br>新增病例</div></div>
+      </div>
+      <div class="sgrid">
+        <div class="syb"><div class="sybn">01</div><div><div class="sybt">尿道分泌物</div><div class="sybd">白色或透明黏液，晨起尤為明顯，可能伴有異味</div></div></div>
+        <div class="syb"><div class="sybn">02</div><div><div class="sybt">排尿灼熱感</div><div class="sybd">尿道炎引起的刺痛或灼熱感覺，排尿時加重</div></div></div>
+        <div class="syb"><div class="sybn">03</div><div><div class="sybt">睪丸疼痛腫脹</div><div class="sybd">附睪炎，可引致不育，出現即需立即就醫</div></div></div>
+        <div class="syb"><div class="sybn">04</div><div><div class="sybt">直腸不適</div><div class="sybd">肛交感染者出現直腸炎症狀，分泌物或出血</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s5">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">05</div>
+      <div><div class="st">女性症狀</div><div class="se">FEMALE SYMPTOM PROFILE</div></div>
+      <div class="ss">沉默的定時炸彈<br>70% 毫無察覺</div>
+    </div>
+    <div style="padding:1.5rem 4rem 0;display:flex;flex-direction:column;gap:1.5rem">
+      <div class="bsbar">
+        <div class="bpct">70%</div>
+        <div class="binfo">
+          <strong>女性感染後完全無明顯症狀</strong>
+          <p>症狀出現前，病菌已悄悄破壞生殖系統數月乃至數年。這正是衣原體被稱為「沉默殺手」的原因 — 等你察覺，傷害早已造成。</p>
+        </div>
+      </div>
+      <div class="fgrid">
+        <div class="fb"><div class="fbi">🔥</div><div class="fbt">骨盆腔炎 (PID)</div><div class="fbd">下腹疼痛、發燒、不規則出血，可致永久損傷</div></div>
+        <div class="fb"><div class="fbi">💧</div><div class="fbt">陰道分泌物異常</div><div class="fbd">顏色氣味或量改變，需立即就醫檢查</div></div>
+        <div class="fb"><div class="fbi">🚨</div><div class="fbt">性交後出血</div><div class="fbd">宮頸受損，性交後出現少量血跡</div></div>
+        <div class="fb"><div class="fbi">⚡</div><div class="fbt">排尿刺痛</div><div class="fbd">常被誤認為普通尿道炎而延誤診治</div></div>
+        <div class="fb"><div class="fbi">😶</div><div class="fbt">長期無症狀</div><div class="fbd">最危險狀態，持續傳播病菌而不自知</div></div>
+        <div class="fb"><div class="fbi">❄️</div><div class="fbt">宮頸炎</div><div class="fbd">子宮頸發炎，細胞病變風險上升</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s6">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">06</div>
+      <div><div class="st">長期後果</div><div class="se">LONG-TERM DAMAGE REPORT</div></div>
+      <div class="ss">未經治療<br>可造成永久性傷害</div>
+    </div>
+    <div style="padding:1.5rem 4rem 0;display:flex;flex-direction:column;gap:1.5rem">
+      <div class="trow">
+        <div class="tp ok">
+          <div class="tpl" style="color:#00CC55">STATUS: HEALTHY</div>
+          <div class="tv ok"></div>
+          <div class="tpd">輸卵管通暢，卵子可正常通過，生育功能完整</div>
+        </div>
+        <div class="tsep"><div class="tsepline"></div><span style="font-size:1.2rem">🚧</span><div class="tsepline"></div></div>
+        <div class="tp bad">
+          <div class="tpl" style="color:var(--red)">STATUS: COMPROMISED</div>
+          <div class="tv bad"><div class="sc"></div><div class="sc"></div><div class="sc"></div><div class="sc"></div></div>
+          <div class="tpd">管腔阻塞，纖維化病變，卵子無法通過</div>
+        </div>
+      </div>
+      <div class="crow">
+        <div class="cb" style="border-color:rgba(255,0,34,0.15)"><div class="cbi">🚫</div><div class="cbt" style="color:var(--red)">不孕症</div><div class="cbd">輸卵管阻塞，女性不育風險大幅上升</div></div>
+        <div class="cb" style="border-color:rgba(255,208,0,0.15)"><div class="cbi">⚡</div><div class="cbt" style="color:var(--yellow)">子宮外孕</div><div class="cbd">卵子植入輸卵管，威脅生命安全</div></div>
+        <div class="cb" style="border-color:rgba(179,157,219,0.15)"><div class="cbi">💔</div><div class="cbt" style="color:#B39DDB">慢性骨盆痛</div><div class="cbd">反覆感染造成慢性炎症，難以根治</div></div>
+        <div class="cb" style="border-color:rgba(68,170,255,0.15)"><div class="cbi">🔬</div><div class="cbt" style="color:#4AF">男性副睪炎</div><div class="cbd">精子生成受損，可導致男性不育</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s7">
+  <div class="content">
+    <div class="sh" style="padding:2.5rem 4rem 1rem;margin-bottom:0">
+      <div class="sn">07</div>
+      <div><div class="st">治療方法</div><div class="se">TREATMENT PROTOCOL</div></div>
+      <div class="ss">早期發現<br>完全可以根治</div>
+    </div>
+    <div style="padding:1.5rem 4rem 0;display:flex;flex-direction:column;gap:1.2rem">
+      <div class="cbar">CRITICAL // 衣原體感染完全可治癒 — 抗生素療程完成後幾乎 100% 清除病菌</div>
+      <div class="txrow">
+        <div class="txp a">
+          <div class="txbadge">PROTOCOL A // SINGLE-DOSE</div>
+          <div class="txname" style="color:#00C9C8">單次療程</div>
+          <div class="txdrug">Azithromycin 阿奇黴素</div>
+          <ul class="txlist"><li>1g 單次口服，一次解決</li><li>依從性高，不易漏服</li><li>適合擔心忘記服藥者</li><li>費用相對較高</li></ul>
+        </div>
+        <div class="txp b">
+          <div class="txbadge">PROTOCOL B // 7-DAY COURSE</div>
+          <div class="txname" style="color:var(--yellow)">七日療程</div>
+          <div class="txdrug">Doxycycline 多西環素</div>
+          <ul class="txlist"><li>100mg 每日兩次，連服 7 天</li><li>療效更穩定，清除率更高</li><li>孕婦使用 Amoxicillin 替代</li><li>必須嚴格按時服藥</li></ul>
+        </div>
+      </div>
+      <div class="pp">WARNING // 伴侶必須同時接受治療 — 否則出現乒乓效應 (Ping-Pong Effect)，反覆交叉感染</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s8">
+  <div class="content">
+    <div class="s8l">
+      <div class="sh" style="padding:0 0 1rem;margin-bottom:0">
+        <div class="sn">08</div>
+        <div><div class="st">預防與總結</div><div class="se">PREVENTION PROTOCOL</div></div>
+      </div>
+      <div class="pitems">
+        <div class="pblk"><div class="pico">🔒</div><div><div class="ptitle">正確使用安全套</div><div class="pdesc">每次性行為必須使用，降低感染風險達 90%</div></div></div>
+        <div class="pblk"><div class="pico">🧪</div><div><div class="ptitle">定期性病檢測</div><div class="pdesc">有性生活者每年至少檢測一次，無症狀也要查</div></div></div>
+        <div class="pblk"><div class="pico">💬</div><div><div class="ptitle">伴侶知情與溝通</div><div class="pdesc">坦誠性健康狀況，雙方共同防護</div></div></div>
+        <div class="pblk"><div class="pico">📅</div><div><div class="ptitle">減少高風險行為</div><div class="pdesc">避免多個性伴侶，降低暴露機率</div></div></div>
+        <div class="pblk"><div class="pico">🏥</div><div><div class="ptitle">感染後立即治療</div><div class="pdesc">不要拖延，及早就醫防止長期傷害</div></div></div>
+      </div>
+      <div class="s8close">// 沉默不代表安全 — 定期檢測才是真正的保護 //</div>
+    </div>
+    <div class="s8r">
+      <div class="sw">
+        <div class="se2">🛡️</div>
+        <div class="slbl2">PROTECTED</div>
+        <div class="ssub">KNOWLEDGE IS YOUR<br>STRONGEST SHIELD<br>——<br>知識是最強的武器</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const slides=document.querySelectorAll('.slide');
+const total=slides.length;
+let cur=0;
+const dotsEl=document.getElementById('dots');
+const countEl=document.getElementById('count');
+for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);dotsEl.appendChild(d);}
+function pad(n){return String(n).padStart(2,'0');}
+function updateUI(){document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));countEl.textContent=pad(cur+1)+' / '+pad(total);}
+function goTo(idx){if(idx===cur||idx<0||idx>=total)return;const prev=slides[cur],next=slides[idx];prev.classList.remove('active');next.classList.add('active','enter');setTimeout(()=>next.classList.remove('enter'),400);cur=idx;updateUI();}
+document.getElementById('nextBtn').onclick=()=>goTo(cur+1);
+document.getElementById('prevBtn').onclick=()=>goTo(cur-1);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')goTo(cur+1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')goTo(cur-1);});
+document.querySelector('.deck').addEventListener('click',e=>{if(!e.target.closest('nav')&&!e.target.closest('.dot'))goTo(cur+1);});
+updateUI();
+</script>
+</body>
+</html>
