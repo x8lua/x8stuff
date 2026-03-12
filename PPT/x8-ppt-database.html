@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>x8 PowerPoint Database</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --bg:#080808; --faint:rgba(255,255,255,0.07); --muted:rgba(255,255,255,0.22); }
+
+body {
+  background: var(--bg);
+  width: 100vw; min-height: 100vh;
+  overflow-x: hidden; cursor: none;
+  font-family: 'Share Tech Mono', monospace; color: #fff;
+}
+body::before {
+  content:''; position:fixed; inset:-50%; width:200%; height:200%;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity:0.04; pointer-events:none; z-index:9997; animation:grain .2s steps(1) infinite;
+}
+@keyframes grain {
+  0%{transform:translate(0,0)} 25%{transform:translate(-1%,2%)}
+  50%{transform:translate(2%,-1%)} 75%{transform:translate(-2%,-2%)}
+}
+
+#cur {
+  position:fixed; width:5px; height:5px; background:#fff;
+  border-radius:50%; pointer-events:none; z-index:9999;
+  mix-blend-mode:difference; transition:transform .12s ease;
+}
+#cur.big { transform:scale(4); }
+
+/* ── INTRO ── */
+#intro {
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--bg); z-index:500; pointer-events:none;
+}
+
+/* the title row — this physically moves to the header */
+#title-row {
+  display:flex; align-items:baseline;
+  position:relative; white-space:nowrap;
+  /* will become position:fixed during tween */
+}
+
+.big {
+  font-family:'Google Sans',sans-serif;
+  font-style:italic; font-weight:700;
+  font-size:clamp(72px,13vw,180px);
+  line-height:1; letter-spacing:-0.02em; white-space:nowrap;
+  display:inline-block;
+}
+
+/* x8 hollow → filled by ink */
+#t-x8 {
+  position:relative; color:transparent;
+  -webkit-text-stroke:1.5px rgba(255,255,255,0.13);
+}
+#t-x8-ink {
+  position:absolute; inset:0; color:#fff;
+  clip-path:inset(0 100% 0 0); pointer-events:none;
+  font-family:'Google Sans',sans-serif; font-style:italic; font-weight:700;
+  font-size:clamp(72px,13vw,180px); line-height:1; letter-spacing:-0.02em; white-space:nowrap;
+}
+#t-x8-sweep {
+  position:absolute; inset:0; pointer-events:none; opacity:0;
+  background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,1) 50%,rgba(255,255,255,0) 72%,transparent 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  background-size:300% 100%; background-position:220% center;
+  font-family:'Google Sans',sans-serif; font-style:italic; font-weight:700;
+  font-size:clamp(72px,13vw,180px); line-height:1; letter-spacing:-0.02em; white-space:nowrap;
+}
+
+/* " PowerPoint" — clipped in */
+#t-pp { color:#fff; clip-path:inset(0 100% 0 0); }
+
+/* sub-line */
+#t-sub { position:absolute; bottom:-44px; left:0; right:0; opacity:0; }
+#t-div { height:1px; background:rgba(255,255,255,0.1); transform:scaleX(0); transform-origin:left; }
+.t-row { display:flex; justify-content:space-between; margin-top:9px; font-size:10px; letter-spacing:.45em; text-transform:uppercase; }
+.t-row-l { color:rgba(255,255,255,.22); }
+.t-row-r { color:rgba(255,255,255,.1); }
+
+/* ── HEADER BAR (behind the tweened title) ── */
+#hdr {
+  position:fixed; top:0; left:0; right:0; height:68px;
+  border-bottom:1px solid var(--faint);
+  background:rgba(8,8,8,.96); backdrop-filter:blur(14px);
+  z-index:490; opacity:0;
+  display:flex; align-items:center; justify-content:flex-end;
+  padding:0 36px;
+}
+#hdr-right { font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); }
+
+/* ── MAIN ── */
+#main { padding-top:68px; opacity:0; transform:translateY(28px); }
+
+.path-bar {
+  padding:18px 36px; border-bottom:1px solid var(--faint);
+  font-size:10px; letter-spacing:.22em; color:var(--muted);
+  display:flex; gap:7px; align-items:center;
+}
+.path-bar .active { color:#fff; }
+.sep { color:rgba(255,255,255,.12); }
+
+.stats-row {
+  padding:14px 36px; border-bottom:1px solid var(--faint);
+  display:none; gap:36px;
+}
+.st { display:flex; flex-direction:column; gap:3px; }
+.st-v { font-family:'Google Sans',sans-serif; font-style:italic; font-weight:700; font-size:22px; }
+.st-l { font-size:9px; letter-spacing:.35em; text-transform:uppercase; color:var(--muted); }
+
+.back-row { padding:14px 36px; display:none; }
+.back-btn {
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  font-family:'Share Tech Mono',monospace; font-size:10px;
+  letter-spacing:.3em; text-transform:uppercase; transition:color .2s;
+}
+.back-btn:hover { color:#fff; }
+
+/* grid */
+.grid {
+  padding:28px 36px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px;
+}
+
+.card {
+  border:1px solid var(--faint); padding:18px 18px 16px;
+  position:relative; overflow:hidden; cursor:pointer;
+  opacity:0; transform:translateY(14px);
+  transition:border-color .2s, background .2s;
+}
+.card::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.025) 0%,transparent 55%);
+}
+.card:hover { border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.025); }
+.card:hover .arr { opacity:1; transform:translate(0,0); }
+
+.badge {
+  font-size:9px; letter-spacing:.4em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:10px;
+  display:flex; align-items:center; gap:7px;
+}
+.badge::before { content:''; width:18px; height:1px; background:var(--muted); }
+
+.cname {
+  font-family:'Google Sans',sans-serif; font-style:italic; font-weight:700;
+  font-size:15px; line-height:1.25; color:#fff; word-break:break-word; margin-bottom:7px;
+}
+.card.dir .cname { color:rgba(255,255,255,.6); }
+
+.cmeta { font-size:9px; letter-spacing:.18em; color:rgba(255,255,255,.18); display:flex; flex-direction:column; gap:2px; }
+
+.arr {
+  position:absolute; top:17px; right:17px; font-size:13px; color:var(--muted);
+  opacity:0; transform:translate(-3px,3px); transition:opacity .18s,transform .18s;
+}
+
+.btn {
+  margin-top:12px; display:inline-block; padding:6px 13px;
+  border:1px solid rgba(255,255,255,.09); color:var(--muted); background:none;
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.32em;
+  text-transform:uppercase; cursor:pointer; text-decoration:none;
+  transition:color .2s,border-color .2s;
+}
+.btn + .btn { margin-left:6px; }
+.btn:hover { color:#fff; border-color:rgba(255,255,255,.38); }
+
+/* loading / error */
+.loading {
+  padding:40px 36px; font-size:10px; letter-spacing:.3em;
+  color:var(--muted); display:flex; align-items:center; gap:12px;
+}
+.ld { width:4px; height:4px; background:var(--muted); border-radius:50%; animation:ld .9s ease-in-out infinite; }
+.ld:nth-child(2){animation-delay:.18s} .ld:nth-child(3){animation-delay:.36s}
+@keyframes ld{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+.err { padding:40px 36px; font-size:10px; letter-spacing:.18em; color:var(--muted); line-height:2.2; }
+.err a { color:rgba(255,255,255,.4); text-decoration:none; border-bottom:1px solid rgba(255,255,255,.12); }
+
+/* preview */
+#preview {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.88);
+  z-index:600; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+}
+#preview.open { display:flex; }
+#pframe { width:92vw; height:88vh; border:1px solid var(--faint); background:#111; }
+#pclose {
+  position:absolute; top:20px; right:26px; background:none; border:none;
+  color:var(--muted); cursor:pointer; font-family:'Share Tech Mono',monospace;
+  font-size:10px; letter-spacing:.3em; text-transform:uppercase; transition:color .2s;
+}
+#pclose:hover { color:#fff; }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+
+<!-- INTRO OVERLAY -->
+<div id="intro">
+  <div id="title-row">
+    <!-- x8 with sweep+ink -->
+    <span class="big" id="t-x8">
+      x8
+      <span id="t-x8-ink">x8</span>
+      <span id="t-x8-sweep">x8</span>
+    </span>
+    <!-- PowerPoint clips in -->
+    <span class="big" id="t-pp">&nbsp;PowerPoint</span>
+    <!-- sub-line (hides during tween) -->
+    <div id="t-sub">
+      <div id="t-div"></div>
+      <div class="t-row">
+        <span class="t-row-l">Database</span>
+        <span class="t-row-r">2025</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER (just the right-side meta + bottom border, title row flies here) -->
+<div id="hdr">
+  <div id="hdr-right">—</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <div class="path-bar">
+    <span>x8lua</span><span class="sep">/</span>
+    <span>x8stuff</span><span class="sep">/</span>
+    <span class="active" id="path-cur">PPT</span>
+  </div>
+  <div class="stats-row" id="stats-row">
+    <div class="st"><div class="st-v" id="s-files">0</div><div class="st-l">Files</div></div>
+    <div class="st"><div class="st-v" id="s-dirs">0</div><div class="st-l">Folders</div></div>
+    <div class="st"><div class="st-v" id="s-html">0</div><div class="st-l">HTML</div></div>
+  </div>
+  <div class="back-row" id="back-row">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+  </div>
+  <div id="file-area">
+    <div class="loading">
+      <div class="ld"></div><div class="ld"></div><div class="ld"></div>
+      <span>Waiting...</span>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div id="preview">
+  <button id="pclose" onclick="closePrev()">✕ Close</button>
+  <iframe id="pframe" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+</div>
+
+<script>
+// 24fps
+const FMS=1000/24,_r=requestAnimationFrame.bind(window);let _lt=0;
+window.requestAnimationFrame=cb=>_r(function t(ts){if(ts-_lt>=FMS){_lt=ts-((ts-_lt)%FMS);cb(ts);}else _r(t);});
+const shut=document.createElement('div');
+Object.assign(shut.style,{position:'fixed',inset:'0',background:'#000',pointerEvents:'none',zIndex:'9996',opacity:'0'});
+document.body.appendChild(shut);
+(function L(){_r(ts=>{shut.style.opacity=ts-_lt<FMS*.22?.1:0;L()});})();
+
+// cursor
+const cur=document.getElementById('cur');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX-2.5+'px';cur.style.top=e.clientY-2.5+'px';});
+document.addEventListener('mouseover',e=>{cur.classList.toggle('big',!!e.target.closest('button,a,.card,.btn'));});
+
+// easings
+const eio4=t=>t<.5?8*t**4:1-(-2*t+2)**4/2;
+const eoE=t=>t===1?1:1-Math.pow(2,-10*t);
+const eio3=t=>t<.5?4*t**3:1-(-2*t+2)**3/2;
+const eo4=t=>1-(1-t)**4;
+
+function anim(dur,tick,done){
+  let s=null;
+  function f(ts){if(!s)s=ts;const r=Math.min((ts-s)/dur,1);tick(r);if(r<1)requestAnimationFrame(f);else done&&done();}
+  requestAnimationFrame(f);
+}
+
+// els
+const intro=document.getElementById('intro');
+const titleRow=document.getElementById('title-row');
+const tX8=document.getElementById('t-x8');
+const tInk=document.getElementById('t-x8-ink');
+const tSweep=document.getElementById('t-x8-sweep');
+const tPP=document.getElementById('t-pp');
+const tSub=document.getElementById('t-sub');
+const tDiv=document.getElementById('t-div');
+const hdr=document.getElementById('hdr');
+const main=document.getElementById('main');
+
+// nav
+let stack=['PPT'];
+
+// helpers
+const ext=n=>(n.split('.').pop()||'').toLowerCase();
+const typeOf=(n,t)=>{
+  if(t==='dir')return'FOLDER';
+  const m={html:'HTML',htm:'HTML',pptx:'POWERPOINT',ppt:'POWERPOINT',
+    pdf:'PDF',png:'IMAGE',jpg:'IMAGE',jpeg:'IMAGE',gif:'IMAGE',
+    mp4:'VIDEO',zip:'ARCHIVE',md:'MARKDOWN',txt:'TEXT'};
+  return m[ext(n)]||ext(n).toUpperCase()||'FILE';
+};
+const fmtSize=b=>{if(!b)return'—';if(b<1024)return b+' B';if(b<1<<20)return(b/1024).toFixed(1)+' KB';return(b/(1<<20)).toFixed(1)+' MB';};
+const isHtml=n=>['html','htm'].includes(ext(n));
+
+// hardcoded fallback (from API)
+const FALLBACK=[
+  {name:'brutal.html',path:'PPT/brutal.html',sha:'76a6787b',size:51979,type:'file',download_url:'https://raw.githubusercontent.com/x8lua/x8stuff/main/PPT/brutal.html',html_url:'https://github.com/x8lua/x8stuff/blob/main/PPT/brutal.html'},
+  {name:'brutal1',path:'PPT/brutal1',sha:'bddbfd0d',size:55377,type:'file',download_url:'https://raw.githubusercontent.com/x8lua/x8stuff/main/PPT/brutal1',html_url:'https://github.com/x8lua/x8stuff/blob/main/PPT/brutal1'},
+  {name:'brutal1.html',path:'PPT/brutal1.html',sha:'bddbfd0d',size:55377,type:'file',download_url:'https://raw.githubusercontent.com/x8lua/x8stuff/main/PPT/brutal1.html',html_url:'https://github.com/x8lua/x8stuff/blob/main/PPT/brutal1.html'},
+  {name:'prototype',path:'PPT/prototype',sha:'1efa8eaa',size:0,type:'dir',download_url:null,html_url:null},
+  {name:'time.txt',path:'PPT/time.txt',sha:'30b3f2be',size:15,type:'file',download_url:'https://raw.githubusercontent.com/x8lua/x8stuff/main/PPT/time.txt',html_url:'https://github.com/x8lua/x8stuff/blob/main/PPT/time.txt'},
+];
+
+function render(items){
+  items.sort((a,b)=>{
+    if(a.type==='dir'&&b.type!=='dir')return -1;
+    if(a.type!=='dir'&&b.type==='dir')return 1;
+    return a.name.localeCompare(b.name);
+  });
+  const files=items.filter(i=>i.type!=='dir');
+  const dirs=items.filter(i=>i.type==='dir');
+  const htmls=files.filter(i=>isHtml(i.name));
+  document.getElementById('s-files').textContent=files.length;
+  document.getElementById('s-dirs').textContent=dirs.length;
+  document.getElementById('s-html').textContent=htmls.length;
+  document.getElementById('stats-row').style.display='flex';
+  document.getElementById('hdr-right').textContent=items.length+' ITEMS';
+  document.getElementById('back-row').style.display=stack.length>1?'block':'none';
+
+  const grid=document.createElement('div');
+  grid.className='grid';
+
+  items.forEach(item=>{
+    const isDir=item.type==='dir';
+    const card=document.createElement('div');
+    card.className='card'+(isDir?' dir':'');
+    const dl=item.download_url||item.html_url||'#';
+    const sha=(item.sha||'').slice(0,8).toUpperCase();
+    let actions='';
+    if(isDir){
+      actions=`<button class="btn" onclick="event.stopPropagation();into('${item.path}','${item.name}')">Open →</button>`;
+    } else if(isHtml(item.name)){
+      const viewUrl = item.html_url || item.download_url;
+      actions=`<button class="btn" onclick="event.stopPropagation();openPrev('${viewUrl}')">Preview ⊞</button><a class="btn" href="${item.download_url}" target="_blank" rel="noopener">Download ↓</a>`;
+    } else {
+      actions=`<a class="btn" href="${dl}" target="_blank" rel="noopener">Download ↓</a>`;
+    }
+    card.innerHTML=`
+      <div class="badge">${typeOf(item.name,item.type)}</div>
+      <div class="cname">${item.name}</div>
+      <div class="cmeta">
+        ${item.size?`<span>${fmtSize(item.size)}</span>`:''}
+        <span>SHA — ${sha||'—'}</span>
+      </div>
+      <div class="arr">↗</div>
+      ${actions}`;
+    if(isDir) card.addEventListener('dblclick',()=>into(item.path,item.name));
+    grid.appendChild(card);
+  });
+
+  const area=document.getElementById('file-area');
+  area.innerHTML=''; area.appendChild(grid);
+
+  grid.querySelectorAll('.card').forEach((c,i)=>{
+    setTimeout(()=>anim(480,r=>{const t=eo4(r);c.style.opacity=t;c.style.transform=`translateY(${(1-t)*14}px)`;}),i*50);
+  });
+}
+
+async function loadPath(path){
+  const area = document.getElementById('file-area');
+  document.getElementById('path-cur').textContent = path.split('/').pop();
+  document.getElementById('stats-row').style.display = 'none';
+  area.innerHTML = `<div class="loading"><div class="ld"></div><div class="ld"></div><div class="ld"></div><span>Fetching ${path.split('/').pop()}...</span></div>`;
+  
+  try {
+    // 終極解法：無 Proxy、無 Header，直接戳 GitHub API！
+    const apiUrl = `https://api.github.com/repos/x8lua/x8stuff/contents/${path}`;
+    const res = await fetch(apiUrl); 
+    
+    if (!res.ok) {
+      if (res.status === 403) throw new Error('被 GitHub 擋了！可能是沒登入的 API 額度 (每小時 60 次) 刷爆了。');
+      if (res.status === 404) throw new Error('找不到目標資料夾。');
+      throw new Error('HTTP ' + res.status);
+    }
+    
+    const data = await res.json();
+    render(Array.isArray(data) ? data : [data]);
+    
+  } catch(e) {
+    area.innerHTML = `<div class="err">
+      Fetch failed — ${e.message}<br><br>
+      <a href="https://github.com/x8lua/x8stuff/tree/main/${path}" target="_blank">View on GitHub ↗</a>
+      &nbsp;&nbsp;·&nbsp;&nbsp;
+      <button class="back-btn" style="display:inline;font-size:10px" onclick="goBack()">← Go back</button>
+    </div>`;
+    document.getElementById('hdr-right').textContent = 'ERROR';
+    document.getElementById('back-row').style.display = 'block';
+  }
+}
+
+function into(path,_name){ stack.push(path); loadPath(path); }
+function goBack(){ if(stack.length<=1)return; stack.pop(); loadPath(stack[stack.length-1]); }
+function openPrev(url){ 
+  // Convert GitHub blob URL to htmlpreview for rendering
+  if(url.includes('github.com') && !url.includes('htmlpreview.github.io')) {
+    // If it's a blob URL, get the raw content URL
+    const rawUrl = url.replace('github.com/x8lua/x8stuff/blob/', 'raw.githubusercontent.com/x8lua/x8stuff/');
+    url = 'https://htmlpreview.github.io/?' + rawUrl;
+  }
+  document.getElementById('pframe').src=url; document.getElementById('preview').classList.add('open'); 
+}
+function closePrev(){ document.getElementById('preview').classList.remove('open'); document.getElementById('pframe').src=''; }
+
+// ── INTRO ANIMATION ──
+function runIntro(onDone){
+  // reset state
+  tX8.style.color='transparent';
+  tX8.style.webkitTextStroke='1.5px rgba(255,255,255,0.13)';
+  tInk.style.clipPath='inset(0 100% 0 0)'; tInk.style.filter='';
+  tSweep.style.opacity='0'; tSweep.style.backgroundPosition='220% center';
+  tPP.style.clipPath='inset(0 100% 0 0)';
+  tSub.style.opacity='0';
+  tDiv.style.transition='none'; tDiv.style.transform='scaleX(0)';
+
+  setTimeout(()=>{
+    // phase 1: sweep shimmer across x8
+    tSweep.style.opacity='1';
+    anim(880,r=>{
+      tSweep.style.backgroundPosition=(220-eoE(r)*270)+'% center';
+      tSweep.style.opacity=r>.75?String(1-(r-.75)/.25):'1';
+    });
+    // phase 1b: ink fills x8 (tiny delay behind sweep)
+    setTimeout(()=>{
+      anim(1100,r=>{
+        const t=eio3(r);
+        tInk.style.clipPath=`inset(0 ${100-t*100}% 0 0)`;
+        tInk.style.filter=`blur(${(1-t)*3}px)`;
+      },()=>{
+        tX8.style.webkitTextStroke='0px transparent';
+        // phase 2: " PowerPoint" clips in
+        setTimeout(()=>{
+          anim(850,r=>{
+            tPP.style.clipPath=`inset(0 ${100-eio4(r)*100}% 0 0)`;
+          },()=>{
+            // sub-line appears
+            tSub.style.transition='opacity .6s ease';
+            tSub.style.opacity='1';
+            tDiv.style.transition='transform .8s cubic-bezier(.16,1,.3,1)';
+            tDiv.style.transform='scaleX(1)';
+            // hold then call back
+            setTimeout(onDone,500);
+          });
+        },180);
+      });
+    },80);
+  },80);
+}
+
+// ── TWEEN: title-row flies from center to top-left header ──
+function tweenToHeader(onDone){
+  const r0=titleRow.getBoundingClientRect();
+  const startLeft=r0.left;
+  const startTop=r0.top;
+
+  // pin exactly where it is
+  titleRow.style.position='fixed';
+  titleRow.style.left=startLeft+'px';
+  titleRow.style.top=startTop+'px';
+  titleRow.style.margin='0';
+  titleRow.style.transformOrigin='top left';
+  titleRow.style.zIndex='495';
+  // switch intro from flex to block so it stops re-centering
+  intro.style.display='block';
+
+  tSub.style.transition='none';
+  tSub.style.opacity='0';
+
+  const curFS=parseFloat(getComputedStyle(tX8).fontSize);
+  const targetScale=30/curFS;
+  const scaledH=r0.height*targetScale;
+  const endLeft=36;
+  const endTop=Math.max(8,(68-scaledH)/2);
+
+  hdr.style.opacity='0';
+
+  anim(1000,r=>{
+    const t=eio4(r);
+    titleRow.style.left=(startLeft+(endLeft-startLeft)*t)+'px';
+    titleRow.style.top=(startTop+(endTop-startTop)*t)+'px';
+    titleRow.style.transform=`scale(${1+(targetScale-1)*t})`;
+    intro.style.background=`rgba(8,8,8,${1-t})`;
+    hdr.style.opacity=String(t);
+  },()=>{
+    titleRow.style.left=endLeft+'px';
+    titleRow.style.top=endTop+'px';
+    titleRow.style.transform=`scale(${targetScale})`;
+    intro.style.background='rgba(0,0,0,0)';
+    hdr.style.opacity='1';
+    anim(600,r=>{
+      const t=eo4(r);
+      main.style.opacity=t;
+      main.style.transform=`translateY(${(1-t)*28}px)`;
+    });
+    onDone&&onDone();
+  });
+}
+
+// ── BOOT ──
+document.fonts.ready.then(()=>{
+  setTimeout(()=>{
+    runIntro(()=>tweenToHeader(()=>loadPath('PPT')));
+  },350);
+});
+</script>
+</body>
+</html>
