@@ -1,0 +1,305 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Serif+Display&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans TC',sans-serif;background:transparent;color:var(--color-text-primary)}
+  .page{padding:1.5rem 0.5rem;max-width:900px;margin:0 auto}
+  .section-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin:2.5rem 0 1rem;color:var(--color-text-primary);display:flex;align-items:center;gap:10px}
+  .section-title span{font-size:13px;font-family:'Noto Sans TC',sans-serif;font-weight:400;color:var(--color-text-secondary);letter-spacing:.05em}
+
+  /* PEST */
+  .pest-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .pest-card{border-radius:12px;padding:1.1rem 1.2rem}
+  .pest-card.p{background:#E6F1FB;border:0.5px solid #85B7EB}
+  .pest-card.e{background:#EAF3DE;border:0.5px solid #97C459}
+  .pest-card.s{background:#FAEEDA;border:0.5px solid #EF9F27}
+  .pest-card.t{background:#EEEDFE;border:0.5px solid #AFA9EC}
+  .pest-label{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .pest-card.p .pest-label{color:#185FA5}
+  .pest-card.e .pest-label{color:#3B6D11}
+  .pest-card.s .pest-label{color:#854F0B}
+  .pest-card.t .pest-label{color:#534AB7}
+  .pest-heading{font-size:16px;font-weight:500;margin-bottom:10px}
+  .pest-card.p .pest-heading{color:#0C447C}
+  .pest-card.e .pest-heading{color:#27500A}
+  .pest-card.s .pest-heading{color:#633806}
+  .pest-card.t .pest-heading{color:#3C3489}
+  .pest-item{font-size:13px;line-height:1.6;color:inherit;padding:3px 0;border-bottom:0.5px solid rgba(0,0,0,.07)}
+  .pest-item:last-child{border-bottom:none}
+  .pest-card.p .pest-item{color:#0C447C}
+  .pest-card.e .pest-item{color:#27500A}
+  .pest-card.s .pest-item{color:#633806}
+  .pest-card.t .pest-item{color:#3C3489}
+
+  /* SWOT */
+  .swot-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden}
+  .swot-header{display:grid;grid-template-columns:80px 1fr 1fr;background:var(--color-background-secondary)}
+  .swot-h-cell{padding:8px 12px;font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--color-text-secondary);text-align:center;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .swot-h-cell.internal{color:#185FA5}
+  .swot-h-cell.external{color:#3B6D11}
+  .swot-row{display:grid;grid-template-columns:80px 1fr 1fr}
+  .swot-row-label{display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:11px;font-weight:500;letter-spacing:.1em;padding:16px 8px;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary)}
+  .swot-row-label.pos{color:#185FA5;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .swot-row-label.neg{color:#A32D2D}
+  .swot-cell{padding:1rem;border-left:0.5px solid var(--color-border-tertiary)}
+  .swot-cell.s-cell{border-bottom:0.5px solid var(--color-border-tertiary);background:#E6F1FB22}
+  .swot-cell.w-cell{border-bottom:0.5px solid var(--color-border-tertiary)}
+  .swot-cell.o-cell{background:#EAF3DE22}
+  .swot-cell-title{font-size:12px;font-weight:500;margin-bottom:8px}
+  .swot-cell.s-cell .swot-cell-title{color:#185FA5}
+  .swot-cell.w-cell .swot-cell-title{color:#A32D2D}
+  .swot-cell.o-cell .swot-cell-title{color:#3B6D11}
+  .swot-cell.t-cell .swot-cell-title{color:#854F0B}
+  .swot-point{font-size:12px;line-height:1.65;color:var(--color-text-secondary);padding:2px 0}
+
+  /* BMC */
+  .bmc-wrap{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto;gap:8px}
+  .bmc-cell{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px}
+  .bmc-title{font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--color-text-secondary);margin-bottom:6px}
+  .bmc-item{font-size:12px;line-height:1.6;color:var(--color-text-primary)}
+  .bmc-cell.kp{grid-column:1;grid-row:1/3;border-left:3px solid #378ADD}
+  .bmc-cell.ka{grid-column:2;grid-row:1;border-left:3px solid #7F77DD}
+  .bmc-cell.vp{grid-column:3;grid-row:1/3;border-left:3px solid #1D9E75;background:#E1F5EE44}
+  .bmc-cell.cr{grid-column:4;grid-row:1;border-left:3px solid #D85A30}
+  .bmc-cell.cs{grid-column:5;grid-row:1/3;border-left:3px solid #D4537E}
+  .bmc-cell.kr{grid-column:2;grid-row:2;border-left:3px solid #7F77DD}
+  .bmc-cell.ch{grid-column:4;grid-row:2;border-left:3px solid #D85A30}
+  .bmc-cell.co{grid-column:1/4;border-left:3px solid #E24B4A;background:#FCEBEB33}
+  .bmc-cell.rs{grid-column:4/6;border-left:3px solid #1D9E75;background:#E1F5EE33}
+  .bmc-bottom{display:grid;grid-template-columns:3fr 2fr;gap:8px;margin-top:0}
+
+  /* Quadrant */
+  .quad-wrap{position:relative;width:100%;aspect-ratio:1.4/1;border:0.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;background:var(--color-background-secondary)}
+  .quad-axis-x{position:absolute;left:0;right:0;top:50%;height:0.5px;background:var(--color-border-secondary)}
+  .quad-axis-y{position:absolute;top:0;bottom:0;left:50%;width:0.5px;background:var(--color-border-secondary)}
+  .quad-label{position:absolute;font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em}
+  .quad-label.tl{top:8px;left:12px}
+  .quad-label.tr{top:8px;right:12px}
+  .quad-label.bl{bottom:8px;left:12px}
+  .quad-label.br{bottom:8px;right:12px}
+  .quad-axis-name{position:absolute;font-size:11px;font-weight:500;color:var(--color-text-secondary)}
+  .quad-axis-name.xr{bottom:calc(50% + 6px);right:10px}
+  .quad-axis-name.xl{bottom:calc(50% + 6px);left:10px}
+  .quad-axis-name.yt{top:10px;left:calc(50% + 8px)}
+  .quad-axis-name.yb{bottom:10px;left:calc(50% + 8px)}
+  .dot{position:absolute;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%)}
+  .dot-label{position:absolute;font-size:11px;font-weight:500;white-space:nowrap;transform:translateX(-50%)}
+
+  /* Creative */
+  .creative-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .creative-card{border-radius:10px;padding:14px 14px 12px;border:0.5px solid var(--color-border-tertiary)}
+  .creative-icon{font-size:20px;margin-bottom:8px}
+  .creative-name{font-size:13px;font-weight:500;margin-bottom:4px;color:var(--color-text-primary)}
+  .creative-desc{font-size:12px;line-height:1.6;color:var(--color-text-secondary)}
+</style>
+
+<div class="page">
+
+  <!-- PEST -->
+  <div class="section-title">PEST 分析 <span>宏觀環境</span></div>
+  <div class="pest-grid">
+    <div class="pest-card p">
+      <div class="pest-label">P · Political</div>
+      <div class="pest-heading">政策環境</div>
+      <div class="pest-item">· 《青年創業援助計劃》最高30萬免息援助</div>
+      <div class="pest-item">· 橫琴合作區租金補貼、稅收優惠</div>
+      <div class="pest-item">· 特區政府大力推動文創產業發展</div>
+      <div class="pest-item">· 琴澳一體化打通跨區資源壁壘</div>
+    </div>
+    <div class="pest-card e">
+      <div class="pest-label">E · Economic</div>
+      <div class="pest-heading">經濟環境</div>
+      <div class="pest-item">· 2025年旅客突破3000萬人次</div>
+      <div class="pest-item">· 文旅消費市場需求激增</div>
+      <div class="pest-item">· 中小微企業佔比超90%數碼化需求迫切</div>
+      <div class="pest-item">· 粵港澳大灣區市場開放</div>
+    </div>
+    <div class="pest-card s">
+      <div class="pest-label">S · Social</div>
+      <div class="pest-heading">社會環境</div>
+      <div class="pest-item">· 中西文化交融孕育豐富文創資源</div>
+      <div class="pest-item">· 本地青年對本土文化認同感提升</div>
+      <div class="pest-item">· 旅客偏好沉浸式互動文旅體驗</div>
+      <div class="pest-item">· 琴澳居民往來便利化推動交流</div>
+    </div>
+    <div class="pest-card t">
+      <div class="pest-label">T · Technological</div>
+      <div class="pest-heading">科技環境</div>
+      <div class="pest-item">· 社交媒體（小紅書、抖音）流量紅利持續</div>
+      <div class="pest-item">· AI工具降低文創設計門檻</div>
+      <div class="pest-item">· 微信生態覆蓋廣泛支付與運營場景</div>
+      <div class="pest-item">· 數智化工具快速普及推動轉型</div>
+    </div>
+  </div>
+
+  <!-- SWOT -->
+  <div class="section-title">SWOT 矩陣分析 <span>經營環境</span></div>
+  <div class="swot-grid">
+    <div class="swot-row">
+      <div class="swot-row-label pos">有利條件</div>
+      <div class="swot-cell s-cell">
+        <div class="swot-cell-title">S · 優勢</div>
+        <div class="swot-point">· 核心團隊為本地青年，深諳本土文化與政策</div>
+        <div class="swot-point">· 文創＋文旅＋數智三合一差異化模式</div>
+        <div class="swot-point">· 琴澳雙城布局享雙重政策紅利</div>
+        <div class="swot-point">· 初創期靈活性高，服務可快速定制</div>
+      </div>
+      <div class="swot-cell o-cell">
+        <div class="swot-cell-title">O · 機會</div>
+        <div class="swot-point">· 文旅市場復蘇帶來龐大消費需求</div>
+        <div class="swot-point">· 中小商戶數碼化轉型需求迫切</div>
+        <div class="swot-point">· 青年創業政策提供充足資金支持</div>
+        <div class="swot-point">· 大灣區市場拓展潛力巨大</div>
+      </div>
+    </div>
+    <div class="swot-row">
+      <div class="swot-row-label neg">不利條件</div>
+      <div class="swot-cell w-cell">
+        <div class="swot-cell-title">W · 劣勢</div>
+        <div class="swot-point">· 初創期品牌知名度低，獲客難度較大</div>
+        <div class="swot-point">· 團隊規模小，服務承接能力有限</div>
+        <div class="swot-point">· 文創產品研發周期長，資金壓力大</div>
+        <div class="swot-point">· 缺乏成熟供應鏈與批量生產能力</div>
+      </div>
+      <div class="swot-cell t-cell">
+        <div class="swot-cell-title">T · 威脅</div>
+        <div class="swot-point">· 外地機構入澳競爭，資本實力懸殊</div>
+        <div class="swot-point">· 文旅市場受宏觀環境影響波動較大</div>
+        <div class="swot-point">· 文創產品同質化風險持續存在</div>
+        <div class="swot-point">· 核心人才流失可能影響服務質量</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BMC -->
+  <div class="section-title">商業模式圖 <span>Business Model Canvas</span></div>
+  <div class="bmc-wrap">
+    <div class="bmc-cell kp">
+      <div class="bmc-title">KP · 重要夥伴</div>
+      <div class="bmc-item">· 本地手工藝人</div>
+      <div class="bmc-item">· 澳門旅遊局</div>
+      <div class="bmc-item">· 文創協會</div>
+      <div class="bmc-item">· 橫琴創業機構</div>
+      <div class="bmc-item">· KOL 網紅</div>
+      <div class="bmc-item">· 酒店 / 景區</div>
+    </div>
+    <div class="bmc-cell ka">
+      <div class="bmc-title">KA · 核心活動</div>
+      <div class="bmc-item">· 文創IP研發</div>
+      <div class="bmc-item">· 文旅體驗策劃</div>
+      <div class="bmc-item">· 商戶數智運營</div>
+      <div class="bmc-item">· 線上平台運營</div>
+    </div>
+    <div class="bmc-cell vp">
+      <div class="bmc-title">VP · 價值主張</div>
+      <div class="bmc-item">· 一站式文創×文旅×數智服務</div>
+      <div class="bmc-item">· 葡式文化本土IP產品</div>
+      <div class="bmc-item">· 沉浸式文旅體驗</div>
+      <div class="bmc-item">· 中小商戶數碼化升級</div>
+      <div class="bmc-item">· 琴澳雙城市場覆蓋</div>
+    </div>
+    <div class="bmc-cell cr">
+      <div class="bmc-title">CR · 客戶關係</div>
+      <div class="bmc-item">· 會員積分制度</div>
+      <div class="bmc-item">· 定期回訪服務</div>
+      <div class="bmc-item">· 社群運營互動</div>
+    </div>
+    <div class="bmc-cell cs">
+      <div class="bmc-title">CS · 客戶群體</div>
+      <div class="bmc-item">C端：年輕旅客、本地文創愛好者、親子家庭</div>
+      <div class="bmc-item" style="margin-top:8px">B端：餐飲/零售/文創中小商戶、酒店景區</div>
+      <div class="bmc-item" style="margin-top:8px">合作：橫琴文創企業、旅遊機構</div>
+    </div>
+    <div class="bmc-cell kr">
+      <div class="bmc-title">KR · 核心資源</div>
+      <div class="bmc-item">· 本土文化知識積累</div>
+      <div class="bmc-item">· 創意設計人才</div>
+      <div class="bmc-item">· 數智運營技術</div>
+      <div class="bmc-item">· 政策資金支持</div>
+    </div>
+    <div class="bmc-cell ch">
+      <div class="bmc-title">CH · 渠道通路</div>
+      <div class="bmc-item">· 小紅書/抖音/Instagram</div>
+      <div class="bmc-item">· 微信小程序</div>
+      <div class="bmc-item">· 景點/酒店代售點</div>
+      <div class="bmc-item">· 文創市集參展</div>
+    </div>
+  </div>
+  <div class="bmc-bottom" style="margin-top:8px">
+    <div class="bmc-cell co" style="grid-column:auto;grid-row:auto">
+      <div class="bmc-title">CO · 成本結構</div>
+      <div class="bmc-item">場地8萬 · 設備10萬 · 薪酬20萬 · 推廣7萬 · 研發3萬 · 應急2萬 — 共50萬澳門幣</div>
+    </div>
+    <div class="bmc-cell rs" style="grid-column:auto;grid-row:auto">
+      <div class="bmc-title">RS · 收入來源</div>
+      <div class="bmc-item">文創產品銷售 · 文旅體驗收費 · 商戶數智服務月費 · 活動策劃執行費</div>
+    </div>
+  </div>
+
+  <!-- Perception Quadrant -->
+  <div class="section-title">消費偏好知覺象限圖 <span>市場定位</span></div>
+  <div class="quad-wrap">
+    <div class="quad-axis-x"></div>
+    <div class="quad-axis-y"></div>
+    <div class="quad-label tl">🔮 高端創意</div>
+    <div class="quad-label tr">⭐ 高端本土</div>
+    <div class="quad-label bl">💡 平價創意</div>
+    <div class="quad-label br">🏷️ 平價大眾</div>
+    <div class="quad-axis-name xr" style="transform:translateY(50%)">高價格 →</div>
+    <div class="quad-axis-name xl" style="transform:translateY(50%)">← 低價格</div>
+    <div class="quad-axis-name yt">高本土特色 ↑</div>
+    <div class="quad-axis-name yb">低本土特色 ↓</div>
+    <!-- dots: left%=price axis (left=low, right=high), top%=culture axis (top=high culture) -->
+    <!-- Our brand: high culture + mid-high price → left ~65%, top ~25% -->
+    <div class="dot" style="left:65%;top:25%;background:#1D9E75"></div>
+    <div class="dot-label" style="left:65%;top:14%;color:#1D9E75;font-weight:500">葡韻文創（本項目）</div>
+    <!-- Traditional studios: high culture + low price -->
+    <div class="dot" style="left:32%;top:28%;background:#378ADD"></div>
+    <div class="dot-label" style="left:32%;top:17%;color:#378ADD">傳統文創工作室</div>
+    <!-- Digital companies: low culture + mid price -->
+    <div class="dot" style="left:58%;top:68%;background:#BA7517"></div>
+    <div class="dot-label" style="left:58%;top:74%;color:#BA7517">本地數碼服務公司</div>
+    <!-- External agencies: low culture + high price -->
+    <div class="dot" style="left:75%;top:72%;background:#993C1D"></div>
+    <div class="dot-label" style="left:75%;top:78%;color:#993C1D">外地入澳機構</div>
+    <!-- Souvenir shops: low culture + low price -->
+    <div class="dot" style="left:28%;top:72%;background:#888780"></div>
+    <div class="dot-label" style="left:28%;top:78%;color:#888780">普通紀念品商店</div>
+  </div>
+
+  <!-- Creative Elements -->
+  <div class="section-title">創意元素說明 <span>差異化核心</span></div>
+  <div class="creative-grid">
+    <div class="creative-card" style="border-left:3px solid #1D9E75">
+      <div class="creative-icon">🏛️</div>
+      <div class="creative-name">葡韻文化IP</div>
+      <div class="creative-desc">深度挖掘大三巴、媽閣廟、路環漁村等本土元素，開發原創輕奢文創產品，建立獨特文化符號。</div>
+    </div>
+    <div class="creative-card" style="border-left:3px solid #7F77DD">
+      <div class="creative-icon">🎭</div>
+      <div class="creative-name">沉浸式文旅體驗</div>
+      <div class="creative-desc">「葡韻街巷尋蹤」「澳門手作體驗」「中西文化沙龍」四大主題，從觀光升級為互動式體驗。</div>
+    </div>
+    <div class="creative-card" style="border-left:3px solid #378ADD">
+      <div class="creative-icon">📱</div>
+      <div class="creative-name">數智化一站服務</div>
+      <div class="creative-desc">為中小商戶提供社交媒體運營、線上店鋪搭建、會員管理等全套數智化解決方案。</div>
+    </div>
+    <div class="creative-card" style="border-left:3px solid #D85A30">
+      <div class="creative-icon">🌉</div>
+      <div class="creative-name">琴澳雙城協同</div>
+      <div class="creative-desc">同步布局澳門與橫琴市場，享受雙重政策紅利，打通內地客源與資源渠道，擴大市場邊界。</div>
+    </div>
+    <div class="creative-card" style="border-left:3px solid #BA7517">
+      <div class="creative-icon">🤝</div>
+      <div class="creative-name">本土青年優勢</div>
+      <div class="creative-desc">核心團隊深諳本土文化、市場習慣與政策規則，比外地機構更貼近客戶需求，響應更快。</div>
+    </div>
+    <div class="creative-card" style="border-left:3px solid #D4537E">
+      <div class="creative-icon">♻️</div>
+      <div class="creative-name">三位一體閉環</div>
+      <div class="creative-desc">「線上文創運營＋線下體驗服務＋數智技術賦能」三業務互相引流，構建可持續服務閉環。</div>
+    </div>
+  </div>
+
+</div>
