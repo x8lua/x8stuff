@@ -66,8 +66,9 @@
 
 <script>
     // 這裡填入你的 Supabase 資料
-    const SB_URL = "https:/eimkojcgfsjlbxxpiiuh.supabase.co/rest/v1/alt_control?id=eq.1";
-    const SB_KEY = "sb_publishable_nRNFb0Vc796L82oggdgOLA_U-d78rPo";
+    // 確保開頭只有一個 https:// 且沒有多餘的空格
+const SB_URL = "https://eimkojcgfsjlbxxpiiuh.supabase.co/rest/v1/alt_control?id=eq.1";
+const SB_KEY = "sb_publishable_nRNFb0Vc796L82oggdgOLA_U-d78rPo";
 
     async function send(mode) {
         const log = document.getElementById('log');
