@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL - X8 ALT CONTROL</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            border: 1px solid #00ff41;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            background: rgba(0, 0, 0, 0.9);
+            width: 80%;
+            max-width: 500px;
+        }
+        h1 { font-size: 1.5rem; text-shadow: 0 0 5px #00ff41; margin-bottom: 20px; }
+        .status-box {
+            border-bottom: 1px solid #00ff41;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn {
+            background: transparent;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
+        .btn-panic { grid-column: span 2; border-color: #ff0000; color: #ff0000; font-weight: bold; }
+        .btn-panic:hover { background: #ff0000; color: #fff; box-shadow: 0 0 15px #ff0000; }
+        #log { margin-top: 20px; font-size: 0.8rem; color: #008f11; text-align: left; height: 60px; overflow-y: hidden; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>> X8_ALT_COMMANDER_V1.0</h1>
+    <div class="status-box">SYSTEM_STATUS: <span id="current-cmd">WAITING...</span></div>
+    
+    <div class="btn-group">
+        <button class="btn" onclick="send('IDLE')">[ IDLE ]</button>
+        <button class="btn" onclick="send('RUNNING')">[ RUNNING ]</button>
+        <button class="btn btn-panic" onclick="send('RETREAT')">!!! 撤退 !!!</button>
+    </div>
+
+    <div id="log"></div>
+</div>
+
+<script>
+    // 這裡填入你的 Supabase 資料
+    const SB_URL = "https://你的專案ID.supabase.co/rest/v1/alt_control?id=eq.1";
+    const SB_KEY = "你的ANON_KEY";
+
+    async function send(mode) {
+        const log = document.getElementById('log');
+        const status = document.getElementById('current-cmd');
+        
+        log.innerHTML += `> EXECUTING: ${mode}...<br>`;
+        
+        try {
+            const response = await fetch(SB_URL, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SB_KEY,
+                    'Authorization': `Bearer ${SB_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify({ command: mode, updated_at: new Date() })
+            });
+
+            if (response.ok) {
+                status.innerText = mode;
+                log.innerHTML += `> SUCCESS: MODE_SET_${mode}<br>`;
+            } else {
+                log.innerHTML += `> ERROR: FAILED_TO_CONNECT<br>`;
+            }
+        } catch (err) {
+            log.innerHTML += `> FATAL: SYSTEM_OFFLINE<br>`;
+        }
+        
+        // 保持 Log 在底部
+        log.scrollTop = log.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
