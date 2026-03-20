@@ -65,38 +65,44 @@
 </div>
 
 <script>
-    // 這裡填入你的 Supabase 資料
-    // 確保開頭只有一個 https:// 且沒有多餘的空格
 const SB_URL = "https://eimkojcgfsjlbxxpiiuh.supabase.co/rest/v1/alt_control?id=eq.1";
 const SB_KEY = "sb_publishable_nRNFb0Vc796L82oggdgOLA_U-d78rPo";
 
-    async function send(mode) {
-        const log = document.getElementById('log');
-        const status = document.getElementById('current-cmd');
-        
-        log.innerHTML += `> EXECUTING: ${mode}...<br>`;
-        
-        try {
-            const response = await fetch(SB_URL, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': SB_KEY,
-                    'Authorization': `Bearer ${SB_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({ command: mode, updated_at: new Date() })
-            });
+async function send(mode) {
+    const log = document.getElementById('log');
+    const status = document.getElementById('current-cmd');
+    
+    log.innerHTML += `> EXECUTING: ${mode}...<br>`;
+    
+    try {
+        // 使用修正後的 SB_URL
+        const response = await fetch(SB_URL, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SB_KEY,
+                'Authorization': `Bearer ${SB_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({ 
+                command: mode, 
+                updated_at: new Date().toISOString() // 使用標準 ISO 格式更專業
+            })
+        });
 
-            if (response.ok) {
-                status.innerText = mode;
-                log.innerHTML += `> SUCCESS: MODE_SET_${mode}<br>`;
-            } else {
-                log.innerHTML += `> ERROR: FAILED_TO_CONNECT<br>`;
-            }
-        } catch (err) {
-            log.innerHTML += `> FATAL: SYSTEM_OFFLINE<br>`;
+        if (response.ok) {
+            status.innerText = mode;
+            log.innerHTML += `> SUCCESS: MODE_SET_${mode}<br>`;
+        } else {
+            const errText = await response.text();
+            log.innerHTML += `> ERROR: ${response.status}<br>`;
+            console.error("Supabase Error:", errText);
         }
+    } catch (err) {
+        log.innerHTML += `> FATAL: CONNECTION_REFUSED<br>`;
+        console.error("Fetch Error:", err);
+    }
+}
         
         // 保持 Log 在底部
         log.scrollTop = log.scrollHeight;
