@@ -2,74 +2,80 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL - X8 ALT CONTROL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X8_ALT_COMMANDER_V2</title>
     <style>
-        body { background-color: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .container { border: 1px solid #00ff41; padding: 30px; background: rgba(0, 0, 0, 0.9); width: 80%; max-width: 500px; text-align: center; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 15px; cursor: pointer; font-family: inherit; }
-        .btn:hover { background: #00ff41; color: #000; }
-        .btn-panic { grid-column: span 2; border-color: #ff0000; color: #ff0000; }
-        #log { margin-top: 20px; font-size: 0.8rem; color: #008f11; text-align: left; height: 80px; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; }
+        body { background-color: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .container { border: 1px solid #00ff41; padding: 30px; box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); background: rgba(0, 0, 0, 0.9); width: 90%; max-width: 500px; text-align: center; }
+        h1 { font-size: 1.2rem; text-shadow: 0 0 5px #00ff41; margin-bottom: 20px; border-bottom: 1px solid #00ff41; padding-bottom: 10px; }
+        .status-box { margin-bottom: 20px; font-size: 1rem; color: #fff; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 12px; cursor: pointer; font-family: inherit; transition: 0.2s; }
+        .btn:hover { background: #00ff41; color: #000; font-weight: bold; }
+        .btn-panic { grid-column: span 2; border-color: #ff0000; color: #ff0000; margin-top: 10px; }
+        .btn-panic:hover { background: #ff0000; color: #fff; }
+        .attack-section { margin-top: 25px; border-top: 1px dashed #444; padding-top: 20px; }
+        input { background: #000; border: 1px solid #00ff41; color: #00ff41; padding: 10px; width: calc(100% - 22px); margin-bottom: 10px; outline: none; }
+        .btn-attack { background: #ffaa00; border-color: #ffaa00; color: #000; width: 100%; font-weight: bold; }
+        #log { margin-top: 20px; font-size: 0.7rem; color: #008f11; text-align: left; height: 100px; overflow-y: auto; background: #050505; padding: 5px; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>> X8_ALT_COMMANDER_V1.0</h1>
-    <div id="status">SYSTEM_STATUS: <span id="current-cmd">WAITING...</span></div>
+    <h1>> X8_COMMAND_UNIT_V2.0</h1>
+    <div class="status-box">CURRENT_MODE: <span id="current-cmd" style="color:#00ff41">WAITING...</span></div>
     
     <div class="btn-group">
-        <button class="btn" onclick="send('IDLE')">[ IDLE ]</button>
-        <button class="btn" onclick="send('RUNNING')">[ RUNNING ]</button>
-        <button class="btn btn-panic" onclick="send('RETREAT')">!!! 撤退 !!!</button>
+        <button class="btn" onclick="send('IDLE')">停止動作 (IDLE)</button>
+        <button class="btn" onclick="send('RUNNING')">跳躍模式 (JUMP)</button>
+        <button class="btn btn-panic" onclick="send('RETREAT')">!!! 全體撤退 (TP) !!!</button>
     </div>
 
-    <div id="log"></div>
+    <div class="attack-section">
+        <input type="text" id="jobid-input" placeholder="貼上目標 JobID...">
+        <button class="btn btn-attack" onclick="attack()">⚡ 發動進攻 (JOIN SERVER)</button>
+    </div>
+
+    <div id="log">> 系統初始化完成...<br></div>
 </div>
 
 <script>
-    // 1. 宣告變數 (確保網址正確，開頭只有一個 https://)
     const SB_URL = "https://eimkojcgfsjlbxxpiiuh.supabase.co/rest/v1/alt_control?id=eq.1";
     const SB_KEY = "sb_publishable_nRNFb0Vc796L82oggdgOLA_U-d78rPo";
 
-    // 2. 定義 send 函數 (一定要在 HTML 呼叫它之前或同時加載)
-    async function send(mode) {
+    async function send(mode, extraData = {}) {
         const log = document.getElementById('log');
         const status = document.getElementById('current-cmd');
-        
-        console.log("正在嘗試發送指令:", mode);
-        log.innerHTML += `> 執行指令: ${mode}...<br>`;
-        
+        log.innerHTML += `> 發送指令: ${mode}...<br>`;
+
         try {
+            const body = { command: mode, updated_at: new Date().toISOString(), ...extraData };
             const response = await fetch(SB_URL, {
                 method: 'PATCH',
                 headers: {
                     'apikey': SB_KEY,
                     'Authorization': `Bearer ${SB_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    command: mode, 
-                    updated_at: new Date().toISOString() 
-                })
+                body: JSON.stringify(body)
             });
 
             if (response.ok) {
                 status.innerText = mode;
-                log.innerHTML += `> 成功: 模式已切換為 ${mode}<br>`;
-            } else {
-                const errText = await response.text();
-                log.innerHTML += `> 錯誤: ${response.status} ${errText}<br>`;
+                log.innerHTML += `> SUCCESS: ${mode} 已同步<br>`;
             }
         } catch (err) {
-            log.innerHTML += `> 失敗: 連線至指揮部時發生致命錯誤<br>`;
-            console.error(err);
+            log.innerHTML += `> FATAL: 連線中斷<br>`;
         }
         log.scrollTop = log.scrollHeight;
     }
-</script>
 
+    async function attack() {
+        const jobId = document.getElementById('jobid-input').value.trim();
+        if (!jobId) return alert("請輸入 JobID！");
+        await send('ATTACK', { target_job_id: jobId });
+    }
+</script>
 </body>
 </html>
