@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>x8 Inspector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --border: #21262d;
+    --accent: #00ff88;
+    --accent2: #0ff;
+    --accent3: #ff3c6e;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --glow: 0 0 20px rgba(0,255,136,0.3);
+    --glow2: 0 0 20px rgba(0,255,255,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header .brand {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .header h1 {
+    font-size: clamp(40px, 8vw, 72px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header .sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* Search bar */
+  .search-wrap {
+    display: flex;
+    gap: 0;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s 0.2s ease both;
+    position: relative;
+  }
+
+  .search-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    z-index: -1;
+    opacity: 0.4;
+    filter: blur(8px);
+  }
+
+  #username-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-right: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    padding: 14px 20px;
+    outline: none;
+    border-radius: 4px 0 0 4px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #username-input:focus {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(0,255,136,0.2);
+  }
+
+  #username-input::placeholder { color: var(--muted); }
+
+  #search-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  #search-btn:hover { background: #00ffaa; }
+  #search-btn:active { transform: scale(0.98); }
+
+  /* Error */
+  .error-box {
+    background: rgba(255,60,110,0.1);
+    border: 1px solid var(--accent3);
+    color: var(--accent3);
+    padding: 14px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 48px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  .loading p {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* Profile card */
+  #result { display: none; animation: fadeUp 0.5s ease both; }
+
+  .profile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+  }
+
+  .pfp-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .pfp-wrap img {
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    border: 2px solid var(--accent);
+    display: block;
+    box-shadow: var(--glow);
+  }
+
+  .avatar-wrap img {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  .profile-info { flex: 1; }
+
+  .profile-info .display-name {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .profile-info .username {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .profile-info .description {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: pre-wrap;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .profile-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 14px;
+  }
+
+  .meta-item { text-align: center; }
+  .meta-item .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent2);
+    display: block;
+    font-family: 'Space Mono', monospace;
+  }
+  .meta-item .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Sections */
+  .section { margin-bottom: 32px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: var(--glow);
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+  }
+
+  .section-header .count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* Games grid */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .game-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .game-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,255,136,0.1);
+  }
+
+  .game-card img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+    background: var(--border);
+  }
+
+  .game-info { padding: 8px 10px; }
+
+  .game-info .name {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+
+  .game-info .plays {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Badges grid */
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+  }
+
+  .badge-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 6px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+    position: relative;
+  }
+
+  .badge-card:hover {
+    border-color: var(--accent2);
+    transform: scale(1.04);
+    z-index: 2;
+  }
+
+  .badge-card img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    margin: 0 auto 6px;
+    display: block;
+  }
+
+  .badge-card .badge-name {
+    font-size: 9px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Tooltip */
+  .badge-card .tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0d1117;
+    border: 1px solid var(--accent2);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    max-width: 200px;
+    white-space: normal;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  .badge-card:hover .tooltip { opacity: 1; }
+
+  .badge-card .tooltip strong {
+    display: block;
+    color: var(--accent2);
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+
+  /* Empty state */
+  .empty {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    padding: 32px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* CORS note */
+  .cors-note {
+    background: rgba(0,255,255,0.05);
+    border: 1px solid rgba(0,255,255,0.2);
+    color: var(--accent2);
+    padding: 12px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+    animation: fadeDown 0.5s 0.3s ease both;
+  }
+
+  .cors-note a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .profile-card { flex-direction: column; text-align: center; }
+    .profile-meta { justify-content: center; }
+    .profile-info .description { max-width: 100%; }
+    .games-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="brand">x8 Production // ROBLOX TOOLS</div>
+    <h1>INSPECTOR</h1>
+    <div class="sub">// profile · badges · games</div>
+  </div>
+
+  <div class="cors-note">
+    ⚠ Roblox API blocks direct browser requests (CORS). This tool uses a public proxy (<code>corsproxy.io</code>) to bypass it. If lookups fail, try opening this file via a local server or use a CORS extension.
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" id="username-input" placeholder="enter roblox username..." autocomplete="off" spellcheck="false" />
+    <button id="search-btn">INSPECT</button>
+  </div>
+
+  <div class="error-box" id="error-box">// ERROR: <span id="error-msg"></span></div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loading-msg">FETCHING USER DATA...</p>
+  </div>
+
+  <div id="result">
+
+    <div class="profile-card">
+      <div class="pfp-wrap">
+        <img id="pfp-img" src="" alt="avatar" />
+      </div>
+      <div class="avatar-wrap">
+        <img id="avatar-img" src="" alt="avatar render" />
+      </div>
+      <div class="profile-info">
+        <div class="display-name" id="display-name"></div>
+        <div class="username" id="username-display"></div>
+        <div class="description" id="description"></div>
+        <div class="profile-meta">
+          <div class="meta-item">
+            <span class="val" id="friends-count">—</span>
+            <span class="lbl">Friends</span>
+          </div>
+          <div class="meta-item">
+            <span class="val" id="followers-count">—</span>
+            <span class="lbl">Followers</span>
+          </div>
+          <div class="meta-item">
+            <span class="val" id="following-count">—</span>
+            <span class="lbl">Following</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="games-section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Favorited Games</h2>
+        <span class="count" id="games-count"></span>
+      </div>
+      <div class="games-grid" id="games-grid"></div>
+    </div>
+
+    <div class="section" id="badges-section">
+      <div class="section-header">
+        <div class="dot" style="background:var(--accent2);box-shadow:var(--glow2)"></div>
+        <h2>Recent Badges</h2>
+        <span class="count" id="badges-count"></span>
+      </div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://corsproxy.io/?';
+const api = url => fetch(PROXY + encodeURIComponent(url)).then(r => r.json());
+
+function fmt(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return String(n);
+}
+
+function showError(msg) {
+  document.getElementById('error-box').style.display = 'block';
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+}
+
+function setLoading(msg) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+}
+
+async function inspect(username) {
+  username = username.trim();
+  if (!username) return;
+
+  setLoading('FETCHING USER DATA...');
+
+  try {
+    // Step 1: resolve username → user ID
+    const usersRes = await api(`https://users.roblox.com/v1/usernames/users`, {});
+    // POST not supported via simple fetch through proxy like this; use search endpoint
+    const searchRes = await api(`https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=10`);
+
+    let userId = null;
+    let userData = null;
+
+    if (searchRes && searchRes.data) {
+      const match = searchRes.data.find(u => u.name.toLowerCase() === username.toLowerCase());
+      if (match) userId = match.id;
+    }
+
+    if (!userId) {
+      // fallback: direct lookup by username via POST
+      const body = JSON.stringify({ usernames: [username], excludeBannedUsers: false });
+      const res = await fetch(PROXY + encodeURIComponent('https://users.roblox.com/v1/usernames/users'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+      const data = await res.json();
+      if (data && data.data && data.data.length > 0) {
+        userId = data.data[0].id;
+      }
+    }
+
+    if (!userId) throw new Error(`User "${username}" not found`);
+
+    setLoading('LOADING PROFILE...');
+
+    // Step 2: get full user info
+    const [user, friends, followers, following] = await Promise.all([
+      api(`https://users.roblox.com/v1/users/${userId}`),
+      api(`https://friends.roblox.com/v1/users/${userId}/friends/count`),
+      api(`https://friends.roblox.com/v1/users/${userId}/followers/count`),
+      api(`https://friends.roblox.com/v1/users/${userId}/followings/count`),
+    ]);
+
+    // Step 3: headshot + avatar
+    const [headshotRes, avatarRes] = await Promise.all([
+      api(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`),
+      api(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png&isCircular=false`),
+    ]);
+
+    const pfpUrl = headshotRes?.data?.[0]?.imageUrl || '';
+    const avatarUrl = avatarRes?.data?.[0]?.imageUrl || '';
+
+    // Populate profile
+    document.getElementById('display-name').textContent = user.displayName || user.name;
+    document.getElementById('username-display').textContent = `@${user.name}`;
+    document.getElementById('description').textContent = user.description || '// no description';
+    document.getElementById('pfp-img').src = pfpUrl;
+    document.getElementById('avatar-img').src = avatarUrl;
+    document.getElementById('friends-count').textContent = fmt(friends?.count ?? 0);
+    document.getElementById('followers-count').textContent = fmt(followers?.count ?? 0);
+    document.getElementById('following-count').textContent = fmt(following?.count ?? 0);
+
+    // Step 4: Favorited games
+    setLoading('FETCHING FAVORITE GAMES...');
+    const favGames = await api(`https://games.roblox.com/v2/users/${userId}/favorite/games?sortOrder=Asc&limit=50`);
+    const games = favGames?.data || [];
+    document.getElementById('games-count').textContent = `// ${games.length} games`;
+
+    const gamesGrid = document.getElementById('games-grid');
+    gamesGrid.innerHTML = '';
+
+    if (games.length === 0) {
+      gamesGrid.innerHTML = '<div class="empty">// no favorited games found</div>';
+    } else {
+      // get thumbnails for games
+      const gameIds = games.map(g => g.id);
+      let thumbMap = {};
+      try {
+        const thumbs = await api(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${gameIds.join(',')}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`);
+        thumbs?.data?.forEach(t => thumbMap[t.targetId] = t.imageUrl);
+      } catch(e) {}
+
+      games.forEach(game => {
+        const card = document.createElement('a');
+        card.className = 'game-card';
+        card.href = `https://www.roblox.com/games/${game.rootPlace?.id || game.id}`;
+        card.target = '_blank';
+        const thumb = thumbMap[game.id] || '';
+        card.innerHTML = `
+          <img src="${thumb}" alt="${game.name}" loading="lazy" onerror="this.style.background='#21262d'" />
+          <div class="game-info">
+            <div class="name">${game.name}</div>
+            <div class="plays">${fmt(game.visits ?? 0)} plays</div>
+          </div>`;
+        gamesGrid.appendChild(card);
+      });
+    }
+
+    // Step 5: Badges (last awarded)
+    setLoading('FETCHING BADGES...');
+    const badgesRes = await api(`https://badges.roblox.com/v1/users/${userId}/badges?limit=100&sortOrder=Desc`);
+    const badges = (badgesRes?.data || []).slice(0, 30);
+    document.getElementById('badges-count').textContent = `// top ${badges.length}`;
+
+    const badgesGrid = document.getElementById('badges-grid');
+    badgesGrid.innerHTML = '';
+
+    if (badges.length === 0) {
+      badgesGrid.innerHTML = '<div class="empty">// no badges found</div>';
+    } else {
+      // get badge thumbnails
+      const badgeIds = badges.map(b => b.id);
+      let badgeThumbMap = {};
+      try {
+        const bThumbs = await api(`https://thumbnails.roblox.com/v1/badges/icons?badgeIds=${badgeIds.join(',')}&size=150x150&format=Png&isCircular=false`);
+        bThumbs?.data?.forEach(t => badgeThumbMap[t.targetId] = t.imageUrl);
+      } catch(e) {}
+
+      badges.forEach(badge => {
+        const card = document.createElement('div');
+        card.className = 'badge-card';
+        const img = badgeThumbMap[badge.id] || '';
+        const desc = badge.description ? badge.description.slice(0, 80) + (badge.description.length > 80 ? '...' : '') : 'No description';
+        card.innerHTML = `
+          <img src="${img}" alt="${badge.name}" loading="lazy" />
+          <div class="badge-name">${badge.name}</div>
+          <div class="tooltip">
+            <strong>${badge.name}</strong>
+            ${desc}
+          </div>`;
+        badgesGrid.appendChild(card);
+      });
+    }
+
+    // Show result
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    showError(err.message || 'Failed to fetch user data. Check username and try again.');
+  }
+}
+
+document.getElementById('search-btn').addEventListener('click', () => {
+  inspect(document.getElementById('username-input').value);
+});
+
+document.getElementById('username-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') inspect(e.target.value);
+});
+</script>
+</body>
+</html>
