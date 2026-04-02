@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x8</title>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -14,10 +14,8 @@
       background: #0c0c0c;
     }
 
-    /* background photo — pure atmosphere */
     .bg {
-      position: fixed; inset: 0;
-      z-index: 0;
+      position: fixed; inset: 0; z-index: 0;
     }
     .bg img {
       width: 100%; height: 100%;
@@ -25,16 +23,17 @@
       filter: grayscale(1) brightness(0.08);
     }
 
-    /* center everything */
+    /* ── STAGE ── */
     .stage {
       position: fixed; inset: 0;
       z-index: 10;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
-    /* the logotype */
+    /* ── LOGO ── */
     .logo {
       font-family: 'Google Sans', sans-serif;
       font-weight: 700;
@@ -44,11 +43,51 @@
       letter-spacing: -0.03em;
       line-height: 1;
       user-select: none;
+      cursor: pointer;
       opacity: 0;
       animation: appear 0.8s ease 0.1s forwards;
+      transition: opacity 0.2s;
+      position: relative;
+      z-index: 2;
+    }
+    .logo:hover { opacity: 0.75; }
+
+    /* ── INFO PANEL ── */
+    .info-wrap {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.5s ease 0.15s;
+      text-align: center;
+      z-index: 1;
+    }
+    .info-wrap.open {
+      max-height: 120px;
+      opacity: 1;
+    }
+    .info-inner {
+      padding-top: 28px;
+    }
+    .info-main {
+      font-family: 'Google Sans', sans-serif;
+      font-size: clamp(0.75rem, 1.6vw, 1rem);
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #f0ede8;
+    }
+    .info-sub {
+      font-family: 'Google Sans', sans-serif;
+      font-size: clamp(0.55rem, 1vw, 0.7rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.12em;
+      color: rgba(240,237,232,0.35);
+      margin-top: 10px;
     }
 
-    /* volume — bottom right, invisible until hovered */
+    /* ── VOLUME ── */
     .vol {
       position: fixed;
       bottom: 32px; right: 36px;
@@ -99,7 +138,13 @@
   <div class="bg"><img src="/pics/lobby.jpg" alt=""></div>
 
   <div class="stage">
-    <div class="logo">x8</div>
+    <div class="logo" id="logo">x8</div>
+    <div class="info-wrap" id="info">
+      <div class="info-inner">
+        <div class="info-main">Work in Progress</div>
+        <div class="info-sub">last edited on 2026 / 4 / 3</div>
+      </div>
+    </div>
   </div>
 
   <div class="vol">
@@ -113,6 +158,7 @@
   <audio id="audio" src="/lobby.mp3" autoplay loop></audio>
 
   <script>
+    // audio
     const audio = document.getElementById('audio');
     const slider = document.getElementById('vol');
     const fill = document.getElementById('vf');
@@ -122,6 +168,15 @@
       const v = +e.target.value;
       audio.volume = v;
       fill.style.width = (v * 100) + '%';
+    });
+
+    // toggle info
+    const logo = document.getElementById('logo');
+    const info = document.getElementById('info');
+    let open = false;
+    logo.addEventListener('click', () => {
+      open = !open;
+      info.classList.toggle('open', open);
     });
   </script>
 </body>
