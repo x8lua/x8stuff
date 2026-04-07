@@ -299,8 +299,6 @@
     const opening  = document.getElementById('opening');
     const audio    = document.getElementById('bg-music');
 
-    const _0xkick = () => window.location.replace('https://www.google.com');
-
     // ── 啟動儀式 ──
     startBtn.addEventListener('click', () => {
       if (audio) {
@@ -327,7 +325,6 @@
         ['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && 
         (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
       ) {
-        _0xkick();
         e.preventDefault();
       }
       // 鎖死滾動按鍵
@@ -341,7 +338,7 @@
     // 移除 setInterval 檢測，改為被動觸發，極大地降低誤報率
     const element = new Image();
     Object.defineProperty(element, 'id', {
-      get: function() { _0xkick(); }
+      get: function() {}
     });
 
     // 每 2 秒嘗試在後台「引誘」控制台去讀取這個屬性
