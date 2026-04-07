@@ -291,70 +291,103 @@
 </head>
 <body>
 
-<!-- Block scroll with JS too -->
 <script>
-  // Prevent ALL scroll methods
-  window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-  window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-  window.addEventListener('keydown', e => {
-    if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) e.preventDefault();
-  });
-  // Prevent right-click / inspect
-  window.addEventListener('contextmenu', e => e.preventDefault());
+  (function() {
+    'use strict';
 
-  // ── DEVTOOLS DETECTION ──
-  // Method 1: window size diff (works when devtools docked)
-  function checkDevtools() {
-    const threshold = 200;
-    if (
-      window.outerWidth - window.innerWidth > threshold ||
-      window.outerHeight - window.innerHeight > threshold
-    ) {
-      window.location.replace('https://www.google.com');
-    }
-  }
-  setInterval(checkDevtools, 500);
+    const startBtn = document.getElementById('start-btn');
+    const opening  = document.getElementById('opening');
+    const audio    = document.getElementById('bg-music');
 
-  // Method 2: console timing trick — delayed 4s so page owner can load it
-  setTimeout(function() {
-    const devCheck = /./;
-    devCheck.toString = function() {
-      window.location.replace('https://www.google.com');
-      return '';
-    };
-    setInterval(function() {
-      console.log('%c', devCheck);
-    }, 1000);
-  }, 4000);
-
-  // Method 3: F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U keyblock
-  window.addEventListener('keydown', function(e) {
-    if (
-      e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
-      (e.ctrlKey && e.key === 'U') ||
-      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key))
-    ) {
-      e.preventDefault();
-      window.location.replace('https://www.google.com');
-    }
-  });
-
-  // Auto-play music after first interaction (browser policy)
-  document.addEventListener('click', () => {
-    const audio = document.getElementById('bg-music');
-    if (audio && audio.paused) audio.play().catch(()=>{});
-  }, { once: true });
-
-  window.addEventListener('load', () => {
-    const audio = document.getElementById('bg-music');
-    audio.volume = 0.35;
-    audio.play().catch(() => {
-      // will play on first click if blocked
+    // ── 啟動儀式 ──
+    startBtn.addEventListener('click', () => {
+      if (audio) {
+        audio.volume = 0;
+        audio.play().catch(() => {});
+        let vol = 0;
+        const fadeIn = setInterval(() => {
+          if (vol < 0.35) { vol += 0.02; audio.volume = vol; }
+          else clearInterval(fadeIn);
+        }, 100);
+      }
+      opening.style.opacity = '0';
+      opening.style.pointerEvents = 'none';
+      document.body.classList.add('is-active');
+      setTimeout(() => opening.remove(), 1500);
     });
-  });
-</script>
 
+    // ── 核心防禦模組 (混淆化處理) ──
+    const _0xvoid = () => {
+      window.location.replace('https://www.google.com');
+    };
+
+    // 延遲 2 秒執行，給予讀者「入讀感」，同時避免與頁面加載初期的渲染競爭
+    setTimeout(() => {
+      
+      // 1. 偵錯斷點檢測法 (Debugger Method)
+      setInterval(function _0x4a21() {
+        const _0xstart = performance.now();
+        debugger; 
+        if (performance.now() - _0xstart > 100) {
+          _0xvoid();
+        }
+      }, 1000);
+
+      // 2. 元素識別碼檢測 (Getter Method)
+      // 利用 console 試圖渲染物件時觸發 getter 的特性
+      const _0xdetect = /./;
+      _0xdetect.toString = function() {
+        _0xvoid();
+        return '';
+      };
+
+      setInterval(() => {
+        // 只有當控制台開啟並嘗試讀取輸出時，才會觸發 toString
+        console.log('%c', _0xdetect);
+        console.clear(); 
+      }, 1000);
+
+      // 3. 性能指紋檢測 (Memory/Performance)
+      // 監控 console 對象是否被篡改或開啟了特定調試功能
+      setInterval(() => {
+        if (window.console && (console.dirxml || console.table)) {
+          // 檢查某些環境下特定屬性的存在
+          const _0xproto = Object.getPrototypeOf(console);
+          if (_0xproto && _0xproto.constructor.name === 'Console') {
+             // 正常環境，可選做進一步比對
+          }
+        }
+      }, 2000);
+
+    }, 2000);
+
+    // ── 交互限制 ──
+    const prevent = e => e.preventDefault();
+    window.addEventListener('contextmenu', prevent);
+    window.addEventListener('wheel', prevent, { passive: false });
+    window.addEventListener('touchmove', prevent, { passive: false });
+    
+    window.addEventListener('keydown', e => {
+      // 禁用所有可能開啟開發者工具或查看源碼的組合鍵
+      const _0xkey = e.key.toUpperCase();
+      const _0xforbidden = ['F12', 'I', 'J', 'C', 'U', 'S'];
+      
+      if (
+        _0xforbidden.includes(_0xkey) && 
+        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
+      ) {
+        prevent(e);
+        _0xvoid();
+      }
+      
+      // 禁用滾動相關按鍵
+      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) {
+        prevent(e);
+      }
+    });
+
+  })();
+</script>
 <!-- Background music -->
 <audio id="bg-music" loop>
   <source src="https://cdn.discordapp.com/attachments/1482340620587499540/1491037252367941733/void.mp3?ex=69d63c27&is=69d4eaa7&hm=efdba9679dec51a1a495d7cfcc525453dfbc0571713d171e6ea5f3719962e9bb&" type="audio/mpeg">
