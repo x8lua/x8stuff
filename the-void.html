@@ -303,6 +303,7 @@
     const audio = document.getElementById('bg-music');
     const _0xkick = () => window.location.replace('https://www.google.com');
 
+    // ── 只有點擊後才啟動防禦 ──
     startBtn.addEventListener('click', () => {
       if (audio) {
         audio.volume = 0.35;
@@ -310,25 +311,51 @@
       }
       opening.style.opacity = '0';
       document.body.classList.add('is-active');
+      
+      // 延遲 1 秒啟動偵測，避開動畫切換的效能峰值
+      setTimeout(_0xstartGuards, 1000);
+      
       setTimeout(() => opening.remove(), 1500);
     });
 
-    // ── 只保留一套最強防禦 ──
+    function _0xstartGuards() {
+      // 1. Debugger 偵測 (增加延遲判定，防止微小卡頓誤殺)
+      setInterval(() => {
+        const _startTime = performance.now();
+        debugger; 
+        if (performance.now() - _startTime > 200) { // 寬容度增加到 200ms
+          _0xkick();
+        }
+      }, 1000);
+
+      // 2. 元素 ID 讀取偵測 (針對 Chrome 最佳化)
+      // 只有面板開啟且嘗試 inspect 元素時才會觸發
+      const _devdiv = document.createElement('div');
+      Object.defineProperty(_devdiv, 'id', {
+        get: function() { _0xkick(); }
+      });
+      console.log(_devdiv);
+      console.clear();
+    }
+
+    // ── 全域限制 (立即生效) ──
     window.addEventListener('contextmenu', e => e.preventDefault());
     window.addEventListener('keydown', e => {
       const k = e.key.toUpperCase();
-      if (['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && (e.ctrlKey || e.shiftKey || e.metaKey)) {
+      // 攔截快捷鍵
+      if (
+        k === 'F12' || 
+        ((e.ctrlKey || e.metaKey) && (e.shiftKey && ['I', 'J', 'C'].includes(k))) ||
+        ((e.ctrlKey || e.metaKey) && k === 'U')
+      ) {
         _0xkick();
+        e.preventDefault();
       }
+      // 鎖死滾動鍵
       if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
     });
 
-    // Getter 陷阱：只有開控制台才會被踢
-    const element = new Image();
-    Object.defineProperty(element, 'id', { get: function() { _0xkick(); } });
-    setInterval(() => { console.dir(element); console.clear(); }, 2000);
-
-    // 禁止手動滾動
+    // 鎖死滾動行為
     window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
     window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
   })();
