@@ -316,52 +316,33 @@
       setTimeout(() => opening.remove(), 1500);
     });
 
-    // ── 核心防禦模組 ──
-    const _0xvoid = () => {
-      window.location.replace('https://www.google.com');
-    };
+    const _0xkick = () => window.location.replace('https://www.google.com');
 
-    // 延遲 2 秒執行，避免加載時的瞬時卡頓觸發誤報
+    // ── 核心防禦：只保留最硬核且低誤報的邏輯 ──
     setTimeout(() => {
       
-      // 1. 偵錯斷點檢測法 (Debugger Method)
-      // 原理：開發者工具開啟時，debugger 會造成時間大幅延遲
-      setInterval(function() {
-        const startTime = performance.now();
+      // 1. 偵錯斷點檢測 (增加寬容度至 200ms)
+      setInterval(() => {
+        const _0x1 = performance.now();
         debugger; 
-        const endTime = performance.now();
-        if (endTime - startTime > 100) {
-          _0xvoid();
+        const _0x2 = performance.now();
+        // 只有當延遲超過 200ms 且確保不是瞬間卡頓才踢出
+        if (_0x2 - _0x1 > 200) {
+          _0xkick();
         }
-      }, 1000);
+      }, 1500);
 
-      // 2. 元素識別碼檢測 (Getter Method)
-      // 原理：console.log 在渲染物件時會觸發其 getter/toString
-      const devtools = { isOpen: false };
-      const element = new Image();
-      Object.defineProperty(element, 'id', {
-        get: function() {
-          _0xvoid();
-        }
+      // 2. 改良版 Getter 檢測 (針對 Chrome/Edge 最佳化)
+      // 這不會在正常瀏覽時觸發，除非面板真的被拉出來
+      const div = document.createElement('div');
+      Object.defineProperty(div, 'id', {
+        get: () => { _0xkick(); }
       });
+      // 這裡不使用 setInterval，而是利用瀏覽器渲染機制
+      console.log(div); 
+      console.clear();
 
-      setInterval(() => {
-        // 這行只有在控制台面板真的開啟時才會去讀取 element 的屬性
-        console.dir(element);
-      }, 1000);
-
-      // 3. 性能指紋檢測 (Memory/Performance)
-      // 監控是否有非法攔截或特殊的控制台對象屬性
-      setInterval(() => {
-        if (window.console && (console.dirxml || console.table)) {
-          const _0xproto = Object.getPrototypeOf(console);
-          if (_0xproto && _0xproto.constructor.name !== 'Console') {
-            _0xvoid();
-          }
-        }
-      }, 2000);
-
-    }, 2000);
+    }, 3000); // 延遲 3 秒再啟動，確保所有資源（音樂、字體）都加載完了
 
     // ── 交互限制 ──
     const prevent = e => e.preventDefault();
@@ -370,20 +351,12 @@
     window.addEventListener('touchmove', prevent, { passive: false });
     
     window.addEventListener('keydown', e => {
-      const _0xkey = e.key.toUpperCase();
-      // 攔截所有常見的開發者工具快捷鍵
-      if (
-        ['F12', 'I', 'J', 'C', 'U', 'S'].includes(_0xkey) && 
-        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
-      ) {
-        prevent(e);
-        _0xvoid();
-      }
-      
-      // 禁止滾動控制
-      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) {
+      const k = e.key.toUpperCase();
+      if (['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')) {
+        _0xkick();
         prevent(e);
       }
+      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) prevent(e);
     });
 
   })();
