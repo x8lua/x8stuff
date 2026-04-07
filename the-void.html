@@ -20,7 +20,7 @@
     --red: #8b3a3a;
     --font-body: "Söhne", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     --font-mono: "Söhne Mono", ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
-    --read-time: 300s; /* 5 minutes */
+    --read-time: 600s;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -67,7 +67,6 @@
     z-index: 999;
   }
 
-  /* ── SCROLL CONTAINER ── */
   #scroll-track {
     position: fixed;
     top: 0;
@@ -75,33 +74,16 @@
     width: 100%;
     will-change: transform;
     transform: translateY(100vh);
-    animation: scroll-story var(--read-time) linear forwards;
-    animation-delay: 2s;
     padding: 0 0 40vh 0;
+    display: none;
   }
-
+  .is-active #scroll-track { display: block; animation: scroll-story var(--read-time) linear forwards; animation-delay: 0.5s; }
   @keyframes scroll-story {
     from { transform: translateY(100vh); }
-    to   { transform: translateY(-100%); }
+    to   { transform: translateY(-115%); }
   }
 
-  /* ── PROGRESS BAR ── */
-  #progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 1px;
-    width: 0%;
-    background: var(--accent);
-    z-index: 2000;
-    animation: progress-fill var(--read-time) linear forwards;
-    animation-delay: 2s;
-    box-shadow: 0 0 8px var(--accent);
-  }
-  @keyframes progress-fill {
-    from { width: 0%; }
-    to   { width: 100%; }
-  }
+
 
   /* ── TOP FADE ── */
   .top-fade {
@@ -271,7 +253,7 @@
     text-transform: uppercase;
   }
 
-  /* ── OPENING OVERLAY ── */
+  /* ── OPENING ── */
   #opening {
     position: fixed;
     inset: 0;
@@ -280,35 +262,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    animation: fade-opening 1s ease-out 2s forwards;
+    transition: opacity 1.5s ease-in-out;
   }
-
-  @keyframes fade-opening {
-    to { opacity: 0; pointer-events: none; }
-  }
-
-  .opening-title {
+  .opening-content { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .opening-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; color: var(--text-dim); text-transform: uppercase; }
+  .opening-main-title { font-size: clamp(48px, 8vw, 72px); font-weight: 300; letter-spacing: -0.03em; color: var(--text); }
+  .opening-main-title span { color: var(--accent); }
+  .opening-button {
+    background: transparent;
+    border: 1px solid var(--text-dim);
+    color: var(--text-mid);
+    padding: 12px 36px;
     font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--text-dim);
     text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    margin-top: 20px;
   }
-
-  .opening-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: dot-pulse 1s ease-in-out infinite;
-  }
-
-  @keyframes dot-pulse {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.5); }
-  }
+  .opening-button:hover { border-color: var(--accent); color: var(--text); box-shadow: 0 0 20px var(--accent-glow); }
 
   /* Disable all interaction */
   #scroll-track * {
@@ -320,88 +293,86 @@
 
 <!-- Block scroll with JS too -->
 <script>
-  (function() {
-    'use strict';
+  // Prevent ALL scroll methods
+  window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+  window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  window.addEventListener('keydown', e => {
+    if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) e.preventDefault();
+  });
+  // Prevent right-click / inspect
+  window.addEventListener('contextmenu', e => e.preventDefault());
 
-    // --- 核心防禦邏輯 ---
-    const guard = () => {
-      const threshold = 160;
-      const startTime = performance.now();
-      
-      // 觸發偵錯斷點
-      debugger; 
-      
-      const endTime = performance.now();
-      const isDevToolsOpen = endTime - startTime > 100;
-      const isResized = (window.outerWidth - window.innerWidth > threshold) || 
-                        (window.outerHeight - window.innerHeight > threshold);
+  // ── DEVTOOLS DETECTION ──
+  // Method 1: window size diff (works when devtools docked)
+  function checkDevtools() {
+    const threshold = 200;
+    if (
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold
+    ) {
+      window.location.replace('https://www.google.com');
+    }
+  }
+  setInterval(checkDevtools, 500);
 
-      if (isDevToolsOpen || isResized) {
-        // 觸發「虛空」：直接導向 Google 並清理歷史記錄
-        window.location.replace('https://www.google.com');
-      }
+  // Method 2: console timing trick — delayed 4s so page owner can load it
+  setTimeout(function() {
+    const devCheck = /./;
+    devCheck.toString = function() {
+      window.location.replace('https://www.google.com');
+      return '';
     };
+    setInterval(function() {
+      console.log('%c', devCheck);
+    }, 1000);
+  }, 4000);
 
-    // 每秒掃描一次「入侵者」
-    setInterval(guard, 1000);
-
-    // --- 交互限制 ---
-    const preventAction = (e) => {
+  // Method 3: F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U keyblock
+  window.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
+      (e.ctrlKey && e.key === 'U') ||
+      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key))
+    ) {
       e.preventDefault();
-      return false;
-    };
+      window.location.replace('https://www.google.com');
+    }
+  });
 
-    // 禁用右鍵、拖拽與特定快捷鍵
-    window.addEventListener('contextmenu', preventAction);
-    window.addEventListener('keydown', (e) => {
-      const forbiddenKeys = ['F12', 'I', 'J', 'C', 'U', 'S'];
-      if (
-        forbiddenKeys.includes(e.key.toUpperCase()) && 
-        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
-      ) {
-        window.location.replace('https://www.google.com');
-        return preventAction(e);
-      }
+  // Auto-play music after first interaction (browser policy)
+  document.addEventListener('click', () => {
+    const audio = document.getElementById('bg-music');
+    if (audio && audio.paused) audio.play().catch(()=>{});
+  }, { once: true });
+
+  window.addEventListener('load', () => {
+    const audio = document.getElementById('bg-music');
+    audio.volume = 0.35;
+    audio.play().catch(() => {
+      // will play on first click if blocked
     });
-
-    // 禁用所有滾動與觸摸移動
-    window.addEventListener('wheel', preventAction, { passive: false });
-    window.addEventListener('touchmove', preventAction, { passive: false });
-
-    // --- 音效處理 ---
-    const handleMusic = () => {
-      const audio = document.getElementById('bg-music');
-      if (audio) {
-        audio.volume = 0.35;
-        audio.play().catch(() => {
-          // 靜默處理，等待第一次點擊觸發
-        });
-      }
-    };
-
-    window.addEventListener('load', handleMusic);
-    document.addEventListener('click', handleMusic, { once: true });
-
-  })();
+  });
 </script>
 
 <!-- Background music -->
 <audio id="bg-music" loop>
-  <source src="https://raw.githubusercontent.com/x8lua/scripts/refs/heads/main/interstellar%20(1).mp3" type="audio/mpeg">
+  <source src="https://cdn.discordapp.com/attachments/1482340620587499540/1491037252367941733/void.mp3?ex=69d63c27&is=69d4eaa7&hm=efdba9679dec51a1a495d7cfcc525453dfbc0571713d171e6ea5f3719962e9bb&" type="audio/mpeg">
 </audio>
 
 <!-- Opening screen -->
 <div id="opening">
-  <span class="opening-title">loading</span>
-  <div class="opening-dot"></div>
+  <div class="opening-content">
+    <span class="opening-tag">x8 Production &nbsp;/&nbsp; Archive</span>
+    <h1 class="opening-main-title">The <span>Void</span></h1>
+    <button id="start-btn" class="opening-button">Begin Reading</button>
+  </div>
 </div>
 
 <!-- Fade overlays -->
 <div class="top-fade"></div>
 <div class="bottom-fade"></div>
 
-<!-- Progress bar -->
-<div id="progress"></div>
 
 <!-- Main scrolling content -->
 <div id="scroll-track">
@@ -575,6 +546,67 @@
 
   </div><!-- .story-wrap -->
 </div><!-- #scroll-track -->
+
+<script>
+  (function() {
+    'use strict';
+
+    const startBtn = document.getElementById('start-btn');
+    const opening  = document.getElementById('opening');
+    const audio    = document.getElementById('bg-music');
+
+    startBtn.addEventListener('click', () => {
+      if (audio) {
+        audio.volume = 0;
+        audio.play().catch(() => {});
+        let vol = 0;
+        const fadeIn = setInterval(() => {
+          if (vol < 0.35) { vol += 0.02; audio.volume = vol; }
+          else clearInterval(fadeIn);
+        }, 100);
+      }
+      opening.style.opacity = '0';
+      opening.style.pointerEvents = 'none';
+      document.body.classList.add('is-active');
+      setTimeout(() => opening.remove(), 1500);
+    });
+
+    // Method 1: window size diff
+    setInterval(() => {
+      if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200)
+        window.location.replace('https://www.google.com');
+    }, 500);
+
+    // Method 2: debugger timing
+    setInterval(() => {
+      const t = performance.now();
+      debugger;
+      if (performance.now() - t > 100) window.location.replace('https://www.google.com');
+    }, 1000);
+
+    // Method 3: console object trick (delayed 4s)
+    setTimeout(() => {
+      const devCheck = /./;
+      devCheck.toString = () => { window.location.replace('https://www.google.com'); return ''; };
+      setInterval(() => console.log('%c', devCheck), 1000);
+    }, 4000);
+
+    // Block inputs
+    const prevent = e => e.preventDefault();
+    window.addEventListener('contextmenu', prevent);
+    window.addEventListener('wheel', prevent, { passive: false });
+    window.addEventListener('touchmove', prevent, { passive: false });
+    window.addEventListener('keydown', e => {
+      if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) prevent(e);
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+        (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+      ) { prevent(e); window.location.replace('https://www.google.com'); }
+    });
+  })();
+</script>
 
 </body>
 </html>
