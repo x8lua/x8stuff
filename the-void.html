@@ -320,66 +320,69 @@
 
 <!-- Block scroll with JS too -->
 <script>
-  // Prevent ALL scroll methods
-  window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-  window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-  window.addEventListener('keydown', e => {
-    if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) e.preventDefault();
-  });
-  // Prevent right-click / inspect
-  window.addEventListener('contextmenu', e => e.preventDefault());
+  (function() {
+    'use strict';
 
-  // ── DEVTOOLS DETECTION ──
-  // Method 1: window size diff (works when devtools docked)
-  function checkDevtools() {
-    const threshold = 200;
-    if (
-      window.outerWidth - window.innerWidth > threshold ||
-      window.outerHeight - window.innerHeight > threshold
-    ) {
-      window.location.replace('https://www.google.com');
-    }
-  }
-  setInterval(checkDevtools, 500);
+    // --- 核心防禦邏輯 ---
+    const guard = () => {
+      const threshold = 160;
+      const startTime = performance.now();
+      
+      // 觸發偵錯斷點
+      debugger; 
+      
+      const endTime = performance.now();
+      const isDevToolsOpen = endTime - startTime > 100;
+      const isResized = (window.outerWidth - window.innerWidth > threshold) || 
+                        (window.outerHeight - window.innerHeight > threshold);
 
-  // Method 2: console timing trick — delayed 4s so page owner can load it
-  setTimeout(function() {
-    const devCheck = /./;
-    devCheck.toString = function() {
-      window.location.replace('https://www.google.com');
-      return '';
+      if (isDevToolsOpen || isResized) {
+        // 觸發「虛空」：直接導向 Google 並清理歷史記錄
+        window.location.replace('https://www.google.com');
+      }
     };
-    setInterval(function() {
-      console.log('%c', devCheck);
-    }, 1000);
-  }, 4000);
 
-  // Method 3: F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U keyblock
-  window.addEventListener('keydown', function(e) {
-    if (
-      e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
-      (e.ctrlKey && e.key === 'U') ||
-      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key))
-    ) {
+    // 每秒掃描一次「入侵者」
+    setInterval(guard, 1000);
+
+    // --- 交互限制 ---
+    const preventAction = (e) => {
       e.preventDefault();
-      window.location.replace('https://www.google.com');
-    }
-  });
+      return false;
+    };
 
-  // Auto-play music after first interaction (browser policy)
-  document.addEventListener('click', () => {
-    const audio = document.getElementById('bg-music');
-    if (audio && audio.paused) audio.play().catch(()=>{});
-  }, { once: true });
-
-  window.addEventListener('load', () => {
-    const audio = document.getElementById('bg-music');
-    audio.volume = 0.35;
-    audio.play().catch(() => {
-      // will play on first click if blocked
+    // 禁用右鍵、拖拽與特定快捷鍵
+    window.addEventListener('contextmenu', preventAction);
+    window.addEventListener('keydown', (e) => {
+      const forbiddenKeys = ['F12', 'I', 'J', 'C', 'U', 'S'];
+      if (
+        forbiddenKeys.includes(e.key.toUpperCase()) && 
+        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
+      ) {
+        window.location.replace('https://www.google.com');
+        return preventAction(e);
+      }
     });
-  });
+
+    // 禁用所有滾動與觸摸移動
+    window.addEventListener('wheel', preventAction, { passive: false });
+    window.addEventListener('touchmove', preventAction, { passive: false });
+
+    // --- 音效處理 ---
+    const handleMusic = () => {
+      const audio = document.getElementById('bg-music');
+      if (audio) {
+        audio.volume = 0.35;
+        audio.play().catch(() => {
+          // 靜默處理，等待第一次點擊觸發
+        });
+      }
+    };
+
+    window.addEventListener('load', handleMusic);
+    document.addEventListener('click', handleMusic, { once: true });
+
+  })();
 </script>
 
 <!-- Background music -->
