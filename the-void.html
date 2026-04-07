@@ -303,7 +303,7 @@
     const audio = document.getElementById('bg-music');
     const _0xkick = () => window.location.replace('https://www.google.com');
 
-    // ── 只有點擊後才啟動防禦 ──
+    // ── 啟動儀式 ──
     startBtn.addEventListener('click', () => {
       if (audio) {
         audio.volume = 0.35;
@@ -312,52 +312,52 @@
       opening.style.opacity = '0';
       document.body.classList.add('is-active');
       
-      // 延遲 1 秒啟動偵測，避開動畫切換的效能峰值
-      setTimeout(_0xstartGuards, 1000);
-      
+      // 動畫結束後移除遮罩
       setTimeout(() => opening.remove(), 1500);
     });
 
-    function _0xstartGuards() {
-      // 1. Debugger 偵測 (增加延遲判定，防止微小卡頓誤殺)
-      setInterval(() => {
-        const _startTime = performance.now();
-        debugger; 
-        if (performance.now() - _startTime > 200) { // 寬容度增加到 200ms
-          _0xkick();
-        }
-      }, 1000);
+    // ── 只有最穩定的硬性攔截 ──
 
-      // 2. 元素 ID 讀取偵測 (針對 Chrome 最佳化)
-      // 只有面板開啟且嘗試 inspect 元素時才會觸發
-      const _devdiv = document.createElement('div');
-      Object.defineProperty(_devdiv, 'id', {
-        get: function() { _0xkick(); }
-      });
-      console.log(_devdiv);
-      console.clear();
-    }
-
-    // ── 全域限制 (立即生效) ──
+    // 1. 禁用右鍵 (防止透過選單點擊「檢查」)
     window.addEventListener('contextmenu', e => e.preventDefault());
+
+    // 2. 鍵盤守衛 (攔截所有開啟 DevTools 的路徑)
     window.addEventListener('keydown', e => {
       const k = e.key.toUpperCase();
-      // 攔截快捷鍵
       if (
         k === 'F12' || 
         ((e.ctrlKey || e.metaKey) && (e.shiftKey && ['I', 'J', 'C'].includes(k))) ||
-        ((e.ctrlKey || e.metaKey) && k === 'U')
+        ((e.ctrlKey || e.metaKey) && k === 'U') ||
+        (e.ctrlKey && k === 'S') // 防止存檔
       ) {
         _0xkick();
         e.preventDefault();
       }
-      // 鎖死滾動鍵
-      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
+
+      // 鎖死捲動鍵 (空白、箭頭、PageUp/Down)
+      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) {
+        e.preventDefault();
+      }
     });
 
-    // 鎖死滾動行為
+    // 3. 視窗尺寸突變檢測 (僅在點擊後生效，且增加極大寬容度)
+    // 預防讀者「先開好控制台再點進來」
+    let _started = false;
+    startBtn.addEventListener('click', () => { _started = true; });
+
+    window.addEventListener('resize', () => {
+      if (_started) {
+        // 如果在閱讀過程中視窗突然縮小（通常是拉出控制台），直接踢出
+        if (window.outerWidth - window.innerWidth > 250 || window.outerHeight - window.innerHeight > 250) {
+          _0xkick();
+        }
+      }
+    });
+
+    // 4. 鎖死所有捲動行為
     window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
     window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
   })();
 </script>
 </body>
