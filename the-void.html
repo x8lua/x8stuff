@@ -316,45 +316,47 @@
       setTimeout(() => opening.remove(), 1500);
     });
 
-    // ── 核心防禦模組 (混淆化處理) ──
+    // ── 核心防禦模組 ──
     const _0xvoid = () => {
       window.location.replace('https://www.google.com');
     };
 
-    // 延遲 2 秒執行，給予讀者「入讀感」，同時避免與頁面加載初期的渲染競爭
+    // 延遲 2 秒執行，避免加載時的瞬時卡頓觸發誤報
     setTimeout(() => {
       
       // 1. 偵錯斷點檢測法 (Debugger Method)
-      setInterval(function _0x4a21() {
-        const _0xstart = performance.now();
+      // 原理：開發者工具開啟時，debugger 會造成時間大幅延遲
+      setInterval(function() {
+        const startTime = performance.now();
         debugger; 
-        if (performance.now() - _0xstart > 100) {
+        const endTime = performance.now();
+        if (endTime - startTime > 100) {
           _0xvoid();
         }
       }, 1000);
 
       // 2. 元素識別碼檢測 (Getter Method)
-      // 利用 console 試圖渲染物件時觸發 getter 的特性
-      const _0xdetect = /./;
-      _0xdetect.toString = function() {
-        _0xvoid();
-        return '';
-      };
+      // 原理：console.log 在渲染物件時會觸發其 getter/toString
+      const devtools = { isOpen: false };
+      const element = new Image();
+      Object.defineProperty(element, 'id', {
+        get: function() {
+          _0xvoid();
+        }
+      });
 
       setInterval(() => {
-        // 只有當控制台開啟並嘗試讀取輸出時，才會觸發 toString
-        console.log('%c', _0xdetect);
-        console.clear(); 
+        // 這行只有在控制台面板真的開啟時才會去讀取 element 的屬性
+        console.dir(element);
       }, 1000);
 
       // 3. 性能指紋檢測 (Memory/Performance)
-      // 監控 console 對象是否被篡改或開啟了特定調試功能
+      // 監控是否有非法攔截或特殊的控制台對象屬性
       setInterval(() => {
         if (window.console && (console.dirxml || console.table)) {
-          // 檢查某些環境下特定屬性的存在
           const _0xproto = Object.getPrototypeOf(console);
-          if (_0xproto && _0xproto.constructor.name === 'Console') {
-             // 正常環境，可選做進一步比對
+          if (_0xproto && _0xproto.constructor.name !== 'Console') {
+            _0xvoid();
           }
         }
       }, 2000);
@@ -368,19 +370,17 @@
     window.addEventListener('touchmove', prevent, { passive: false });
     
     window.addEventListener('keydown', e => {
-      // 禁用所有可能開啟開發者工具或查看源碼的組合鍵
       const _0xkey = e.key.toUpperCase();
-      const _0xforbidden = ['F12', 'I', 'J', 'C', 'U', 'S'];
-      
+      // 攔截所有常見的開發者工具快捷鍵
       if (
-        _0xforbidden.includes(_0xkey) && 
+        ['F12', 'I', 'J', 'C', 'U', 'S'].includes(_0xkey) && 
         (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
       ) {
         prevent(e);
         _0xvoid();
       }
       
-      // 禁用滾動相關按鍵
+      // 禁止滾動控制
       if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) {
         prevent(e);
       }
@@ -388,6 +388,8 @@
 
   })();
 </script>
+
+  
 <!-- Background music -->
 <audio id="bg-music" loop>
   <source src="https://cdn.discordapp.com/attachments/1482340620587499540/1491037252367941733/void.mp3?ex=69d63c27&is=69d4eaa7&hm=efdba9679dec51a1a495d7cfcc525453dfbc0571713d171e6ea5f3719962e9bb&" type="audio/mpeg">
