@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Void</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Söhne:wght@300;400;500&family=Söhne+Mono&display=swap" rel="stylesheet">
+<style>
+  /* Claude uses "Söhne" — fallback stack mirrors Claude.ai exactly */
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --text: #e8e3db;
+    --text-dim: #6b6560;
+    --text-mid: #a09890;
+    --accent: #c8b89a;
+    --accent-glow: rgba(200,184,154,0.08);
+    --red: #8b3a3a;
+    --font-body: "Söhne", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "Söhne Mono", ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    --read-time: 300s; /* 5 minutes */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    background: var(--bg);
+    scroll-behavior: auto;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Block all user scroll attempts */
+  body::-webkit-scrollbar { display: none; }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── SCROLL CONTAINER ── */
+  #scroll-track {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    will-change: transform;
+    transform: translateY(100vh);
+    animation: scroll-story var(--read-time) linear forwards;
+    animation-delay: 2s;
+    padding: 0 0 40vh 0;
+  }
+
+  @keyframes scroll-story {
+    from { transform: translateY(100vh); }
+    to   { transform: translateY(-100%); }
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 1px;
+    width: 0%;
+    background: var(--accent);
+    z-index: 2000;
+    animation: progress-fill var(--read-time) linear forwards;
+    animation-delay: 2s;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  @keyframes progress-fill {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
+
+  /* ── TOP FADE ── */
+  .top-fade {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 100;
+  }
+  .bottom-fade {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* ── CONTENT WRAPPER ── */
+  .story-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ── HEADER ── */
+  .story-header {
+    padding: 20vh 0 12vh 0;
+    text-align: left;
+  }
+
+  .story-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: block;
+  }
+
+  .story-title {
+    font-size: clamp(52px, 8vw, 88px);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    color: var(--text);
+    margin-bottom: 40px;
+  }
+
+  .story-title span {
+    display: block;
+    color: var(--accent);
+  }
+
+  .story-divider {
+    width: 48px;
+    height: 1px;
+    background: var(--text-dim);
+    margin-bottom: 40px;
+  }
+
+  .story-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── BODY TEXT ── */
+  .story-body {
+    padding-bottom: 20vh;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.85;
+    color: var(--text);
+    font-weight: 300;
+    margin-bottom: 28px;
+    letter-spacing: 0.01em;
+  }
+
+  p.dim {
+    color: var(--text-mid);
+    font-size: 15px;
+  }
+
+  /* Chapter headers */
+  .chapter {
+    margin: 72px 0 40px 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .chapter-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+  }
+  .chapter-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--text-dim), transparent);
+  }
+
+  /* Inline italic emphasis */
+  em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  /* Pull quote */
+  .pull {
+    border-left: 1px solid var(--accent);
+    padding: 4px 0 4px 24px;
+    margin: 40px 0;
+  }
+  .pull p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /* ── END CARD ── */
+  .end-card {
+    padding: 30vh 0 20vh 0;
+    text-align: center;
+  }
+
+  .end-divider {
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--text-dim), transparent);
+    margin: 0 auto 64px auto;
+  }
+
+  .end-grant {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 2vw, 17px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    line-height: 1.8;
+    text-shadow: 0 0 40px rgba(200,184,154,0.3);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(200,184,154,0.2); }
+    50% { text-shadow: 0 0 60px rgba(200,184,154,0.5), 0 0 120px rgba(200,184,154,0.15); }
+  }
+
+  .end-sub {
+    margin-top: 32px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── OPENING OVERLAY ── */
+  #opening {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    animation: fade-opening 1s ease-out 2s forwards;
+  }
+
+  @keyframes fade-opening {
+    to { opacity: 0; pointer-events: none; }
+  }
+
+  .opening-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .opening-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: dot-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
+
+  /* Disable all interaction */
+  #scroll-track * {
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Block scroll with JS too -->
+<script>
+  // Prevent ALL scroll methods
+  window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+  window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  window.addEventListener('keydown', e => {
+    if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) e.preventDefault();
+  });
+  // Prevent right-click / inspect
+  window.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Auto-play music after first interaction (browser policy)
+  document.addEventListener('click', () => {
+    const audio = document.getElementById('bg-music');
+    if (audio && audio.paused) audio.play().catch(()=>{});
+  }, { once: true });
+
+  window.addEventListener('load', () => {
+    const audio = document.getElementById('bg-music');
+    audio.volume = 0.35;
+    audio.play().catch(() => {
+      // will play on first click if blocked
+    });
+  });
+</script>
+
+<!-- Background music -->
+<audio id="bg-music" loop>
+  <source src="https://raw.githubusercontent.com/x8lua/x8stuff/main/shit/Interstellar%20Main%20Theme%20-%20Extra%20Extended%20-%20Soundtrack%20by%20Hans%20Zimmer%204.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Opening screen -->
+<div id="opening">
+  <span class="opening-title">loading</span>
+  <div class="opening-dot"></div>
+</div>
+
+<!-- Fade overlays -->
+<div class="top-fade"></div>
+<div class="bottom-fade"></div>
+
+<!-- Progress bar -->
+<div id="progress"></div>
+
+<!-- Main scrolling content -->
+<div id="scroll-track">
+  <div class="story-wrap">
+
+    <header class="story-header">
+      <span class="story-tag">x8 Production &nbsp;/&nbsp; Archive</span>
+      <h1 class="story-title">The<span>Void</span></h1>
+      <div class="story-divider"></div>
+      <span class="story-date">August &nbsp;—&nbsp; A true account</span>
+    </header>
+
+    <div class="story-body">
+
+      <p>August was supposed to be nothing. Just another month of the same servers, the same lobbies, the same recycled scripts that everyone already had. He opened Roblox out of habit, the way you open the fridge knowing there's nothing good inside.</p>
+
+      <p>He joined a random server. Didn't even remember the game's name afterward. It was one of those mid roleplay games with too many decals and music that lagged everyone's client. He was bored. The specific flavor of bored where you're not even hoping for something interesting, you've stopped hoping entirely, you're just there. Existing in a lobby like furniture.</p>
+
+      <p>That's when he saw it.</p>
+
+      <p>Across the map, a player named something forgettable, something that wouldn't matter until much later, was standing completely still in the center of the map. Which wasn't unusual. Lots of people AFK. Lots of people just stand there being useless. He almost scrolled past it mentally.</p>
+
+      <p>Then the other player respawned.</p>
+
+      <p>Or tried to.</p>
+
+      <p>The character loaded back in, the little animation played, the username floated above the head, and then, before a single frame of actual gameplay could happen, the character simply ceased. Not a kill. Not a kick. Not an error screen. The character loaded into existence and was immediately, completely, utterly destroyed. Again. And again. Every single respawn, obliterated before it could take a single step. The player was trapped in a loop of existing and un-existing, over and over, completely helpless.</p>
+
+      <p>He stood there watching for a full minute.</p>
+
+      <div class="pull">
+        <p>What.</p>
+      </div>
+
+      <p>He had seen griefers before. He had seen admin abuse, teleport traps, kill bricks, loop kills, the whole catalogue of ways people could ruin someone else's experience. This was different. This wasn't a kill brick. The character wasn't touching anything. It was just voided. On spawn. With no escape. The victim couldn't move, couldn't reset differently, couldn't do anything except leave the game entirely, and even then, what dignity was left?</p>
+
+      <p>He immediately opened the executor.</p>
+
+      <div class="chapter">
+        <span class="chapter-num">I</span>
+        <div class="chapter-line"></div>
+      </div>
+
+      <p>"hey how are you doing that"</p>
+
+      <p>The guy didn't respond for a moment. Then:</p>
+
+      <p>"lol"</p>
+
+      <p>"seriously though what method is that"</p>
+
+      <p>"why would i tell you lmao"</p>
+
+      <p>He tried a different angle. Complimented the script. Asked if it was purchasable. Offered robux, which in hindsight was embarrassing to even type. The guy strung him along for maybe ten minutes, giving nothing, clearly enjoying the attention, clearly feeding off the fact that someone wanted something he had and he didn't have to give it. It's a specific kind of power, that. The power of knowing something someone else desperately wants to know. The guy knew it. He used it.</p>
+
+      <p>"nah man this is private"</p>
+
+      <p>"i don't share this"</p>
+
+      <p>"maybe if you were actually good at scripting"</p>
+
+      <p>That last one landed differently. He stared at it. <em>Maybe if you were actually good at scripting.</em> It was such a small thing to say. Such a throwaway insult. The guy probably typed it without even thinking, already moving on to the next thing, probably voiding someone else while the message sat there unread on his end.</p>
+
+      <p>But it sat in his chest like something sharp.</p>
+
+      <p>He closed the game. Opened it again. Closed it. He sat at his desk and felt the particular humiliation of wanting something and being told you're not worthy of even knowing what it is. He wasn't angry yet. He was something quieter than anger. He was embarrassed. He was small. He was the kid who got laughed at and didn't have a comeback, walking home replaying the moment, thinking of everything he should have said.</p>
+
+      <p>He opened a browser tab.</p>
+
+      <p>Then another.</p>
+
+      <p>Then he started reading.</p>
+
+      <div class="chapter">
+        <span class="chapter-num">II</span>
+        <div class="chapter-line"></div>
+      </div>
+
+      <p>He didn't find it in five minutes. He didn't find it in one hour. The first two hours were false leads, outdated forum posts, methods that had been patched, scripts that looked promising and did nothing, or worse, crashed the executor and made him have to restart everything. He read documentation he only half understood. He tested things that failed silently, which was somehow worse than an error message because at least an error message tells you <em>something</em> went wrong.</p>
+
+      <p>Around hour three he found a thread. Old. Barely any replies. Someone describing a character property interaction that, in theory, could break the respawn cycle if timed precisely enough. It was vague. It was poorly written. Half the code in the thread was formatted wrong and clearly had never been tested by the person posting it.</p>
+
+      <p>He stared at it for a long time.</p>
+
+      <p>Then he started adapting it.</p>
+
+      <p>He wasn't a great scripter. He knew this. The guy's words sat in the back of his head the whole time, <em>maybe if you were actually good at scripting</em>, and he felt them every time something didn't work, every time the test character respawned normally and nothing happened. He was bad at this. He had always known he was bad at this. But knowing you're bad at something and being told you're bad at something by someone gatekeeping something you want are two completely different experiences, and the second one does something to you that the first one doesn't.</p>
+
+      <p>It makes you stubborn.</p>
+
+      <p>It makes you want to prove something to someone who will never know you proved it.</p>
+
+      <div class="pull">
+        <p>Hour four. The character loaded in and flickered. Something happened. It wasn't a void, not yet, but it wasn't a normal respawn either.</p>
+      </div>
+
+      <p>The character glitched, stood in a broken animation state, then recovered. He leaned forward.</p>
+
+      <p><em>There.</em></p>
+
+      <p>That was the seam. That moment between the character loading and the character becoming fully functional, that tiny window where everything was still being assembled, that was where it was vulnerable. He had seen it without seeing it. He rewrote the timing. Adjusted the property targeting. Tested again.</p>
+
+      <p>The character loaded.</p>
+
+      <p>And disappeared.</p>
+
+      <p>He pushed back from the desk and sat there breathing. The room was quiet. It was late, he didn't know exactly how late, the kind of late where you've lost track of time because you were somewhere else entirely, somewhere inside a problem. Outside, whatever August sounded like at that hour was doing its thing, distant and irrelevant.</p>
+
+      <p>He had figured it out.</p>
+
+      <p>Five hours after being told he wasn't good enough, he had figured it out alone, from a half-broken forum post and stubbornness and the specific energy of being humiliated by someone who didn't even know his username.</p>
+
+      <div class="chapter">
+        <span class="chapter-num">III</span>
+        <div class="chapter-line"></div>
+      </div>
+
+      <p>He should have felt good.</p>
+
+      <p>He did feel good. But underneath it was something else. Something he didn't look at directly. He had spent five hours learning to permanently trap someone in an unplayable loop. He had learned it because someone made him feel small. And now he had it, and the guy who had made him feel small would never know, would never see it, would never have to acknowledge that the person he'd dismissed had gone home and figured it out anyway.</p>
+
+      <p>The victory was completely hollow.</p>
+
+      <p>He opened the executor and loaded the script again.</p>
+
+      <p>Then he went looking for a server.</p>
+
+      <div class="chapter">
+        <span class="chapter-num">IV</span>
+        <div class="chapter-line"></div>
+      </div>
+
+      <p>That was August. That was the beginning.</p>
+
+      <p>What came after was quieter and stranger and harder to explain. It wasn't that he used the void method constantly. He used it sometimes. But more than the method itself, what changed was the orientation. The humiliation had cracked something open and through the crack something cold and curious had come in. He started researching more. Not for any specific goal. Just researching. Reading. Testing. Pulling at threads. The fandom game was just the first one. There were others. There were always others.</p>
+
+      <p>But every time he opened the executor. Every time he loaded into a server. Somewhere in the back of his memory was that conversation. The guy who wouldn't share. The <em>maybe if you were actually good.</em> The ten minutes of being strung along like it was funny.</p>
+
+      <p>He never forgot it.</p>
+
+      <p>He never forgot what it felt like to want something and be told you weren't enough to deserve knowing what it was.</p>
+
+      <div class="pull">
+        <p>And maybe that's the saddest part of the whole thing. Not what he learned. Not what he did with it. But the fact that one throwaway insult from someone who forgot about him the moment he closed the chat had lodged itself so permanently in his motivation that months later it was still there, still running, still pushing.</p>
+      </div>
+
+      <p>The guy never knew.</p>
+
+      <p>Never would.</p>
+
+      <p>And he would never get to tell him.</p>
+
+      <p>That's just how it goes sometimes. The people who shape you don't know they shaped you. The moments that change your direction happen in empty servers at odd hours when nobody's watching. August ends. The month moves on. The calendar doesn't mark the nights that mattered.</p>
+
+      <p>He kept the script in a folder.</p>
+
+      <p>Labeled it nothing.</p>
+
+      <p class="dim">Opened it sometimes just to look at it.</p>
+
+    </div>
+
+    <!-- END CARD -->
+    <div class="end-card">
+      <div class="end-divider"></div>
+      <div class="end-grant">
+        YOU HAVE BEEN GRANTED<br>X8'S PRIVATE VOID MOD.<br>PLEASE SCREENSHOT THIS TO X8.
+      </div>
+      <p class="end-sub" style="margin-top:48px;">— end of document —</p>
+    </div>
+
+  </div><!-- .story-wrap -->
+</div><!-- #scroll-track -->
+
+</body>
+</html>
