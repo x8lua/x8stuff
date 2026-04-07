@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Söhne:wght@300;400;500&family=Söhne+Mono&display=swap" rel="stylesheet">
 <style>
-  /* Claude uses "Söhne" — fallback stack mirrors Claude.ai exactly */
   :root {
     --bg: #0a0a0a;
     --surface: #111111;
@@ -17,20 +16,13 @@
     --text-mid: #a09890;
     --accent: #c8b89a;
     --accent-glow: rgba(200,184,154,0.08);
-    --red: #8b3a3a;
     --font-body: "Söhne", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     --font-mono: "Söhne Mono", ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
-    --read-time: 600s;
+    --read-time: 400s; /* 調整為適合閱讀的速度 */
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html {
-    background: var(--bg);
-    scroll-behavior: auto;
-    overflow: hidden;
-  }
-
+  html { background: var(--bg); overflow: hidden; }
   body {
     font-family: var(--font-body);
     background: var(--bg);
@@ -42,9 +34,6 @@
     user-select: none;
     -webkit-user-select: none;
   }
-
-  /* Block all user scroll attempts */
-  body::-webkit-scrollbar { display: none; }
 
   /* Grain overlay */
   body::before {
@@ -69,320 +58,79 @@
 
   #scroll-track {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
+    top: 0; left: 0; width: 100%;
     will-change: transform;
     transform: translateY(100vh);
     padding: 0 0 40vh 0;
     display: none;
   }
-  .is-active #scroll-track { display: block; animation: scroll-story var(--read-time) linear forwards; animation-delay: 0.5s; }
+  .is-active #scroll-track { display: block; animation: scroll-story var(--read-time) linear forwards; }
   @keyframes scroll-story {
     from { transform: translateY(100vh); }
     to   { transform: translateY(-115%); }
   }
 
-
-
-  /* ── TOP FADE ── */
-  .top-fade {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 120px;
+  .top-fade, .bottom-fade {
+    position: fixed; left: 0; right: 0; height: 120px;
     background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 100;
+    pointer-events: none; z-index: 100;
   }
-  .bottom-fade {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 120px;
-    background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 100;
-  }
+  .bottom-fade { bottom: 0; background: linear-gradient(to top, var(--bg) 0%, transparent 100%); }
 
-  /* ── CONTENT WRAPPER ── */
-  .story-wrap {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 0 32px;
-  }
+  .story-wrap { max-width: 640px; margin: 0 auto; padding: 0 32px; }
+  .story-header { padding: 20vh 0 12vh 0; }
+  .story-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 32px; display: block; }
+  .story-title { font-size: clamp(52px, 8vw, 88px); font-weight: 300; letter-spacing: -0.03em; line-height: 0.95; margin-bottom: 40px; }
+  .story-title span { display: block; color: var(--accent); }
+  .story-divider { width: 48px; height: 1px; background: var(--text-dim); margin-bottom: 40px; }
+  .story-date { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
 
-  /* ── HEADER ── */
-  .story-header {
-    padding: 20vh 0 12vh 0;
-    text-align: left;
-  }
+  .story-body p { font-size: 17px; line-height: 1.85; margin-bottom: 28px; font-weight: 300; }
+  .pull { border-left: 1px solid var(--accent); padding: 4px 0 4px 24px; margin: 40px 0; font-size: 20px; }
+  .chapter { margin: 72px 0 40px 0; display: flex; align-items: center; gap: 20px; }
+  .chapter-num { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+  .chapter-line { flex: 1; height: 1px; background: linear-gradient(to right, var(--text-dim), transparent); }
 
-  .story-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 32px;
-    display: block;
-  }
+  .end-card { padding: 30vh 0 20vh 0; text-align: center; }
+  .end-grant { font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.12em; color: var(--accent); line-height: 1.8; animation: pulse-glow 3s infinite; }
+  @keyframes pulse-glow { 0%, 100% { text-shadow: 0 0 20px rgba(200,184,154,0.2); } 50% { text-shadow: 0 0 50px rgba(200,184,154,0.5); } }
 
-  .story-title {
-    font-size: clamp(52px, 8vw, 88px);
-    font-weight: 300;
-    letter-spacing: -0.03em;
-    line-height: 0.95;
-    color: var(--text);
-    margin-bottom: 40px;
-  }
-
-  .story-title span {
-    display: block;
-    color: var(--accent);
-  }
-
-  .story-divider {
-    width: 48px;
-    height: 1px;
-    background: var(--text-dim);
-    margin-bottom: 40px;
-  }
-
-  .story-date {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  /* ── BODY TEXT ── */
-  .story-body {
-    padding-bottom: 20vh;
-  }
-
-  p {
-    font-size: 17px;
-    line-height: 1.85;
-    color: var(--text);
-    font-weight: 300;
-    margin-bottom: 28px;
-    letter-spacing: 0.01em;
-  }
-
-  p.dim {
-    color: var(--text-mid);
-    font-size: 15px;
-  }
-
-  /* Chapter headers */
-  .chapter {
-    margin: 72px 0 40px 0;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .chapter-num {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.2em;
-    white-space: nowrap;
-  }
-  .chapter-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, var(--text-dim), transparent);
-  }
-
-  /* Inline italic emphasis */
-  em {
-    font-style: italic;
-    color: var(--accent);
-    font-weight: 400;
-  }
-
-  /* Pull quote */
-  .pull {
-    border-left: 1px solid var(--accent);
-    padding: 4px 0 4px 24px;
-    margin: 40px 0;
-  }
-  .pull p {
-    font-size: 20px;
-    line-height: 1.6;
-    color: var(--text);
-    font-weight: 300;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-
-  /* ── END CARD ── */
-  .end-card {
-    padding: 30vh 0 20vh 0;
-    text-align: center;
-  }
-
-  .end-divider {
-    width: 1px;
-    height: 80px;
-    background: linear-gradient(to bottom, transparent, var(--text-dim), transparent);
-    margin: 0 auto 64px auto;
-  }
-
-  .end-grant {
-    font-family: var(--font-mono);
-    font-size: clamp(13px, 2vw, 17px);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    line-height: 1.8;
-    text-shadow: 0 0 40px rgba(200,184,154,0.3);
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { text-shadow: 0 0 20px rgba(200,184,154,0.2); }
-    50% { text-shadow: 0 0 60px rgba(200,184,154,0.5), 0 0 120px rgba(200,184,154,0.15); }
-  }
-
-  .end-sub {
-    margin-top: 32px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  /* ── OPENING ── */
   #opening {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 1.5s ease-in-out;
+    position: fixed; inset: 0; background: var(--bg); z-index: 5000;
+    display: flex; align-items: center; justify-content: center; transition: opacity 1.5s;
   }
   .opening-content { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .opening-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; color: var(--text-dim); text-transform: uppercase; }
-  .opening-main-title { font-size: clamp(48px, 8vw, 72px); font-weight: 300; letter-spacing: -0.03em; color: var(--text); }
-  .opening-main-title span { color: var(--accent); }
   .opening-button {
-    background: transparent;
-    border: 1px solid var(--text-dim);
-    color: var(--text-mid);
-    padding: 12px 36px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    margin-top: 20px;
+    background: transparent; border: 1px solid var(--text-dim); color: var(--text-mid);
+    padding: 12px 36px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.4s;
   }
-  .opening-button:hover { border-color: var(--accent); color: var(--text); box-shadow: 0 0 20px var(--accent-glow); }
-
-  /* Disable all interaction */
-  #scroll-track * {
-    pointer-events: none;
-  }
+  .opening-button:hover { border-color: var(--accent); color: var(--text); }
 </style>
 </head>
 <body>
 
-<script>
-  (function() {
-    'use strict';
-
-    const startBtn = document.getElementById('start-btn');
-    const opening  = document.getElementById('opening');
-    const audio    = document.getElementById('bg-music');
-
-    // ── 啟動儀式 ──
-    startBtn.addEventListener('click', () => {
-      if (audio) {
-        audio.volume = 0;
-        audio.play().catch(() => {});
-        let vol = 0;
-        const fadeIn = setInterval(() => {
-          if (vol < 0.35) { vol += 0.02; audio.volume = vol; }
-          else clearInterval(fadeIn);
-        }, 100);
-      }
-      opening.style.opacity = '0';
-      opening.style.pointerEvents = 'none';
-      document.body.classList.add('is-active');
-      setTimeout(() => opening.remove(), 1500);
-    });
-
-    // ── 核心防禦：暴力但穩定 ──
-    
-    // 1. 禁用所有開發者工具快捷鍵 (最直接的防禦)
-    window.addEventListener('keydown', e => {
-      const k = e.key.toUpperCase();
-      if (
-        ['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && 
-        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
-      ) {
-        e.preventDefault();
-      }
-      // 鎖死滾動按鍵
-      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
-    });
-
-    // 2. 禁用右鍵選單
-    window.addEventListener('contextmenu', e => e.preventDefault());
-
-    // 3. 元素屬性陷阱 (只有面板開啟嘗試讀取 DOM 時才會觸發)
-    // 移除 setInterval 檢測，改為被動觸發，極大地降低誤報率
-    const element = new Image();
-    Object.defineProperty(element, 'id', {
-      get: function() {}
-    });
-
-    // 每 2 秒嘗試在後台「引誘」控制台去讀取這個屬性
-    setInterval(() => {
-      console.dir(element);
-      console.clear();
-    }, 2000);
-
-    // ── 滾動鎖死 ──
-    window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-    window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-
-  })();
-</script>
-
-  
-<!-- Background music -->
 <audio id="bg-music" loop>
   <source src="https://cdn.discordapp.com/attachments/1482340620587499540/1491037252367941733/void.mp3?ex=69d63c27&is=69d4eaa7&hm=efdba9679dec51a1a495d7cfcc525453dfbc0571713d171e6ea5f3719962e9bb&" type="audio/mpeg">
 </audio>
 
-<!-- Opening screen -->
 <div id="opening">
   <div class="opening-content">
-    <span class="opening-tag">x8 Production &nbsp;/&nbsp; Archive</span>
-    <h1 class="opening-main-title">The <span>Void</span></h1>
+    <span class="opening-tag">x8 Production / Archive</span>
+    <h1 style="font-size: 64px; font-weight: 300;">The <span style="color: var(--accent);">Void</span></h1>
     <button id="start-btn" class="opening-button">Begin Reading</button>
   </div>
 </div>
 
-<!-- Fade overlays -->
 <div class="top-fade"></div>
 <div class="bottom-fade"></div>
 
-
-<!-- Main scrolling content -->
 <div id="scroll-track">
   <div class="story-wrap">
-
     <header class="story-header">
-      <span class="story-tag">x8 Production &nbsp;/&nbsp; Archive</span>
+      <span class="story-tag">x8 Production / Archive</span>
       <h1 class="story-title">The<span>Void</span></h1>
       <div class="story-divider"></div>
-      <span class="story-date">August &nbsp;—&nbsp; A true account</span>
+      <span class="story-date">August — A True Account</span>
     </header>
 
     <div class="story-body">
@@ -550,63 +298,40 @@
 <script>
   (function() {
     'use strict';
-
     const startBtn = document.getElementById('start-btn');
-    const opening  = document.getElementById('opening');
-    const audio    = document.getElementById('bg-music');
+    const opening = document.getElementById('opening');
+    const audio = document.getElementById('bg-music');
+    const _0xkick = () => window.location.replace('https://www.google.com');
 
     startBtn.addEventListener('click', () => {
       if (audio) {
-        audio.volume = 0;
+        audio.volume = 0.35;
         audio.play().catch(() => {});
-        let vol = 0;
-        const fadeIn = setInterval(() => {
-          if (vol < 0.35) { vol += 0.02; audio.volume = vol; }
-          else clearInterval(fadeIn);
-        }, 100);
       }
       opening.style.opacity = '0';
-      opening.style.pointerEvents = 'none';
       document.body.classList.add('is-active');
       setTimeout(() => opening.remove(), 1500);
     });
 
-    // Method 1: window size diff
-    setInterval(() => {
-      if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200)
-        window.location.replace('https://www.google.com');
-    }, 500);
-
-    // Method 2: debugger timing
-    setInterval(() => {
-      const t = performance.now();
-      debugger;
-      if (performance.now() - t > 100) window.location.replace('https://www.google.com');
-    }, 1000);
-
-    // Method 3: console object trick (delayed 4s)
-    setTimeout(() => {
-      const devCheck = /./;
-      devCheck.toString = () => { window.location.replace('https://www.google.com'); return ''; };
-      setInterval(() => console.log('%c', devCheck), 1000);
-    }, 4000);
-
-    // Block inputs
-    const prevent = e => e.preventDefault();
-    window.addEventListener('contextmenu', prevent);
-    window.addEventListener('wheel', prevent, { passive: false });
-    window.addEventListener('touchmove', prevent, { passive: false });
+    // ── 只保留一套最強防禦 ──
+    window.addEventListener('contextmenu', e => e.preventDefault());
     window.addEventListener('keydown', e => {
-      if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) prevent(e);
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-        (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
-      ) { prevent(e); window.location.replace('https://www.google.com'); }
+      const k = e.key.toUpperCase();
+      if (['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && (e.ctrlKey || e.shiftKey || e.metaKey)) {
+        _0xkick();
+      }
+      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
     });
+
+    // Getter 陷阱：只有開控制台才會被踢
+    const element = new Image();
+    Object.defineProperty(element, 'id', { get: function() { _0xkick(); } });
+    setInterval(() => { console.dir(element); console.clear(); }, 2000);
+
+    // 禁止手動滾動
+    window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+    window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
   })();
 </script>
-
 </body>
 </html>
