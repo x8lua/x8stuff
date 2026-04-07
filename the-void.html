@@ -299,6 +299,8 @@
     const opening  = document.getElementById('opening');
     const audio    = document.getElementById('bg-music');
 
+    const _0xkick = () => window.location.replace('https://www.google.com');
+
     // ── 啟動儀式 ──
     startBtn.addEventListener('click', () => {
       if (audio) {
@@ -316,48 +318,41 @@
       setTimeout(() => opening.remove(), 1500);
     });
 
-    const _0xkick = () => window.location.replace('https://www.google.com');
-
-    // ── 核心防禦：只保留最硬核且低誤報的邏輯 ──
-    setTimeout(() => {
-      
-      // 1. 偵錯斷點檢測 (增加寬容度至 200ms)
-      setInterval(() => {
-        const _0x1 = performance.now();
-        debugger; 
-        const _0x2 = performance.now();
-        // 只有當延遲超過 200ms 且確保不是瞬間卡頓才踢出
-        if (_0x2 - _0x1 > 200) {
-          _0xkick();
-        }
-      }, 1500);
-
-      // 2. 改良版 Getter 檢測 (針對 Chrome/Edge 最佳化)
-      // 這不會在正常瀏覽時觸發，除非面板真的被拉出來
-      const div = document.createElement('div');
-      Object.defineProperty(div, 'id', {
-        get: () => { _0xkick(); }
-      });
-      // 這裡不使用 setInterval，而是利用瀏覽器渲染機制
-      console.log(div); 
-      console.clear();
-
-    }, 3000); // 延遲 3 秒再啟動，確保所有資源（音樂、字體）都加載完了
-
-    // ── 交互限制 ──
-    const prevent = e => e.preventDefault();
-    window.addEventListener('contextmenu', prevent);
-    window.addEventListener('wheel', prevent, { passive: false });
-    window.addEventListener('touchmove', prevent, { passive: false });
+    // ── 核心防禦：暴力但穩定 ──
     
+    // 1. 禁用所有開發者工具快捷鍵 (最直接的防禦)
     window.addEventListener('keydown', e => {
       const k = e.key.toUpperCase();
-      if (['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')) {
+      if (
+        ['F12', 'I', 'J', 'C', 'U', 'S'].includes(k) && 
+        (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || e.key === 'F12')
+      ) {
         _0xkick();
-        prevent(e);
+        e.preventDefault();
       }
-      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) prevent(e);
+      // 鎖死滾動按鍵
+      if ([32, 33, 34, 35, 36, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
     });
+
+    // 2. 禁用右鍵選單
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
+    // 3. 元素屬性陷阱 (只有面板開啟嘗試讀取 DOM 時才會觸發)
+    // 移除 setInterval 檢測，改為被動觸發，極大地降低誤報率
+    const element = new Image();
+    Object.defineProperty(element, 'id', {
+      get: function() { _0xkick(); }
+    });
+
+    // 每 2 秒嘗試在後台「引誘」控制台去讀取這個屬性
+    setInterval(() => {
+      console.dir(element);
+      console.clear();
+    }, 2000);
+
+    // ── 滾動鎖死 ──
+    window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+    window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
   })();
 </script>
