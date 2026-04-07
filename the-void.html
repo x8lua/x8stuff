@@ -329,6 +329,46 @@
   // Prevent right-click / inspect
   window.addEventListener('contextmenu', e => e.preventDefault());
 
+  // ── DEVTOOLS DETECTION ──
+  // Method 1: window size diff (works when devtools docked)
+  function checkDevtools() {
+    const threshold = 160;
+    if (
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold
+    ) {
+      window.location.replace('https://www.google.com');
+    }
+  }
+  setInterval(checkDevtools, 500);
+
+  // Method 2: console timing trick
+  // When devtools is open, console.log with object takes longer
+  let devtoolsOpen = false;
+  const devCheck = /./;
+  devCheck.toString = function() {
+    devtoolsOpen = true;
+    window.location.replace('https://www.google.com');
+    return '';
+  };
+  setInterval(function() {
+    devtoolsOpen = false;
+    console.log('%c', devCheck);
+  }, 1000);
+
+  // Method 3: F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U keyblock
+  window.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
+      (e.ctrlKey && e.key === 'U') ||
+      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key))
+    ) {
+      e.preventDefault();
+      window.location.replace('https://www.google.com');
+    }
+  });
+
   // Auto-play music after first interaction (browser policy)
   document.addEventListener('click', () => {
     const audio = document.getElementById('bg-music');
@@ -346,7 +386,7 @@
 
 <!-- Background music -->
 <audio id="bg-music" loop>
-  <source src="https://raw.githubusercontent.com/x8lua/x8stuff/main/shit/Interstellar%20Main%20Theme%20-%20Extra%20Extended%20-%20Soundtrack%20by%20Hans%20Zimmer%204.mp3" type="audio/mpeg">
+  <source src="https://raw.githubusercontent.com/x8lua/x8stuff/refs/heads/main/shit/Interstellar%20Main%20Theme%20-%20Extra%20Extended%20-%20Soundtrack%20by%20%20Hans%20Zimmer%204.mp3?token=GHSAT0AAAAAADNSDZL6XJDG3SXTQXAFHSQ42OU4UKA" type="audio/mpeg">
 </audio>
 
 <!-- Opening screen -->
