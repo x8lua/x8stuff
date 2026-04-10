@@ -1,14 +1,15 @@
 {
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/:path*",
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "powerpoint.x8stuff.lol"
         }
       ],
-      "destination": "/PPT/:path*"
+      "destination": "/PPT",
+      "permanent": true
     }
   ]
 }
