@@ -1,24 +1,14 @@
 {
   "rewrites": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "powerpoint.x8stuff.lol"
         }
       ],
-      "destination": "/PPT"
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "powerpoint.x8stuff.lol"
-        }
-      ],
-      "destination": "/PPT/:path*"
+      "destination": "/PPT/$1"
     }
   ]
 }
