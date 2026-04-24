@@ -95,7 +95,6 @@
 
         .btn-shorten { background: #fff; color: #000; }
         .btn-shorten:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
-        .btn-shorten:disabled { background: #555; cursor: not-allowed; }
 
         .btn-push { background: #1a1a1a; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
         .btn-push:hover { background: #222; border-color: rgba(255,255,255,0.3); }
@@ -163,31 +162,32 @@
         const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // 自動獲取當前網域 (例如 x8stuff.vercel.app 或 x8stuff.lol)
+        const CURRENT_DOMAIN = window.location.origin;
+
         let historyData = [];
+        const nodes = [];
         let isElevator = false;
         let isLocked = false;
-        const nodes = [];
 
         // --- 🛠️ 核心邏輯 ---
 
-        // 初始化宇宙
         async function initUniverse() {
-            // 從資料庫抓取最近的資料 (24小時內)
             const { data, error } = await _supabase
                 .from('workspace')
                 .select('*')
                 .order('created_at', { ascending: true });
 
-            if (error) console.error("抓取失敗:", error);
-            else historyData = data;
-
-            renderNodes();
+            if (!error) {
+                historyData = data;
+                renderNodes();
+            }
         }
 
         function renderNodes() {
             const container = document.getElementById('universe-bg');
             container.innerHTML = '';
-            nodes.length = 0; // 清空陣列
+            nodes.length = 0;
 
             historyData.forEach((item, i) => {
                 const el = document.createElement('div');
@@ -198,95 +198,66 @@
                     <div class="node-type"><i class="ph ${icon}"></i> ${item.type}</div>
                     <div class="node-content">${item.content}</div>
                 `;
-
-                // 隨機分佈
                 const x = Math.random() * 80 + 10;
                 const y = Math.random() * 80 + 10;
                 const z = (Math.random() - 0.5) * 600;
-
-                el.style.left = `${x}%`;
-                el.style.top = `${y}%`;
-                el.style.transform = `translateZ(${z}px)`;
-                
+                el.style.left = `${x}%`; el.style.top = `${y}%`; el.style.transform = `translateZ(${z}px)`;
                 container.appendChild(el);
                 nodes.push({ el, x, y, z });
             });
             renderCanvas();
         }
 
-        // 監聽即時更新 (Realtime)
-        _supabase
-            .channel('schema-db-changes')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'workspace' }, (payload) => {
-                console.log("偵測到新數據!", payload.new);
-                historyData.push(payload.new);
-                renderNodes();
-            })
-            .subscribe();
+        // 即時更新
+        _supabase.channel('changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'workspace' }, payload => {
+            historyData.push(payload.new);
+            renderNodes();
+        }).subscribe();
 
-        // 縮網址動作
+        // 縮網址 (自動網域)
         async function handleShorten(e) {
             e.stopPropagation();
             const input = document.getElementById('main-input');
             const btn = document.getElementById('shorten-btn');
-            if(!input.value) return alert("老兄，網址呢？");
+            if(!input.value) return;
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="ph ph-circle-notch"></i> Processing...`;
+            btn.innerHTML = `<i class="ph ph-circle-notch"></i>...`;
 
-            // 1. 獲取最後一個序號
-            const { data: lastItem } = await _supabase
-                .from('workspace')
-                .select('id')
-                .order('id', { ascending: false })
-                .limit(1)
-                .single();
-            
+            const { data: lastItem } = await _supabase.from('workspace').select('id').order('id', { ascending: false }).limit(1).single();
             const nextSlug = lastItem ? (lastItem.id + 1).toString() : "1";
 
-            // 2. 寫入資料庫
-            const { error } = await _supabase
-                .from('workspace')
-                .insert([{ type: 'link', content: input.value, slug: nextSlug }]);
+            const { error } = await _supabase.from('workspace').insert([{ type: 'link', content: input.value, slug: nextSlug }]);
 
-            if (error) alert("失敗了: " + error.message);
-            else {
-                alert(`搞定！縮網址為: x8stuff.com/i/${nextSlug}`);
+            if (!error) {
+                // 這裡會自動使用當前網域
+                alert(`SUCCESS: ${CURRENT_DOMAIN}/i/${nextSlug}`);
                 input.value = '';
             }
             btn.disabled = false;
             btn.innerHTML = `<i class="ph ph-link"></i> Shorten`;
         }
 
-        // 推送文字動作
         async function handlePush(e) {
             e.stopPropagation();
             const input = document.getElementById('main-input');
-            if(!input.value) return alert("空空的，你想推空氣嗎？");
-
-            const { error } = await _supabase
-                .from('workspace')
-                .insert([{ type: 'text', content: input.value }]);
-
-            if (error) alert("推送失敗: " + error.message);
-            else input.value = '';
+            if(!input.value) return;
+            const { error } = await _supabase.from('workspace').insert([{ type: 'text', content: input.value }]);
+            if (!error) input.value = '';
         }
 
-        // --- 🎨 視覺特效 ---
-
+        // --- 視覺特效 ---
         const canvas = document.getElementById('connections-canvas');
         const ctx = canvas.getContext('2d');
         function renderCanvas() {
-            canvas.width = window.innerWidth * 1.4;
-            canvas.height = window.innerHeight * 1.4;
+            canvas.width = window.innerWidth * 1.4; canvas.height = window.innerHeight * 1.4;
             if(isElevator) return;
             ctx.clearRect(0,0, canvas.width, canvas.height);
             ctx.strokeStyle = 'rgba(255,255,255,0.06)';
             nodes.forEach((n1, i) => {
                 nodes.slice(i+1).forEach(n2 => {
                     if(Math.random() > 0.3) return;
-                    const r1 = n1.el.getBoundingClientRect();
-                    const r2 = n2.el.getBoundingClientRect();
+                    const r1 = n1.el.getBoundingClientRect(); const r2 = n2.el.getBoundingClientRect();
                     ctx.beginPath();
                     ctx.moveTo(r1.left + r1.width/2 + canvas.width*0.14, r1.top + r1.height/2 + canvas.height*0.14);
                     ctx.lineTo(r2.left + r2.width/2 + canvas.width*0.14, r2.top + r2.height/2 + canvas.height*0.14);
@@ -295,7 +266,7 @@
             });
         }
 
-        window.addEventListener('mousemove', (e) => {
+        window.addEventListener('mousemove', e => {
             if(isElevator) return;
             const x = (e.clientX / window.innerWidth - 0.5) * 40;
             const y = (e.clientY / window.innerHeight - 0.5) * 40;
@@ -310,13 +281,10 @@
             isElevator = !isElevator;
             document.body.classList.toggle('elevator-mode');
             document.getElementById('mode-text').innerText = isElevator ? "Universe Mode" : "Elevator Mode";
-            if(isElevator) focusBg(true);
-            else { isLocked = false; unfocusBg(); setTimeout(renderCanvas, 300); }
+            if(isElevator) focusBg(true); else { isLocked = false; unfocusBg(); setTimeout(renderCanvas, 300); }
         }
 
-        window.addEventListener('resize', renderCanvas);
         initUniverse();
-
     </script>
 </body>
 </html>
