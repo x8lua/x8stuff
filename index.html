@@ -165,22 +165,21 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // --- 自動跳轉邏輯 ---
+    // --- 🚀 修正後的跳轉邏輯 ---
     async function handleRedirect() {
       const path = window.location.pathname;
       if (path.startsWith('/i/')) {
         const slug = path.split('/').pop();
         if (!slug) return;
 
-        // UI 反饋：打開 info 並顯示跳轉狀態
         const info = document.getElementById('info');
         const statusMain = document.getElementById('status-main');
         const statusSub = document.getElementById('status-sub');
         
         info.classList.add('open');
         statusMain.innerText = "Redirecting";
-        statusSub.innerText = "fetching destination from x8 universe...";
+        statusSub.innerText = "warping through the x8 universe...";
 
-        // 從資料庫抓取
         const { data, error } = await _supabase
           .from('workspace')
           .select('content')
@@ -188,10 +187,16 @@
           .single();
 
         if (data && data.content) {
-          // 成功後起飛
+          let target = data.content.trim();
+
+          // 核心修正：如果網址不是以 http 開頭，強行加上 https://
+          if (!/^https?:\/\//i.test(target)) {
+            target = 'https://' + target;
+          }
+
           setTimeout(() => {
-            window.location.href = data.content;
-          }, 800); // 稍微延遲一下，讓使用者看到 Premium 的跳轉狀態
+            window.location.href = target; // 現在它會飛出你的網域了
+          }, 800);
         } else {
           statusMain.innerText = "404 - Void";
           statusSub.innerText = "this shortlink doesn't exist.";
