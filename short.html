@@ -3,338 +3,320 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>x8stuff | Premium URL Shortener</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <title>x8stuff | Universe Workspace</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #050505;
-            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-bg: rgba(10, 10, 10, 0.8);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --primary: #ffffff;
-            --secondary: #a1a1aa;
-            --accent: #ffffff; /* 改成純白高對比，更 Vercel */
-            --accent-glow: rgba(255, 255, 255, 0.15);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
         body {
             background-color: var(--bg-color);
-            color: var(--primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-image: radial-gradient(circle at 50% -20%, #1a1a1a, var(--bg-color) 70%);
-            padding: 20px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            perspective: 1200px;
+            width: 100vw;
+            height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 640px; /* 變寬了 */
-            padding: 50px; /* 留白變多，看起來更乾淨 */
+        /* 畫布與背景 */
+        #connections-canvas {
+            position: absolute;
+            top: -20%; left: -20%;
+            width: 140%; height: 140%;
+            z-index: 1;
+            pointer-events: none;
+            transition: filter 0.5s ease;
+        }
+
+        #universe-bg {
+            position: absolute;
+            top: -10%; left: -10%;
+            width: 120%; height: 120%;
+            z-index: 5;
+            transition: filter 0.5s ease, transform 0.1s ease-out;
+            transform-style: preserve-3d;
+            filter: blur(15px);
+        }
+
+        body.bg-focused #universe-bg, 
+        body.bg-focused #connections-canvas { filter: blur(0px); }
+
+        body.bg-focused #main-frame { 
+            filter: blur(25px); 
+            transform: translate(-50%, -50%) scale(0.92); 
+            opacity: 0.35; 
+            cursor: pointer;
+        }
+
+        /* 主控台 Frame */
+        #main-frame {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            width: 520px;
+            z-index: 100;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: 24px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+            padding: 32px;
+            backdrop-filter: blur(50px);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        /* x8 Intro 區塊 */
-        .intro-box {
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .intro-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            color: #d4d4d8;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 12px;
-        }
-
-        p.subtitle {
-            color: var(--secondary);
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        .input-group {
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 16px;
+            color: #fff;
             margin-bottom: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            resize: none;
+            transition: 0.3s;
+        }
+        
+        .action-row { display: flex; gap: 14px; }
+
+        button {
+            flex: 1; padding: 16px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
         }
 
-        input[type="url"], input[type="text"] {
-            width: 100%;
-            padding: 18px 24px; /* 輸入框變大 */
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
+        .btn-shorten { background: #fff; color: #000; }
+        .btn-shorten:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
+        .btn-shorten:disabled { background: #555; cursor: not-allowed; }
 
-        input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow);
-            background: rgba(0, 0, 0, 0.6);
-        }
+        .btn-push { background: #1a1a1a; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-push:hover { background: #222; border-color: rgba(255,255,255,0.3); }
 
-        /* Toggle 開關樣式 */
-        .toggle-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            background: rgba(255,255,255,0.03);
-            padding: 16px 20px;
-            border-radius: 14px;
-            border: 1px solid var(--glass-border);
-        }
-
-        .toggle-text {
-            margin-left: 14px;
-            font-size: 14px;
-            color: var(--secondary);
-            font-weight: 500;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
+        /* 歷史節點 */
+        .history-node {
             position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.1);
-            transition: .3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #fff;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-            background-color: #000;
-        }
-
-        button.generate-btn {
-            width: 100%;
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
             padding: 18px;
-            background: #fff;
-            color: #000;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 600;
+            width: 260px;
+            backdrop-filter: blur(10px);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
+        .history-node:hover { border-color: #fff; transform: scale(1.1) translateZ(50px) !important; z-index: 1000; }
+        
+        .node-floor { display: none; position: absolute; left: -60px; font-size: 28px; font-weight: 800; color: rgba(255,255,255,0.15); }
+        .node-type { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;}
+        .node-content { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #ccc; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
 
-        button.generate-btn:hover {
-            background: #e4e4e7;
-            transform: translateY(-2px);
+        /* 電梯模式 */
+        body.elevator-mode #universe-bg {
+            display: flex; flex-direction: column-reverse; align-items: center;
+            padding: 150px 0; gap: 40px; top: 0; left: 0; width: 100%; height: 100vh;
+            overflow-y: auto; perspective: none; filter: blur(0);
         }
+        body.elevator-mode .history-node { position: relative; left: 0 !important; top: 0 !important; transform: none !important; width: 450px; }
+        body.elevator-mode .node-floor { display: block; }
 
-        button.generate-btn:active {
-            transform: translateY(0);
-        }
-
-        .result-box {
-            margin-top: 24px;
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            display: none;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        .result-box.active {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .result-url {
-            color: #fff;
-            font-weight: 600;
-            font-size: 16px;
-            word-break: break-all;
-        }
-
-        button.copy-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid var(--glass-border);
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
-            margin-left: 15px;
-        }
-
-        button.copy-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .layout-toggle {
+            position: absolute; top: 30px; right: 30px; z-index: 200;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 600;
+            cursor: pointer; backdrop-filter: blur(10px);
         }
     </style>
 </head>
-<body>
+<body id="main-body">
 
-    <div class="container">
-        <div class="intro-box">
-            <span class="intro-badge">x8pect</span>
-            <h1>x8stuff Links</h1>
-            <p class="subtitle">Macau based. Writing scripts, breaking things, and making links shorter so they don't look like garbage.</p>
-        </div>
+    <button class="layout-toggle" onclick="toggleLayout()">
+        <i class="ph ph-elevator"></i> <span id="mode-text">Elevator Mode</span>
+    </button>
 
-        <div class="input-group">
-            <input type="url" id="longUrl" placeholder="Paste your super long URL here..." required>
-        </div>
-        
-        <div class="input-group">
-            <input type="text" id="customAlias" placeholder="Custom alias (e.g., 'roblox-script')">
-        </div>
+    <canvas id="connections-canvas"></canvas>
 
-        <div class="toggle-group">
-            <label class="switch">
-                <input type="checkbox" id="seqToggle">
-                <span class="slider"></span>
-            </label>
-            <span class="toggle-text">Use sequential number (1, 2, 3...)</span>
-        </div>
+    <div id="universe-bg" onmouseenter="focusBg()" onmouseleave="unfocusBg()" onclick="focusBg(true)"></div>
 
-        <button class="generate-btn" id="generateBtn" onclick="generateShortUrl()">Generate Link</button>
-
-        <div class="result-box" id="resultBox">
-            <div class="result-url" id="shortUrlDisplay">https://x8stuff.com/</div>
-            <button class="copy-btn" onclick="copyToClipboard()" id="copyBtn">Copy</button>
+    <div id="main-frame" onmouseenter="unfocusBg()" onclick="unlockAndFocus(event)">
+        <textarea id="main-input" rows="3" placeholder="Paste URL to shorten, or text to sync..."></textarea>
+        <div class="action-row">
+            <button id="shorten-btn" class="btn-shorten" onclick="handleShorten(event)">
+                <i class="ph ph-link"></i> Shorten
+            </button>
+            <button id="push-btn" class="btn-push" onclick="handlePush(event)">
+                <i class="ph ph-cloud-arrow-up"></i> Push
+            </button>
         </div>
     </div>
 
     <script>
-        // 模擬後端已經被用掉的流水號 (假設 1, 2, 4 已經有人用了)
-        const mockDatabase = ["1", "2", "4"];
-        let currentSeqCheck = 1;
+        // --- ⚙️ 配置區 ---
+        const SUPABASE_URL = "https://ikiuqdudpemfkfxzyyfw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 當切換流水號開關時，把 Custom Alias 欄位灰掉
-        document.getElementById('seqToggle').addEventListener('change', function() {
-            const customInput = document.getElementById('customAlias');
-            if(this.checked) {
-                customInput.disabled = true;
-                customInput.style.opacity = "0.3";
-                customInput.value = "";
-            } else {
-                customInput.disabled = false;
-                customInput.style.opacity = "1";
-            }
-        });
+        let historyData = [];
+        let isElevator = false;
+        let isLocked = false;
+        const nodes = [];
 
-        function generateShortUrl() {
-            const longUrl = document.getElementById('longUrl').value;
-            const customAlias = document.getElementById('customAlias').value;
-            const useSeq = document.getElementById('seqToggle').checked;
-            const btn = document.getElementById('generateBtn');
-            const resultBox = document.getElementById('resultBox');
-            const shortUrlDisplay = document.getElementById('shortUrlDisplay');
+        // --- 🛠️ 核心邏輯 ---
 
-            if(!longUrl) {
-                alert("搞什麼，連網址都沒貼？");
-                return;
-            }
+        // 初始化宇宙
+        async function initUniverse() {
+            // 從資料庫抓取最近的資料 (24小時內)
+            const { data, error } = await _supabase
+                .from('workspace')
+                .select('*')
+                .order('created_at', { ascending: true });
 
-            btn.innerText = "Processing...";
-            btn.style.opacity = "0.7";
-            btn.disabled = true;
+            if (error) console.error("抓取失敗:", error);
+            else historyData = data;
 
-            setTimeout(() => {
-                let alias = "";
-
-                if (useSeq) {
-                    // 檢查流水號是否存在
-                    while(mockDatabase.includes(currentSeqCheck.toString())) {
-                        console.log(`流水號 ${currentSeqCheck} 已經被用掉了，跳過...`);
-                        currentSeqCheck++;
-                    }
-                    alias = currentSeqCheck.toString();
-                    // 把它加進假資料庫，這樣下次按就不會重複
-                    mockDatabase.push(alias);
-                } else {
-                    // 如果不用流水號，就看有沒有自訂，沒有就隨便抽5個字
-                    alias = customAlias || Math.random().toString(36).substring(2, 7);
-                }
-
-                const finalUrl = `https://x8stuff.com/${alias}`;
-                
-                shortUrlDisplay.innerText = finalUrl;
-                resultBox.classList.add('active');
-                
-                btn.innerText = "Generate Another";
-                btn.style.opacity = "1";
-                btn.disabled = false;
-                
-                document.getElementById('copyBtn').innerText = "Copy";
-            }, 600);
+            renderNodes();
         }
 
-        function copyToClipboard() {
-            const textToCopy = document.getElementById('shortUrlDisplay').innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const copyBtn = document.getElementById('copyBtn');
-                copyBtn.innerText = "Copied!";
-                setTimeout(() => copyBtn.innerText = "Copy", 2000);
+        function renderNodes() {
+            const container = document.getElementById('universe-bg');
+            container.innerHTML = '';
+            nodes.length = 0; // 清空陣列
+
+            historyData.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'history-node';
+                const icon = item.type === 'link' ? 'ph-link' : 'ph-text-t';
+                el.innerHTML = `
+                    <div class="node-floor">F${i+1}</div>
+                    <div class="node-type"><i class="ph ${icon}"></i> ${item.type}</div>
+                    <div class="node-content">${item.content}</div>
+                `;
+
+                // 隨機分佈
+                const x = Math.random() * 80 + 10;
+                const y = Math.random() * 80 + 10;
+                const z = (Math.random() - 0.5) * 600;
+
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+                el.style.transform = `translateZ(${z}px)`;
+                
+                container.appendChild(el);
+                nodes.push({ el, x, y, z });
+            });
+            renderCanvas();
+        }
+
+        // 監聽即時更新 (Realtime)
+        _supabase
+            .channel('schema-db-changes')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'workspace' }, (payload) => {
+                console.log("偵測到新數據!", payload.new);
+                historyData.push(payload.new);
+                renderNodes();
+            })
+            .subscribe();
+
+        // 縮網址動作
+        async function handleShorten(e) {
+            e.stopPropagation();
+            const input = document.getElementById('main-input');
+            const btn = document.getElementById('shorten-btn');
+            if(!input.value) return alert("老兄，網址呢？");
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ph ph-circle-notch"></i> Processing...`;
+
+            // 1. 獲取最後一個序號
+            const { data: lastItem } = await _supabase
+                .from('workspace')
+                .select('id')
+                .order('id', { ascending: false })
+                .limit(1)
+                .single();
+            
+            const nextSlug = lastItem ? (lastItem.id + 1).toString() : "1";
+
+            // 2. 寫入資料庫
+            const { error } = await _supabase
+                .from('workspace')
+                .insert([{ type: 'link', content: input.value, slug: nextSlug }]);
+
+            if (error) alert("失敗了: " + error.message);
+            else {
+                alert(`搞定！縮網址為: x8stuff.com/i/${nextSlug}`);
+                input.value = '';
+            }
+            btn.disabled = false;
+            btn.innerHTML = `<i class="ph ph-link"></i> Shorten`;
+        }
+
+        // 推送文字動作
+        async function handlePush(e) {
+            e.stopPropagation();
+            const input = document.getElementById('main-input');
+            if(!input.value) return alert("空空的，你想推空氣嗎？");
+
+            const { error } = await _supabase
+                .from('workspace')
+                .insert([{ type: 'text', content: input.value }]);
+
+            if (error) alert("推送失敗: " + error.message);
+            else input.value = '';
+        }
+
+        // --- 🎨 視覺特效 ---
+
+        const canvas = document.getElementById('connections-canvas');
+        const ctx = canvas.getContext('2d');
+        function renderCanvas() {
+            canvas.width = window.innerWidth * 1.4;
+            canvas.height = window.innerHeight * 1.4;
+            if(isElevator) return;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            nodes.forEach((n1, i) => {
+                nodes.slice(i+1).forEach(n2 => {
+                    if(Math.random() > 0.3) return;
+                    const r1 = n1.el.getBoundingClientRect();
+                    const r2 = n2.el.getBoundingClientRect();
+                    ctx.beginPath();
+                    ctx.moveTo(r1.left + r1.width/2 + canvas.width*0.14, r1.top + r1.height/2 + canvas.height*0.14);
+                    ctx.lineTo(r2.left + r2.width/2 + canvas.width*0.14, r2.top + r2.height/2 + canvas.height*0.14);
+                    ctx.stroke();
+                });
             });
         }
+
+        window.addEventListener('mousemove', (e) => {
+            if(isElevator) return;
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            document.getElementById('universe-bg').style.transform = `rotateY(${x/10}deg) rotateX(${-y/10}deg) translate(${x}px, ${y}px)`;
+        });
+
+        function focusBg(lock = false) { if(lock) isLocked = true; document.body.classList.add('bg-focused'); }
+        function unfocusBg() { if(isLocked) return; document.body.classList.remove('bg-focused'); }
+        function unlockAndFocus(e) { isLocked = false; unfocusBg(); e.stopPropagation(); }
+
+        function toggleLayout() {
+            isElevator = !isElevator;
+            document.body.classList.toggle('elevator-mode');
+            document.getElementById('mode-text').innerText = isElevator ? "Universe Mode" : "Elevator Mode";
+            if(isElevator) focusBg(true);
+            else { isLocked = false; unfocusBg(); setTimeout(renderCanvas, 300); }
+        }
+
+        window.addEventListener('resize', renderCanvas);
+        initUniverse();
+
     </script>
 </body>
 </html>
