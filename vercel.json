@@ -1,9 +1,5 @@
 {
-  "redirects": [
-    {
-      "source": "/PPT",
-      "destination": "https://powerpoint.x8stuff.lol",
-      "permanent": true
-    }
+  "rewrites": [
+    { "source": "/i/:path*", "destination": "/index.html" }
   ]
 }
