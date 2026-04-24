@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x8</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -141,8 +142,8 @@
     <div class="logo" id="logo">x8</div>
     <div class="info-wrap" id="info">
       <div class="info-inner">
-        <div class="info-main">Work in Progress</div>
-        <div class="info-sub">last edited on 2026 / 4 / 3</div>
+        <div class="info-main" id="status-main">Work in Progress</div>
+        <div class="info-sub" id="status-sub">last edited on 2026 / 4 / 3</div>
       </div>
     </div>
   </div>
@@ -158,7 +159,50 @@
   <audio id="audio" src="/lobby.mp3" autoplay loop></audio>
 
   <script>
-    // audio
+    // --- 配置 Supabase ---
+    const SUPABASE_URL = "https://ikiuqdudpemfkfxzyyfw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- 自動跳轉邏輯 ---
+    async function handleRedirect() {
+      const path = window.location.pathname;
+      if (path.startsWith('/i/')) {
+        const slug = path.split('/').pop();
+        if (!slug) return;
+
+        // UI 反饋：打開 info 並顯示跳轉狀態
+        const info = document.getElementById('info');
+        const statusMain = document.getElementById('status-main');
+        const statusSub = document.getElementById('status-sub');
+        
+        info.classList.add('open');
+        statusMain.innerText = "Redirecting";
+        statusSub.innerText = "fetching destination from x8 universe...";
+
+        // 從資料庫抓取
+        const { data, error } = await _supabase
+          .from('workspace')
+          .select('content')
+          .eq('slug', slug)
+          .single();
+
+        if (data && data.content) {
+          // 成功後起飛
+          setTimeout(() => {
+            window.location.href = data.content;
+          }, 800); // 稍微延遲一下，讓使用者看到 Premium 的跳轉狀態
+        } else {
+          statusMain.innerText = "404 - Void";
+          statusSub.innerText = "this shortlink doesn't exist.";
+        }
+      }
+    }
+
+    // 啟動跳轉檢查
+    handleRedirect();
+
+    // --- 原有音效邏輯 ---
     const audio = document.getElementById('audio');
     const slider = document.getElementById('vol');
     const fill = document.getElementById('vf');
@@ -170,7 +214,7 @@
       fill.style.width = (v * 100) + '%';
     });
 
-    // toggle info
+    // --- 原有切換邏輯 ---
     const logo = document.getElementById('logo');
     const info = document.getElementById('info');
     let open = false;
