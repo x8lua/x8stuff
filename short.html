@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>x8stuff | Premium URL Shortener</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #ffffff;
+            --secondary: #a1a1aa;
+            --accent: #ffffff; /* 改成純白高對比，更 Vercel */
+            --accent-glow: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, #1a1a1a, var(--bg-color) 70%);
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px; /* 變寬了 */
+            padding: 50px; /* 留白變多，看起來更乾淨 */
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        /* x8 Intro 區塊 */
+        .intro-box {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .intro-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #d4d4d8;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        p.subtitle {
+            color: var(--secondary);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        input[type="url"], input[type="text"] {
+            width: 100%;
+            padding: 18px 24px; /* 輸入框變大 */
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Toggle 開關樣式 */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.03);
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-text {
+            margin-left: 14px;
+            font-size: 14px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #fff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: #000;
+        }
+
+        button.generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button.generate-btn:hover {
+            background: #e4e4e7;
+            transform: translateY(-2px);
+        }
+
+        button.generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .result-box.active {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-url {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+        button.copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+
+        button.copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="intro-box">
+            <span class="intro-badge">x8pect</span>
+            <h1>x8stuff Links</h1>
+            <p class="subtitle">Macau based. Writing scripts, breaking things, and making links shorter so they don't look like garbage.</p>
+        </div>
+
+        <div class="input-group">
+            <input type="url" id="longUrl" placeholder="Paste your super long URL here..." required>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="customAlias" placeholder="Custom alias (e.g., 'roblox-script')">
+        </div>
+
+        <div class="toggle-group">
+            <label class="switch">
+                <input type="checkbox" id="seqToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-text">Use sequential number (1, 2, 3...)</span>
+        </div>
+
+        <button class="generate-btn" id="generateBtn" onclick="generateShortUrl()">Generate Link</button>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-url" id="shortUrlDisplay">https://x8stuff.com/</div>
+            <button class="copy-btn" onclick="copyToClipboard()" id="copyBtn">Copy</button>
+        </div>
+    </div>
+
+    <script>
+        // 模擬後端已經被用掉的流水號 (假設 1, 2, 4 已經有人用了)
+        const mockDatabase = ["1", "2", "4"];
+        let currentSeqCheck = 1;
+
+        // 當切換流水號開關時，把 Custom Alias 欄位灰掉
+        document.getElementById('seqToggle').addEventListener('change', function() {
+            const customInput = document.getElementById('customAlias');
+            if(this.checked) {
+                customInput.disabled = true;
+                customInput.style.opacity = "0.3";
+                customInput.value = "";
+            } else {
+                customInput.disabled = false;
+                customInput.style.opacity = "1";
+            }
+        });
+
+        function generateShortUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            const customAlias = document.getElementById('customAlias').value;
+            const useSeq = document.getElementById('seqToggle').checked;
+            const btn = document.getElementById('generateBtn');
+            const resultBox = document.getElementById('resultBox');
+            const shortUrlDisplay = document.getElementById('shortUrlDisplay');
+
+            if(!longUrl) {
+                alert("搞什麼，連網址都沒貼？");
+                return;
+            }
+
+            btn.innerText = "Processing...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                let alias = "";
+
+                if (useSeq) {
+                    // 檢查流水號是否存在
+                    while(mockDatabase.includes(currentSeqCheck.toString())) {
+                        console.log(`流水號 ${currentSeqCheck} 已經被用掉了，跳過...`);
+                        currentSeqCheck++;
+                    }
+                    alias = currentSeqCheck.toString();
+                    // 把它加進假資料庫，這樣下次按就不會重複
+                    mockDatabase.push(alias);
+                } else {
+                    // 如果不用流水號，就看有沒有自訂，沒有就隨便抽5個字
+                    alias = customAlias || Math.random().toString(36).substring(2, 7);
+                }
+
+                const finalUrl = `https://x8stuff.com/${alias}`;
+                
+                shortUrlDisplay.innerText = finalUrl;
+                resultBox.classList.add('active');
+                
+                btn.innerText = "Generate Another";
+                btn.style.opacity = "1";
+                btn.disabled = false;
+                
+                document.getElementById('copyBtn').innerText = "Copy";
+            }, 600);
+        }
+
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('shortUrlDisplay').innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.innerText = "Copied!";
+                setTimeout(() => copyBtn.innerText = "Copy", 2000);
+            });
+        }
+    </script>
+</body>
+</html>
