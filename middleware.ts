@@ -20,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/index.html',
   '/short.html',
+  '/nope.html',
   '/not-approved(.*)',
   '/favicon.ico',
 ]);
@@ -42,7 +43,7 @@ export default clerkMiddleware(async (auth, request) => {
 
     if (allowedUserIds.length === 0 || !allowedUserIds.includes(userId || '')) {
       const url = request.nextUrl.clone();
-      url.pathname = '/not-approved';
+      url.pathname = '/nope.html';
       url.search = '';
       return NextResponse.redirect(url);
     }
