@@ -29,17 +29,25 @@ function isPrivatePath(pathname: string) {
   return PRIVATE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-export function middleware(request: NextRequest) {
+async function sha256(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isPublicPath(pathname) || !isPrivatePath(pathname)) {
     return NextResponse.next();
   }
 
+  const adminPassword = process.env.X8_ADMIN_PASSWORD;
   const token = request.cookies.get('x8_auth_token')?.value;
-  const expectedToken = process.env.X8_AUTH_TOKEN;
 
-  if (expectedToken && token === expectedToken) {
+  if (adminPassword && token === (await sha256(adminPassword))) {
     return NextResponse.next();
   }
 
