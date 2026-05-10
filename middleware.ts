@@ -1,5 +1,4 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
 
 const isProtectedRoute = createRouteMatcher([
   '/CL(.*)',
@@ -21,21 +20,20 @@ const isPublicRoute = createRouteMatcher([
   '/index.html',
   '/short.html',
   '/not-approved(.*)',
-  '/api/login(.*)',
 ]);
 
-export default clerkMiddleware((auth, request) => {
+export default clerkMiddleware(async (auth, request) => {
   if (isPublicRoute(request)) {
-    return NextResponse.next();
+    return;
   }
 
   if (isProtectedRoute(request)) {
-    return auth().protect({ unauthenticatedUrl: '/not-approved' });
+    await auth.protect({ unauthenticatedUrl: '/not-approved' });
   }
-
-  return NextResponse.next();
 });
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 };
