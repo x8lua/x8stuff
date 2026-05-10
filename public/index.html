@@ -8,28 +8,136 @@
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #0c0c0c; }
-    .bg { position: fixed; inset: 0; z-index: 0; }
-    .bg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) brightness(0.08); }
-    .stage { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .logo { font-family: 'Google Sans', sans-serif; font-weight: 700; font-style: italic; font-size: clamp(7rem, 20vw, 16rem); color: #f0ede8; letter-spacing: -0.03em; line-height: 1; user-select: none; cursor: pointer; opacity: 0; animation: appear 0.8s ease 0.1s forwards; transition: opacity 0.2s; position: relative; z-index: 2; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0c0c0c;
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+    }
+    .bg img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: grayscale(1) brightness(0.08);
+    }
+
+    /* ── STAGE ── */
+    .stage {
+      position: fixed; inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── LOGO ── */
+    .logo {
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 700;
+      font-style: italic;
+      font-size: clamp(7rem, 20vw, 16rem);
+      color: #f0ede8;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      user-select: none;
+      cursor: pointer;
+      opacity: 0;
+      animation: appear 0.8s ease 0.1s forwards;
+      transition: opacity 0.2s;
+      position: relative;
+      z-index: 2;
+    }
     .logo:hover { opacity: 0.75; }
-    .info-wrap { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease 0.15s; text-align: center; z-index: 1; }
-    .info-wrap.open { max-height: 120px; opacity: 1; }
-    .info-inner { padding-top: 28px; }
-    .info-main { font-family: 'Google Sans', sans-serif; font-size: clamp(0.75rem, 1.6vw, 1rem); font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: #f0ede8; }
-    .info-sub { font-family: 'Google Sans', sans-serif; font-size: clamp(0.55rem, 1vw, 0.7rem); font-weight: 400; font-style: italic; letter-spacing: 0.12em; color: rgba(240,237,232,0.35); margin-top: 10px; }
-    .vol { position: fixed; bottom: 32px; right: 36px; z-index: 20; display: flex; align-items: center; gap: 10px; opacity: 0.18; transition: opacity 0.3s; }
+
+    /* ── INFO PANEL ── */
+    .info-wrap {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.5s ease 0.15s;
+      text-align: center;
+      z-index: 1;
+    }
+    .info-wrap.open {
+      max-height: 120px;
+      opacity: 1;
+    }
+    .info-inner {
+      padding-top: 28px;
+    }
+    .info-main {
+      font-family: 'Google Sans', sans-serif;
+      font-size: clamp(0.75rem, 1.6vw, 1rem);
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #f0ede8;
+    }
+    .info-sub {
+      font-family: 'Google Sans', sans-serif;
+      font-size: clamp(0.55rem, 1vw, 0.7rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.12em;
+      color: rgba(240,237,232,0.35);
+      margin-top: 10px;
+    }
+
+    /* ── VOLUME ── */
+    .vol {
+      position: fixed;
+      bottom: 32px; right: 36px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.18;
+      transition: opacity 0.3s;
+    }
     .vol:hover { opacity: 1; }
-    .vol-label { font-family: 'Google Sans', sans-serif; font-size: 0.55rem; letter-spacing: 0.2em; color: #f0ede8; text-transform: uppercase; }
-    .vol-bar { position: relative; width: 72px; height: 1px; background: rgba(240,237,232,0.2); }
-    .vol-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: #f0ede8; transition: width 0.05s; }
-    input[type=range].vol-input { position: absolute; inset: -8px 0; width: 100%; opacity: 0; cursor: pointer; }
-    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .vol-label {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: #f0ede8;
+      text-transform: uppercase;
+    }
+    .vol-bar {
+      position: relative;
+      width: 72px; height: 1px;
+      background: rgba(240,237,232,0.2);
+    }
+    .vol-fill {
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%;
+      width: 50%;
+      background: #f0ede8;
+      transition: width 0.05s;
+    }
+    input[type=range].vol-input {
+      position: absolute;
+      inset: -8px 0;
+      width: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
+
   <div class="bg"><img src="/pics/lobby.jpg" alt=""></div>
+
   <div class="stage">
     <div class="logo" id="logo">x8</div>
     <div class="info-wrap" id="info">
@@ -39,6 +147,7 @@
       </div>
     </div>
   </div>
+
   <div class="vol">
     <span class="vol-label">vol</span>
     <div class="vol-bar">
@@ -46,34 +155,59 @@
       <input type="range" class="vol-input" id="vol" min="0" max="1" step="0.01" value="0.5">
     </div>
   </div>
+
   <audio id="audio" src="/lobby.mp3" autoplay loop></audio>
+
   <script>
+    // --- 配置 Supabase ---
     const SUPABASE_URL = "https://ikiuqdudpemfkfxzyyfw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- 自動跳轉邏輯 ---
+    // --- 🚀 修正後的跳轉邏輯 ---
     async function handleRedirect() {
       const path = window.location.pathname;
       if (path.startsWith('/i/')) {
         const slug = path.split('/').pop();
         if (!slug) return;
+
         const info = document.getElementById('info');
         const statusMain = document.getElementById('status-main');
         const statusSub = document.getElementById('status-sub');
+        
         info.classList.add('open');
         statusMain.innerText = "Redirecting";
         statusSub.innerText = "warping through the x8 universe...";
-        const { data } = await _supabase.from('workspace').select('content').eq('slug', slug).single();
+
+        const { data, error } = await _supabase
+          .from('workspace')
+          .select('content')
+          .eq('slug', slug)
+          .single();
+
         if (data && data.content) {
           let target = data.content.trim();
-          if (!/^https?:\/\//i.test(target)) target = 'https://' + target;
-          setTimeout(() => { window.location.href = target; }, 800);
+
+          // 核心修正：如果網址不是以 http 開頭，強行加上 https://
+          if (!/^https?:\/\//i.test(target)) {
+            target = 'https://' + target;
+          }
+
+          setTimeout(() => {
+            window.location.href = target; // 現在它會飛出你的網域了
+          }, 800);
         } else {
           statusMain.innerText = "404 - Void";
           statusSub.innerText = "this shortlink doesn't exist.";
         }
       }
     }
+
+    // 啟動跳轉檢查
     handleRedirect();
+
+    // --- 原有音效邏輯 ---
     const audio = document.getElementById('audio');
     const slider = document.getElementById('vol');
     const fill = document.getElementById('vf');
@@ -84,6 +218,8 @@
       audio.volume = v;
       fill.style.width = (v * 100) + '%';
     });
+
+    // --- 原有切換邏輯 ---
     const logo = document.getElementById('logo');
     const info = document.getElementById('info');
     let open = false;
