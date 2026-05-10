@@ -1,51 +1,27 @@
-import { useState } from 'react';
+import { SignIn, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
 export default function NotApproved() {
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('ACCESS_DENIED');
-
-  async function login() {
-    const password = window.prompt('administrator password');
-    if (!password) return;
-
-    setBusy(true);
-    setMessage('VERIFYING_CREDENTIALS');
-
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      if (!response.ok) {
-        setMessage('INVALID_PASSWORD');
-        return;
-      }
-
-      setMessage('ACCESS_GRANTED');
-      window.location.href = '/';
-    } catch {
-      setMessage('AUTH_SERVICE_UNAVAILABLE');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <main className="screen">
-      <button className="hiddenLogin" type="button" onClick={login} disabled={busy} aria-label="admin login" />
       <section className="bsod">
         <p>A problem has been detected and access has been shut down to prevent damage to your universe.</p>
         <p>X8_NOT_APPROVED</p>
         <p>
-          If this is the first time you've seen this stop error screen, restart your brain. If this screen appears again,
-          follow these steps:
+          If this is the first time you've seen this stop error screen, sign in with an approved x8 account. If this
+          screen appears again, check whether your account has access.
         </p>
-        <p>Check to make sure you are allowed to view this directory. If a new folder is protected, ask the administrator for clearance.</p>
         <p>Technical information:</p>
-        <p>*** STOP: 0x0000008X ({message})</p>
-        <p className="hint">press the invisible corner if you know the password</p>
+        <p>*** STOP: 0x0000008X (CLERK_AUTH_REQUIRED)</p>
+        <div className="authBox">
+          <SignedOut>
+            <SignIn routing="path" path="/not-approved" signUpUrl="/not-approved" afterSignInUrl="/" />
+          </SignedOut>
+          <SignedIn>
+            <p className="signedIn">You are signed in. Return to the protected page or go home.</p>
+            <UserButton afterSignOutUrl="/not-approved" />
+            <a className="home" href="/">return home</a>
+          </SignedIn>
+        </div>
       </section>
 
       <style jsx>{`
@@ -61,24 +37,28 @@ export default function NotApproved() {
           padding: 32px;
         }
         .bsod {
-          width: min(900px, 100%);
-          font-size: clamp(16px, 2.2vw, 24px);
+          width: min(920px, 100%);
+          font-size: clamp(16px, 2vw, 22px);
           line-height: 1.45;
           text-shadow: 1px 1px #000;
         }
-        .hiddenLogin {
-          position: fixed;
-          right: 0;
-          bottom: 0;
-          width: 64px;
-          height: 64px;
-          opacity: 0;
-          border: 0;
-          cursor: default;
+        .authBox {
+          margin-top: 28px;
+          display: inline-block;
+          color: #111827;
+          text-shadow: none;
         }
-        .hint {
-          opacity: 0.18;
-          font-size: 0.72em;
+        .signedIn {
+          color: white;
+          text-shadow: 1px 1px #000;
+          margin-bottom: 12px;
+        }
+        .home {
+          display: inline-block;
+          margin-left: 16px;
+          color: white;
+          text-shadow: 1px 1px #000;
+          text-transform: uppercase;
         }
       `}</style>
     </main>
