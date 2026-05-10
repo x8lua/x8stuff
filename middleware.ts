@@ -23,13 +23,13 @@ const isPublicRoute = createRouteMatcher([
   '/favicon.ico',
 ]);
 
-export default clerkMiddleware((auth, request) => {
+export default clerkMiddleware(async (auth, request) => {
   if (isPublicRoute(request)) {
     return;
   }
 
   if (isProtectedRoute(request)) {
-    auth().protect();
+    await auth.protect();
   }
 });
 
