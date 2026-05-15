@@ -1,1 +1,21 @@
-{"scripts":{"dev":"next dev --webpack","build":"next build","start":"next start"},"dependencies":{"next":"latest","react":"latest","react-dom":"latest","nextra":"latest","nextra-theme-docs":"latest"},"devDependencies":{"typescript":"latest","@types/node":"latest","@types/react":"latest"}}
+{
+  "name": "cdsj5-wiki",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "15.3.4",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "nextra": "4.2.17",
+    "nextra-theme-docs": "4.2.17"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.29",
+    "@types/react": "^19.0.12"
+  }
+}
