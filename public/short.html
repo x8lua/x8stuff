@@ -449,12 +449,35 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .recent-title {
             font-size: 14px;
             font-weight: 700;
             color: #173866;
+        }
+
+        .view-switch {
+            display: flex;
+            gap: 4px;
+        }
+
+        .view-switch-btn {
+            min-height: 26px;
+            padding: 0 8px;
+            border: 1px solid #9eb1ca;
+            background: linear-gradient(180deg, #fffdf7, #dfe8f8);
+            color: #36527c;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .view-switch-btn.active {
+            background: linear-gradient(180deg, #fff7cf 0%, #f0c352 100%);
+            border-color: #bf8b1f;
+            color: #5f3d00;
         }
 
         .recent-list {
@@ -511,6 +534,35 @@
             line-height: 1.45;
             color: #22304a;
             word-break: break-word;
+        }
+
+        .floor-item {
+            padding: 9px;
+            border: 1px solid #c0cde0;
+            background: linear-gradient(180deg, #fffef8 0%, #f1ede0 100%);
+            display: grid;
+            gap: 7px;
+        }
+
+        .floor-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .floor-badge {
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #5f3d00;
+            background: #fff2c8;
+            border: 1px solid #d2b45d;
+        }
+
+        .floor-meta {
+            font-size: 11px;
+            color: #6b7a93;
         }
 
         .statusbar {
@@ -831,7 +883,11 @@
 
                         <aside class="recent-card">
                             <div class="recent-head">
-                                <div class="recent-title">Recent</div>
+                                <div class="recent-title">History</div>
+                                <div class="view-switch" role="tablist" aria-label="History views">
+                                    <button class="view-switch-btn active" type="button" id="view-recent-btn">Recent</button>
+                                    <button class="view-switch-btn" type="button" id="view-floor-btn">Floors</button>
+                                </div>
                                 <span class="badge" id="recent-count">0 items</span>
                             </div>
                             <div class="recent-list" id="recent-list">
@@ -877,6 +933,7 @@
 
         let historyData = [];
         let activeTab = "text";
+        let historyView = "recent";
         let lastResultUrl = "";
         let lastFetchedCopyValue = "";
         let lastFetchedOpenUrl = "";
@@ -897,6 +954,8 @@
             fetchId: document.getElementById("fetch-id"),
             recentList: document.getElementById("recent-list"),
             recentCount: document.getElementById("recent-count"),
+            viewRecentBtn: document.getElementById("view-recent-btn"),
+            viewFloorBtn: document.getElementById("view-floor-btn"),
             countBadge: document.getElementById("count-badge"),
             statusLeft: document.getElementById("status-left"),
             textResult: document.getElementById("text-result"),
@@ -1196,11 +1255,47 @@
             els.recentCount.textContent = `${historyData.length} items`;
         }
 
+        function setHistoryView(viewName) {
+            historyView = viewName;
+            els.viewRecentBtn.classList.toggle("active", viewName === "recent");
+            els.viewFloorBtn.classList.toggle("active", viewName === "floor");
+            renderRecent();
+            setStatus(viewName === "floor" ? "Floor view ready" : "Recent view ready");
+        }
+
         function renderRecent() {
             updateCounts();
 
             if (!historyData.length) {
                 els.recentList.innerHTML = '<div class="recent-empty">No items yet.</div>';
+                return;
+            }
+
+            if (historyView === "floor") {
+                const items = [...historyData];
+                els.recentList.innerHTML = items.map((item, index) => {
+                    const displayValue = item.type === "link" ? `${DOMAIN}/i/${item.slug}` : item.content;
+                    const floorNumber = index + 1;
+                    return `
+                        <article class="floor-item">
+                            <div class="floor-top">
+                                <span class="floor-badge">Floor ${floorNumber}</span>
+                                <span class="floor-meta">${item.type.toUpperCase()} - ${timeAgo(item.created_at)}</span>
+                            </div>
+                            <div class="recent-value">${escapeHtml(displayValue)}</div>
+                            <div class="result-actions">
+                                <button class="btn" type="button" onclick="copyRecent('${encodeURIComponent(displayValue)}')">
+                                    <i class="ph ph-copy"></i> Copy
+                                </button>
+                                ${item.type === "link" ? `
+                                    <button class="btn" type="button" onclick="window.open('${displayValue}', '_blank')">
+                                        <i class="ph ph-arrow-square-out"></i> Open
+                                    </button>
+                                ` : ""}
+                            </div>
+                        </article>
+                    `;
+                }).join("");
                 return;
             }
 
@@ -1304,6 +1399,8 @@
             }
             window.open(lastFetchedOpenUrl, "_blank");
         });
+        els.viewRecentBtn.addEventListener("click", () => setHistoryView("recent"));
+        els.viewFloorBtn.addEventListener("click", () => setHistoryView("floor"));
 
         els.tabs.forEach((tab) => {
             tab.addEventListener("click", () => switchTab(tab.dataset.tab));
