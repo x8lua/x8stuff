@@ -523,6 +523,12 @@
             color: #7a5600;
         }
 
+        .recent-type.file {
+            background: #d8f4ff;
+            border-color: #7fbad2;
+            color: #0e5270;
+        }
+
         .recent-time {
             font-size: 11px;
             color: #6b7a93;
@@ -563,6 +569,41 @@
         .floor-meta {
             font-size: 11px;
             color: #6b7a93;
+        }
+
+        .dropzone {
+            min-height: 140px;
+            padding: 16px;
+            border: 2px dashed #9eb2ce;
+            background: linear-gradient(180deg, #ffffff 0%, #edf3ff 100%);
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: #36527c;
+            cursor: pointer;
+            transition: border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .dropzone.active {
+            border-color: #4d84cf;
+            background: linear-gradient(180deg, #f9fcff 0%, #dbe9ff 100%);
+        }
+
+        .drop-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #173866;
+        }
+
+        .drop-sub {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #5f6d84;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: #36527c;
         }
 
         .statusbar {
@@ -721,7 +762,7 @@
                     <div class="app-icon"></div>
                     <div class="title-copy">
                         <div class="title-main">x8 toolbox</div>
-                        <div class="title-sub">3 modes - text default - quick sync</div>
+                        <div class="title-sub">4 modes - text default - quick sync</div>
                     </div>
                 </div>
                 <div class="window-actions" aria-hidden="true">
@@ -741,6 +782,9 @@
                     </button>
                     <button class="tab" type="button" data-tab="fetch" role="tab" aria-selected="false">
                         <i class="ph ph-cloud-arrow-down"></i> Fetch
+                    </button>
+                    <button class="tab" type="button" data-tab="file" role="tab" aria-selected="false">
+                        <i class="ph ph-file-arrow-up"></i> File
                     </button>
                 </div>
 
@@ -879,6 +923,38 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="panel" id="panel-file" role="tabpanel">
+                                <div class="panel-bar">
+                                    <div class="panel-title">File upload</div>
+                                    <div class="badge-row">
+                                        <span class="badge">drag</span>
+                                        <span class="badge">10 min ttl</span>
+                                    </div>
+                                </div>
+
+                                <div class="dropzone" id="file-dropzone" tabindex="0" role="button" aria-label="Upload file">
+                                    <div>
+                                        <div class="drop-title">Drop file here or click to upload</div>
+                                        <div class="drop-sub">File expires in 10 minutes</div>
+                                    </div>
+                                </div>
+
+                                <input type="file" id="file-input" hidden>
+
+                                <div class="file-meta" id="file-meta">No file selected</div>
+
+                                <div class="action-row">
+                                    <button class="btn" type="button" id="clear-file-btn">
+                                        <i class="ph ph-x"></i> Clear
+                                    </button>
+                                </div>
+
+                                <div class="result-box" id="file-result">
+                                    <div class="result-label">File Status</div>
+                                    <div class="result-value" id="file-result-value"></div>
+                                </div>
+                            </div>
                         </section>
 
                         <aside class="recent-card">
@@ -930,6 +1006,7 @@
         const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const DOMAIN = window.location.origin;
+        const FILE_TTL_MS = 10 * 60 * 1000;
 
         let historyData = [];
         let activeTab = "text";
@@ -937,7 +1014,10 @@
         let lastResultUrl = "";
         let lastFetchedCopyValue = "";
         let lastFetchedOpenUrl = "";
+        let lastFetchedDownloadUrl = "";
+        let lastFetchedFileName = "";
         let lastFetchedIsLink = false;
+        let lastFetchedIsFile = false;
         let toastTimer = null;
 
         const els = {
@@ -952,6 +1032,9 @@
             linkUrl: document.getElementById("link-url"),
             linkSlug: document.getElementById("link-slug"),
             fetchId: document.getElementById("fetch-id"),
+            fileInput: document.getElementById("file-input"),
+            fileDropzone: document.getElementById("file-dropzone"),
+            fileMeta: document.getElementById("file-meta"),
             recentList: document.getElementById("recent-list"),
             recentCount: document.getElementById("recent-count"),
             viewRecentBtn: document.getElementById("view-recent-btn"),
@@ -965,6 +1048,8 @@
             fetchResult: document.getElementById("fetch-result"),
             fetchResultLabel: document.getElementById("fetch-result-label"),
             fetchResultValue: document.getElementById("fetch-result-value"),
+            fileResult: document.getElementById("file-result"),
+            fileResultValue: document.getElementById("file-result-value"),
             openFetchBtn: document.getElementById("open-fetch-btn"),
             qrModal: document.getElementById("qr-modal"),
             qrImg: document.getElementById("qr-img"),
@@ -1056,6 +1141,40 @@
             if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
             if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
             return new Date(dateStr).toLocaleDateString();
+        }
+
+        function formatBytes(size) {
+            if (!Number.isFinite(size) || size < 1) return "0 B";
+            const units = ["B", "KB", "MB", "GB"];
+            let value = size;
+            let index = 0;
+            while (value >= 1024 && index < units.length - 1) {
+                value /= 1024;
+                index += 1;
+            }
+            return `${value.toFixed(value >= 100 || index === 0 ? 0 : 1)} ${units[index]}`;
+        }
+
+        function parseFileContent(content) {
+            try {
+                const parsed = JSON.parse(content);
+                if (!parsed || typeof parsed !== "object") return null;
+                return parsed;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function isFileExpired(fileObj) {
+            return !fileObj || !fileObj.expiresAt || Date.now() > Number(fileObj.expiresAt);
+        }
+
+        function fileSummary(fileObj) {
+            if (!fileObj) return "Invalid file data";
+            const ttl = isFileExpired(fileObj)
+                ? "expired"
+                : `${Math.max(1, Math.ceil((Number(fileObj.expiresAt) - Date.now()) / 60000))}m left`;
+            return `${fileObj.name} (${formatBytes(Number(fileObj.size))}) - ${ttl}`;
         }
 
         async function copyToClipboard(value, successMessage) {
@@ -1167,6 +1286,49 @@
             setStatus("Short URL created");
         }
 
+        async function uploadFile(file) {
+            if (!file) return;
+
+            const reader = new FileReader();
+            const dataUrl = await new Promise((resolve, reject) => {
+                reader.onload = () => resolve(String(reader.result || ""));
+                reader.onerror = () => reject(new Error("Failed to read file"));
+                reader.readAsDataURL(file);
+            });
+
+            const payload = {
+                name: file.name || "file",
+                size: file.size || 0,
+                mime: file.type || "application/octet-stream",
+                dataUrl,
+                uploadedAt: Date.now(),
+                expiresAt: Date.now() + FILE_TTL_MS
+            };
+
+            const { data: last } = await _supabase
+                .from("workspace")
+                .select("id")
+                .order("id", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            const slug = last ? String(last.id + 1) : "1";
+
+            const { error } = await _supabase
+                .from("workspace")
+                .insert([{ type: "file", content: JSON.stringify(payload), slug }]);
+
+            if (error) {
+                showToast("error", error.message);
+                setStatus("File upload failed");
+                return;
+            }
+
+            els.fileMeta.textContent = fileSummary(payload);
+            showResult(els.fileResult, els.fileResultValue, `Saved as /i/${slug} - ${fileSummary(payload)}`);
+            showToast("success", "File uploaded");
+            setStatus("File uploaded");
+        }
+
         async function doFetch() {
             const query = els.fetchId.value.trim();
             if (!query) {
@@ -1212,14 +1374,36 @@
             }
 
             lastFetchedIsLink = record.type === "link";
-            lastFetchedCopyValue = record.content;
+            lastFetchedIsFile = record.type === "file";
             lastFetchedOpenUrl = lastFetchedIsLink ? `${DOMAIN}/i/${record.slug}` : "";
+            lastFetchedDownloadUrl = "";
+            lastFetchedFileName = "";
 
-            els.fetchResultLabel.textContent = lastFetchedIsLink
-                ? `Fetched /i/${record.slug}`
-                : "Fetched text";
-            els.fetchResultValue.textContent = record.content;
-            els.openFetchBtn.style.display = lastFetchedIsLink ? "inline-flex" : "none";
+            if (lastFetchedIsFile) {
+                const fileObj = parseFileContent(record.content);
+                if (!fileObj || !fileObj.dataUrl || isFileExpired(fileObj)) {
+                    els.fetchResult.classList.remove("visible");
+                    showToast("error", "File expired");
+                    setStatus("Fetched file expired");
+                    return;
+                }
+                lastFetchedCopyValue = fileObj.dataUrl;
+                lastFetchedDownloadUrl = fileObj.dataUrl;
+                lastFetchedFileName = fileObj.name || "file";
+                els.fetchResultLabel.textContent = `Fetched file /i/${record.slug}`;
+                els.fetchResultValue.textContent = fileSummary(fileObj);
+                els.openFetchBtn.innerHTML = '<i class="ph ph-download-simple"></i> Download';
+                els.openFetchBtn.style.display = "inline-flex";
+            } else {
+                lastFetchedCopyValue = record.content;
+                els.fetchResultLabel.textContent = lastFetchedIsLink
+                    ? `Fetched /i/${record.slug}`
+                    : "Fetched text";
+                els.fetchResultValue.textContent = record.content;
+                els.openFetchBtn.innerHTML = '<i class="ph ph-arrow-square-out"></i> Open';
+                els.openFetchBtn.style.display = lastFetchedIsLink ? "inline-flex" : "none";
+            }
+
             els.fetchResult.classList.add("visible");
             showToast("success", "Item fetched");
             setStatus("Fetch complete");
@@ -1245,8 +1429,18 @@
             els.fetchResult.classList.remove("visible");
             lastFetchedCopyValue = "";
             lastFetchedOpenUrl = "";
+            lastFetchedDownloadUrl = "";
+            lastFetchedFileName = "";
             lastFetchedIsLink = false;
+            lastFetchedIsFile = false;
             setStatus("Fetch cleared");
+        }
+
+        function clearFilePanel() {
+            els.fileInput.value = "";
+            els.fileMeta.textContent = "No file selected";
+            els.fileResult.classList.remove("visible");
+            setStatus("File panel cleared");
         }
 
         function updateCounts() {
@@ -1274,7 +1468,13 @@
             if (historyView === "floor") {
                 const items = [...historyData];
                 els.recentList.innerHTML = items.map((item, index) => {
-                    const displayValue = item.type === "link" ? `${DOMAIN}/i/${item.slug}` : item.content;
+                    const fileObj = item.type === "file" ? parseFileContent(item.content) : null;
+                    const isExpired = item.type === "file" ? isFileExpired(fileObj) : false;
+                    const displayValue = item.type === "link"
+                        ? `${DOMAIN}/i/${item.slug}`
+                        : item.type === "file"
+                            ? fileSummary(fileObj)
+                            : item.content;
                     const floorNumber = index + 1;
                     return `
                         <article class="floor-item">
@@ -1292,6 +1492,11 @@
                                         <i class="ph ph-arrow-square-out"></i> Open
                                     </button>
                                 ` : ""}
+                                ${item.type === "file" && !isExpired && fileObj && fileObj.dataUrl ? `
+                                    <button class="btn" type="button" onclick="downloadRecentFile('${encodeURIComponent(fileObj.dataUrl)}','${encodeURIComponent(fileObj.name || "file")}')">
+                                        <i class="ph ph-download-simple"></i> Download
+                                    </button>
+                                ` : ""}
                             </div>
                         </article>
                     `;
@@ -1301,7 +1506,13 @@
 
             const items = [...historyData].reverse().slice(0, 6);
             els.recentList.innerHTML = items.map((item) => {
-                const displayValue = item.type === "link" ? `${DOMAIN}/i/${item.slug}` : item.content;
+                const fileObj = item.type === "file" ? parseFileContent(item.content) : null;
+                const isExpired = item.type === "file" ? isFileExpired(fileObj) : false;
+                const displayValue = item.type === "link"
+                    ? `${DOMAIN}/i/${item.slug}`
+                    : item.type === "file"
+                        ? fileSummary(fileObj)
+                        : item.content;
                 return `
                     <article class="recent-item">
                         <div class="recent-top">
@@ -1318,6 +1529,11 @@
                                     <i class="ph ph-arrow-square-out"></i> Open
                                 </button>
                             ` : ""}
+                            ${item.type === "file" && !isExpired && fileObj && fileObj.dataUrl ? `
+                                <button class="btn" type="button" onclick="downloadRecentFile('${encodeURIComponent(fileObj.dataUrl)}','${encodeURIComponent(fileObj.name || "file")}')">
+                                    <i class="ph ph-download-simple"></i> Download
+                                </button>
+                            ` : ""}
                         </div>
                     </article>
                 `;
@@ -1327,6 +1543,16 @@
         function copyRecent(encoded) {
             const value = decodeURIComponent(encoded);
             copyToClipboard(value, "Recent item copied");
+        }
+
+        function downloadRecentFile(encodedUrl, encodedName) {
+            const url = decodeURIComponent(encodedUrl);
+            const name = decodeURIComponent(encodedName || "file");
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = name;
+            a.click();
+            showToast("success", "Download started");
         }
 
         function showQR() {
@@ -1370,6 +1596,7 @@
         document.getElementById("clear-link-btn").addEventListener("click", clearLink);
         document.getElementById("fetch-btn").addEventListener("click", doFetch);
         document.getElementById("clear-fetch-btn").addEventListener("click", clearFetch);
+        document.getElementById("clear-file-btn").addEventListener("click", clearFilePanel);
         document.getElementById("copy-link-btn").addEventListener("click", () => {
             if (!lastResultUrl) {
                 showToast("error", "No short URL");
@@ -1393,6 +1620,10 @@
             copyToClipboard(lastFetchedCopyValue, "Fetched item copied");
         });
         document.getElementById("open-fetch-btn").addEventListener("click", () => {
+            if (lastFetchedIsFile && lastFetchedDownloadUrl) {
+                downloadRecentFile(encodeURIComponent(lastFetchedDownloadUrl), encodeURIComponent(lastFetchedFileName || "file"));
+                return;
+            }
             if (!lastFetchedIsLink || !lastFetchedOpenUrl) {
                 showToast("error", "No fetched link");
                 return;
@@ -1414,6 +1645,37 @@
                 event.preventDefault();
                 toggleSlugPanel();
             }
+        });
+
+        els.fileDropzone.addEventListener("click", () => {
+            els.fileInput.click();
+        });
+        els.fileDropzone.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                els.fileInput.click();
+            }
+        });
+        els.fileInput.addEventListener("change", async (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            els.fileMeta.textContent = `${file.name} (${formatBytes(file.size)})`;
+            await uploadFile(file);
+        });
+        els.fileDropzone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            els.fileDropzone.classList.add("active");
+        });
+        els.fileDropzone.addEventListener("dragleave", () => {
+            els.fileDropzone.classList.remove("active");
+        });
+        els.fileDropzone.addEventListener("drop", async (event) => {
+            event.preventDefault();
+            els.fileDropzone.classList.remove("active");
+            const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+            if (!file) return;
+            els.fileMeta.textContent = `${file.name} (${formatBytes(file.size)})`;
+            await uploadFile(file);
         });
 
         document.addEventListener("keydown", (event) => {
@@ -1444,6 +1706,7 @@
 
         window.closeQR = closeQR;
         window.copyRecent = copyRecent;
+        window.downloadRecentFile = downloadRecentFile;
     </script>
 </body>
 </html>
