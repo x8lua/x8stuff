@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PENGUIN ⟡ 企鵝檔案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;700;900&family=Google+Sans:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040C18;
+  --bg2:#071528;
+  --cyan:#1FE0FF;
+  --cyan-dim:#0a8aa8;
+  --amber:#FFB23E;
+  --ice:#CFefff;
+  --white:#EAF6FF;
+  --danger:#FF4D6D;
+  --grid:rgba(31,224,255,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:"Noto Sans TC",sans-serif;cursor:none}
+body{position:fixed;inset:0}
+
+/* ===== CANVAS LAYERS ===== */
+#snow,#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#aurora{z-index:-1;filter:blur(60px);opacity:.55}
+
+/* grain */
+.grain{position:fixed;inset:-50%;z-index:60;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 6s steps(8) infinite}
+@keyframes grain{0%{transform:translate(0,0)}10%{transform:translate(-5%,-5%)}20%{transform:translate(-10%,5%)}30%{transform:translate(5%,-10%)}40%{transform:translate(-5%,15%)}50%{transform:translate(-10%,5%)}60%{transform:translate(15%,0)}70%{transform:translate(0,10%)}80%{transform:translate(-15%,0)}90%{transform:translate(10%,5%)}100%{transform:translate(5%,0)}}
+
+/* scanlines */
+.scan{position:fixed;inset:0;z-index:61;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,0,0,.25) 3px,transparent 4px)}
+.sweep{position:fixed;left:0;right:0;height:140px;z-index:62;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(31,224,255,.07),transparent);
+  animation:sweep 7s linear infinite}
+@keyframes sweep{0%{top:-140px}100%{top:100%}}
+
+/* ===== CURSOR ===== */
+.cursor-dot,.cursor-ring{position:fixed;z-index:200;pointer-events:none;border-radius:50%;left:0;top:0;transform:translate(-50%,-50%)}
+.cursor-dot{width:7px;height:7px;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.cursor-ring{width:34px;height:34px;border:1.5px solid rgba(31,224,255,.6);transition:width .2s,height .2s,background .2s}
+.cursor-ring.hot{width:54px;height:54px;background:rgba(31,224,255,.08)}
+
+/* ===== DECK ===== */
+#deck{position:relative;z-index:10;height:100%;width:100%}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:6vh 8vw;opacity:0;visibility:hidden;transform:scale(1.04);transition:opacity .55s ease,transform .55s ease;will-change:opacity,transform}
+.slide.active{opacity:1;visibility:visible;transform:scale(1);z-index:11}
+.slide.leaving{opacity:0;transform:scale(.97)}
+
+/* glitch flash on transition */
+#glitch{position:fixed;inset:0;z-index:120;pointer-events:none;opacity:0;mix-blend-mode:screen}
+#glitch.go{animation:glitchflash .5s steps(2) 1}
+@keyframes glitchflash{
+  0%{opacity:0}
+  15%{opacity:1;background:linear-gradient(90deg,#ff004d33,transparent 30%,#00fff733 70%);transform:translateX(6px)}
+  30%{opacity:.7;background:linear-gradient(90deg,#00fff733,transparent 40%,#ff004d33);transform:translateX(-8px)}
+  50%{opacity:1;transform:translateX(4px) skewX(2deg)}
+  70%{opacity:.4;transform:translateX(-3px)}
+  100%{opacity:0;transform:none}}
+
+/* corner brackets */
+.brk{position:absolute;width:46px;height:46px;border:2px solid var(--cyan);opacity:.5;z-index:30}
+.brk.tl{top:30px;left:30px;border-right:0;border-bottom:0}
+.brk.tr{top:30px;right:30px;border-left:0;border-bottom:0}
+.brk.bl{bottom:30px;left:30px;border-right:0;border-top:0}
+.brk.br{bottom:30px;right:30px;border-left:0;border-top:0}
+
+/* HUD */
+.hud{position:fixed;z-index:40;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;color:var(--cyan-dim);text-transform:uppercase}
+.hud.tlh{top:38px;left:90px}
+.hud.trh{top:38px;right:90px;color:var(--amber)}
+.hud.blh{bottom:40px;left:90px}
+.hud .blink{animation:bl 1.1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+
+/* progress bar */
+#bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--amber));z-index:80;width:0;box-shadow:0 0 14px var(--cyan);transition:width .5s ease}
+
+/* dots */
+#dots{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);z-index:80;display:flex;gap:14px}
+.dot{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--cyan-dim);cursor:none;transition:.3s}
+.dot.on{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+
+/* nav arrows */
+.nav{position:fixed;top:50%;transform:translateY(-50%);z-index:80;width:54px;height:54px;border:1.5px solid rgba(31,224,255,.35);
+  background:rgba(7,21,40,.4);backdrop-filter:blur(6px);color:var(--cyan);font-size:22px;display:flex;align-items:center;justify-content:center;cursor:none;transition:.25s}
+.nav:hover{background:var(--cyan);color:var(--bg);box-shadow:0 0 24px var(--cyan)}
+#prev{left:26px}#next{right:26px}
+
+/* ===== TYPOGRAPHY ===== */
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:15px;letter-spacing:.4em;color:var(--cyan);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.kicker::before{content:"";width:42px;height:2px;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.title{font-family:"Bebas Neue",sans-serif;font-size:clamp(54px,9vw,150px);line-height:.92;letter-spacing:.01em;color:var(--white);text-shadow:0 0 40px rgba(31,224,255,.25)}
+.title .hl{color:var(--cyan);text-shadow:0 0 30px var(--cyan)}
+.title .am{color:var(--amber);text-shadow:0 0 30px var(--amber)}
+.sub{font-size:clamp(16px,1.8vw,22px);color:var(--ice);max-width:680px;line-height:1.7;margin-top:22px}
+.mono{font-family:"IBM Plex Mono",monospace}
+
+/* reveal helper */
+.rv{opacity:0;transform:translateY(26px)}
+.active .rv{animation:rv .7s cubic-bezier(.2,.8,.2,1) forwards}
+.active .rv.d1{animation-delay:.12s}
+.active .rv.d2{animation-delay:.24s}
+.active .rv.d3{animation-delay:.36s}
+.active .rv.d4{animation-delay:.48s}
+.active .rv.d5{animation-delay:.60s}
+@keyframes rv{to{opacity:1;transform:none}}
+
+/* ===== SLIDE 1 COVER ===== */
+.cover{padding:0;overflow:hidden}
+
+/* full-bleed background image */
+.cover-bg{
+  position:absolute;inset:0;z-index:0;
+  overflow:hidden}
+.cover-bg img{
+  width:100%;
+  height:100%;
+  aspect-ratio:2/1;
+  object-fit:fill;
+  opacity:.1;
+  display:block}
+
+/* bottom vignette */
+.cover-mask{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,transparent 40%,rgba(4,12,24,.85) 100%)}
+
+/* title block: center-bottom */
+.cover-title-wrap{
+  position:absolute;
+  bottom:10vh;
+  left:0;right:0;
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px}
+
+/* ── THE TITLE EFFECT: layered stroke + fill reveal + float ── */
+.cover-main-title{
+  position:relative;
+  font-family:"Noto Sans TC",sans-serif;
+  font-weight:900;
+  font-size:clamp(88px,17vw,240px);
+  line-height:1;
+  letter-spacing:.08em;
+  /* base: transparent, outline only */
+  color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,.9);
+  animation:title-fill 2.4s cubic-bezier(.4,0,.2,1) 0.3s forwards}
+
+/* fill sweeps in from bottom */
+@keyframes title-fill{
+  0%{
+    color:transparent;
+    -webkit-text-stroke:2px rgba(31,224,255,.9);
+    text-shadow: 0 0 40px rgba(31,224,255,.8), 0 0 80px rgba(31,224,255,.4);
+    transform:translateY(16px);
+    filter:blur(8px)}
+  60%{
+    color:rgba(255,255,255,.15);
+    -webkit-text-stroke:2px rgba(31,224,255,.7);
+    text-shadow: 0 0 60px rgba(31,224,255,.6), 0 0 120px rgba(31,224,255,.2);
+    transform:translateY(0);
+    filter:blur(0)}
+  100%{
+    color:var(--white);
+    -webkit-text-stroke:0px transparent;
+    text-shadow: 0 0 80px rgba(31,224,255,.25), 0 2px 40px rgba(0,0,0,.9);
+    transform:translateY(0);
+    filter:blur(0)}}
+
+/* floating shimmer band that passes through the title */
+.cover-main-title::after{
+  content:attr(data-t);
+  position:absolute;inset:0;
+  color:transparent;
+  background:linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,.55) 50%,
+    rgba(31,224,255,.4) 52%,
+    transparent 70%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  background-size:300% 100%;
+  background-position:200% 0;
+  animation:shimmer 4s ease-in-out 2.5s infinite;
+  pointer-events:none}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-100% 0}}
+
+/* subtitle */
+.cover-sub{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:clamp(11px,1.1vw,14px);
+  letter-spacing:.5em;
+  color:rgba(31,224,255,.7);
+  text-transform:uppercase;
+  opacity:0;
+  animation:fadein .8s ease 1.8s forwards}
+@keyframes fadein{to{opacity:1}}
+
+/* thin cyan line above title */
+.cover-title-line{
+  width:clamp(60px,10vw,120px);
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  box-shadow:0 0 10px var(--cyan);
+  opacity:0;
+  animation:fadein .6s ease 1s forwards}
+
+/* members row on cover */
+.cover-members{
+  display:flex;gap:28px;align-items:center;
+  margin-top:20px;flex-wrap:wrap;justify-content:center}
+.cover-member{
+  display:flex;align-items:baseline;gap:7px}
+.cm-num{
+  font-family:"Bebas Neue",sans-serif;
+  font-size:22px;color:var(--cyan);
+  text-shadow:0 0 12px rgba(31,224,255,.5);
+  line-height:1}
+.cm-name{
+  font-family:"Noto Sans TC",sans-serif;
+  font-size:15px;font-weight:700;
+  color:var(--white);letter-spacing:.06em}
+
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+
+/* ===== generic content grid ===== */
+.row{display:flex;gap:5vw;align-items:center;flex-wrap:wrap}
+.col{flex:1;min-width:300px}
+.bullets{list-style:none;margin-top:26px}
+.bullets li{position:relative;padding-left:34px;margin-bottom:20px;font-size:clamp(15px,1.6vw,20px);line-height:1.65;color:var(--ice)}
+.bullets li::before{content:"◢";position:absolute;left:0;top:2px;color:var(--cyan);font-size:13px;text-shadow:0 0 8px var(--cyan)}
+.bullets li b{color:var(--white)}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:22px;margin-top:30px}
+.stat{border:1px solid rgba(31,224,255,.22);background:linear-gradient(160deg,rgba(31,224,255,.06),rgba(7,21,40,.2));
+  padding:26px 22px;position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(31,224,255,.13),transparent);animation:shine 3.5s infinite}
+@keyframes shine{0%{left:-100%}60%,100%{left:120%}}
+.stat .num{font-family:"Bebas Neue";font-size:clamp(40px,5vw,68px);color:var(--cyan);line-height:1;text-shadow:0 0 20px rgba(31,224,255,.4)}
+.stat .num.am{color:var(--amber);text-shadow:0 0 20px rgba(255,178,62,.4)}
+.stat .lbl{font-family:"IBM Plex Mono";font-size:13px;letter-spacing:.15em;color:var(--ice);text-transform:uppercase;margin-top:10px;opacity:.8}
+
+/* spec list */
+.specs{margin-top:24px;border-top:1px solid rgba(31,224,255,.2)}
+.spec{display:flex;justify-content:space-between;padding:15px 4px;border-bottom:1px solid rgba(31,224,255,.12);font-family:"IBM Plex Mono";font-size:15px}
+.spec .k{color:var(--cyan-dim);letter-spacing:.1em}
+.spec .v{color:var(--white);font-weight:600}
+.spec .v.am{color:var(--amber)}
+
+/* species bars */
+.barwrap{margin-top:26px}
+.brow{margin-bottom:18px}
+.brow .top{display:flex;justify-content:space-between;font-family:"IBM Plex Mono";font-size:13px;margin-bottom:7px}
+.brow .top .nm{color:var(--white)}
+.brow .top .pc{color:var(--cyan)}
+.track{height:12px;background:rgba(31,224,255,.08);border:1px solid rgba(31,224,255,.18);position:relative;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan-dim),var(--cyan));box-shadow:0 0 12px var(--cyan);transition:width 1.3s cubic-bezier(.2,.8,.2,1)}
+.fill.am{background:linear-gradient(90deg,#b3701f,var(--amber));box-shadow:0 0 12px var(--amber)}
+
+/* timeline */
+.tl{position:relative;margin-top:34px;padding-left:30px;border-left:2px solid rgba(31,224,255,.3)}
+.tlitem{position:relative;margin-bottom:30px}
+.tlitem::before{content:"";position:absolute;left:-37px;top:4px;width:13px;height:13px;transform:rotate(45deg);background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.tlitem .yr{font-family:"Bebas Neue";font-size:36px;color:var(--amber);line-height:1}
+.tlitem .tx{font-size:clamp(14px,1.35vw,17px);color:var(--ice);margin-top:4px;max-width:560px}
+
+/* size compare */
+.sizeyard{display:flex;align-items:flex-end;gap:6vw;margin-top:30px;height:46vh}
+.figure{display:flex;flex-direction:column;align-items:center;gap:12px}
+.figure .cap{font-family:"IBM Plex Mono";font-size:13px;color:var(--cyan);text-align:center;letter-spacing:.1em}
+.figure .cap b{display:block;font-family:"Bebas Neue";font-size:26px;color:var(--white);letter-spacing:.02em}
+
+/* final */
+.final{align-items:center;text-align:center}
+.final .title{font-size:clamp(60px,13vw,200px)}
+.qrhint{margin-top:34px;font-family:"IBM Plex Mono";font-size:13px;letter-spacing:.25em;color:var(--cyan-dim)}
+
+/* helper text glow line */
+.divline{height:1px;background:linear-gradient(90deg,var(--cyan),transparent);margin:18px 0;box-shadow:0 0 8px var(--cyan)}
+
+/* ===== IMAGE PLACEHOLDERS ===== */
+/* Replace later: drop a real <img> in, or set background-image on .ph */
+.ph{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  border:2px dashed rgba(31,224,255,.45);background:
+    repeating-linear-gradient(45deg,rgba(31,224,255,.04) 0 12px,rgba(31,224,255,.08) 12px 24px);
+  color:var(--cyan);overflow:hidden}
+.ph::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 50% 40%,rgba(31,224,255,.12),transparent 70%)}
+.ph .ico{font-size:30px;line-height:1;filter:drop-shadow(0 0 8px var(--cyan));z-index:1}
+.ph .tag{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:1;opacity:.85;text-align:center;padding:0 10px}
+.ph .dim{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;color:var(--cyan-dim);z-index:1}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none} /* set display:block when you add a real src */
+.ph.has-img::before,.ph.has-img .ico,.ph.has-img .tag,.ph.has-img .dim{display:none}
+.ph.has-img{border-style:solid;border-color:rgba(31,224,255,.3)}
+
+/* figure placeholders for the size-compare slide */
+.figure .ph{width:100%;height:100%}
+.fig-tall{height:300px;width:150px}
+.fig-mid{height:200px;width:100px}
+.fig-small{height:105px;width:55px}
+
+@media(max-width:720px){
+  .slide{padding:9vh 7vw}
+  .hud.tlh,.hud.trh,.hud.blh{display:none}
+  .cover-peng{opacity:.25;right:-4vw}
+  .nav{width:42px;height:42px}
+  .sizeyard{height:34vh;gap:8vw}
+}
+
+/* ===== UNIQUE SLIDE LAYOUTS ===== */
+
+/* IMAGE SLOT — drop-in placeholder used across slides */
+.img-slot{
+  position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  border:1.5px dashed rgba(31,224,255,.4);
+  background:rgba(31,224,255,.03);
+  overflow:hidden;flex-shrink:0}
+.img-slot::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent 0 14px,rgba(31,224,255,.04) 14px 28px)}
+.img-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.img-slot.has-img img{display:block}
+.img-slot.has-img .isl,.img-slot.has-img::after{display:none}
+.isl{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(31,224,255,.4);text-align:center;
+  padding:0 12px;position:relative;z-index:1;line-height:1.8}
+.isl b{display:block;font-size:20px;margin-bottom:6px;color:rgba(31,224,255,.3);font-family:"Bebas Neue";letter-spacing:.1em}
+
+/* ── SLIDE 2: 1:1 image right — widen column to fit square ── */
+.s2-grid{display:grid;grid-template-columns:1fr min(58vh,34vw);gap:5vw;height:100%;align-items:center}
+.s2-img{width:100%;aspect-ratio:4/5;height:auto;max-height:72vh}
+
+/* ── SLIDE 3: 1:1 image LEFT ── */
+.s3-grid{display:grid;grid-template-columns:min(48vh,28vw) 1fr;gap:5vw;height:100%;align-items:center}
+.s3-img{width:100%;aspect-ratio:4/5;height:auto;max-height:60vh}
+
+/* ── SLIDE 4: two 1:1 images stacked right ── */
+.s4-grid{display:grid;grid-template-columns:1fr min(34vh,26vw);gap:4vw;height:100%;align-items:center;padding:3vh 0}
+.s4-text{display:flex;flex-direction:column;justify-content:center}
+.s4-imgs{display:flex;flex-direction:column;gap:14px;height:100%;justify-content:center}
+.s4-img-a{aspect-ratio:4/5;width:100%;flex-shrink:0}
+.s4-img-b{aspect-ratio:4/5;width:100%;flex-shrink:0}
+
+/* ── SLIDE 5: 1:1 image right ── */
+.s5-grid{display:grid;grid-template-columns:1fr min(45vh,28vw);gap:4vw;height:100%;align-items:center}
+.s5-img{width:100%;aspect-ratio:4/5;height:auto;max-height:56vh}
+
+/* env cards */
+.env-cards{display:flex;flex-direction:column;gap:14px;margin-top:20px}
+.env-card{
+  display:grid;grid-template-columns:120px 1fr;
+  border-left:3px solid rgba(31,224,255,.3);
+  padding:12px 0 12px 18px;gap:14px;align-items:start}
+.env-card.hot{border-left-color:var(--amber)}
+.env-card .ec-yr{
+  font-family:"Bebas Neue";font-size:26px;
+  color:var(--cyan);line-height:1.1;letter-spacing:.04em}
+.env-card.hot .ec-yr{color:var(--amber)}
+.env-card .ec-tx{font-size:clamp(14px,1.35vw,17px);color:var(--ice);line-height:1.65}
+
+/* ── SLIDE 6: 9:16 portrait image centre — wider centre column ── */
+.s6-grid{display:grid;grid-template-columns:1fr min(31vh,18vw) 1fr;gap:3vw;height:100%;align-items:center}
+.s6-img{width:100%;aspect-ratio:9/16;height:auto;max-height:72vh;align-self:center}
+.vs-col{display:flex;flex-direction:column;gap:16px}
+.vs-item{padding:14px 16px;border:1px solid rgba(31,224,255,.2);background:rgba(31,224,255,.04)}
+.vs-item.am{border-color:rgba(255,178,62,.25);background:rgba(255,178,62,.04)}
+.vs-item .vi-head{font-family:"Bebas Neue";font-size:26px;color:var(--cyan);letter-spacing:.06em;margin-bottom:6px}
+.vs-item.am .vi-head{color:var(--amber)}
+.vs-item .vi-body{font-size:clamp(14px,1.35vw,17px);color:var(--ice);line-height:1.65}
+.vs-divider{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.vs-divider .vsd-txt{font-family:"Bebas Neue";font-size:52px;color:rgba(31,224,255,.18);writing-mode:vertical-rl}
+
+/* ── SLIDE 7: 1:1 image top-right ── */
+.s7-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:3vw 5vw;height:100%}
+.s7-text{grid-column:1;grid-row:1/3;display:flex;flex-direction:column;justify-content:center}
+.s7-top-img{grid-column:2;grid-row:1;width:100%;aspect-ratio:1/1;height:auto;max-height:40vh}
+.s7-specs{grid-column:2;grid-row:2;align-self:end;padding-bottom:2vh}
+
+/* ── SLIDE 8: 1:1 image left ── */
+.s8-grid{
+  display:grid;
+  grid-template-columns:min(40vh,28vw) 1fr 1fr;
+  grid-template-rows:auto 1fr auto;
+  gap:2vw 3vw;
+  height:100%;
+  align-items:start}
+.s8-head{grid-column:1/-1;grid-row:1}
+.s8-img{grid-column:1;grid-row:2;width:100%;aspect-ratio:1/1;height:auto;max-height:40vh;align-self:start}
+.s8-timeline{grid-column:2/4;grid-row:2;display:flex;flex-direction:column;justify-content:center}
+.s8-footer{grid-column:1/-1;grid-row:3;display:flex;align-items:center;justify-content:center;padding-bottom:1vh}
+
+/* ===== INTRO OVERLAY ===== */
+#intro{
+  position:fixed;inset:0;z-index:999;
+  background:#080808;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden}
+#intro.fade-out{
+  opacity:0;pointer-events:none;
+  transition:opacity .9s ease}
+
+/* grain on intro body — matches original */
+#intro::after{
+  content:'';position:absolute;
+  inset:-50%;width:200%;height:200%;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity:0.04;pointer-events:none;z-index:1;
+  animation:igrain 0.2s steps(1) infinite}
+@keyframes igrain{
+  0%{transform:translate(0,0)}25%{transform:translate(-1%,2%)}
+  50%{transform:translate(2%,-1%)}75%{transform:translate(-2%,-2%)}}
+
+/* top/bottom lines */
+#intro .i-line{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.08)}
+#intro .i-line.top{top:0}
+#intro .i-line.bot{bottom:0}
+
+/* x8 text — starts dark, sweeps to white */
+#x8-txt{
+  font-family:'Google Sans',sans-serif;
+  font-style:italic;font-weight:700;
+  font-size:clamp(80px,16vw,210px);
+  line-height:1;letter-spacing:-0.02em;
+  color:#111;
+  position:relative;
+  text-align:center;
+  white-space:nowrap;
+  user-select:none;
+  z-index:2}
+#x8-txt.glowing{
+  text-shadow:
+    0 0 40px rgba(255,255,255,.5),
+    0 0 80px rgba(255,255,255,.2),
+    0 0 120px rgba(255,255,255,.1);
+  animation:x8Pulse 3s ease-in-out infinite}
+@keyframes x8Pulse{
+  0%,100%{text-shadow:0 0 40px rgba(255,255,255,.5),0 0 80px rgba(255,255,255,.2),0 0 120px rgba(255,255,255,.1)}
+  50%{text-shadow:0 0 60px rgba(255,255,255,.7),0 0 120px rgba(255,255,255,.35),0 0 180px rgba(255,255,255,.15)}}
+
+/* 24fps shutter on intro */
+#intro-shutter{
+  position:fixed;inset:0;background:#000;
+  pointer-events:none;opacity:0;z-index:9998}
+
+/* penguin bg fade between slides */
+#coverBgImg{transition:opacity 1s ease}
+</style>
+</head>
+<body>
+
+<canvas id="aurora"></canvas>
+<canvas id="snow"></canvas>
+<div class="grain"></div>
+<div class="scan"></div>
+<div class="sweep"></div>
+<div id="glitch"></div>
+
+<!-- INTRO OVERLAY -->
+<div id="intro">
+  <div id="intro-shutter"></div>
+  <div class="i-line top"></div>
+  <div class="i-line bot"></div>
+  <div id="x8-txt">x8</div>
+</div>
+
+<div class="cursor-ring"></div>
+<div class="cursor-dot"></div>
+
+<div id="bar"></div>
+<div class="hud tlh" id="hud-tl" style="opacity:0">⟡ PENGUIN_ARCHIVE.sys</div>
+<div class="hud trh" id="clock" style="opacity:0">--:--:--</div>
+<div class="hud blh" id="hud-bl" style="opacity:0"><span id="slidecode">SLIDE 01</span> <span class="blink">▌</span></div>
+
+<div id="deck" style="opacity:0">
+
+  <!-- SLIDE 1 -->
+  <section class="slide cover active" data-code="COVER">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+
+    <!-- bg image as <img> so it loads cross-origin properly -->
+    <div class="cover-bg">
+      <img id="coverBgImg" alt="">
+    </div>
+    <div class="cover-mask"></div>
+
+    <div class="cover-title-wrap rv">
+      <div class="cover-title-line"></div>
+      <h1 class="cover-main-title" data-t="企鵝">企鵝</h1>
+      <span class="cover-sub">PENGUIN · SPHENISCIDAE</span>
+      <div class="cover-members">
+        <div class="cover-member"><span class="cm-num">18</span><span class="cm-name">林子謙</span></div>
+        <div class="cover-member"><span class="cm-num">25</span><span class="cm-name">蘇楚晴</span></div>
+        <div class="cover-member"><span class="cm-num">22</span><span class="cm-name">盧珈延</span></div>
+        <div class="cover-member"><span class="cm-num">21</span><span class="cm-name">盧艷沁</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: anatomy — text left, animal image right -->
+  <section class="slide" data-code="ANATOMY">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s2-grid">
+      <div>
+        <div class="kicker rv">// 檔案 01 — 反常的解剖學</div>
+        <h2 class="title rv d1" style="font-size:clamp(40px,6vw,96px)">現代企鵝的<br><span class="hl">反常特徵</span></h2>
+        <p class="sub rv d2" style="font-size:clamp(15px,1.5vw,18px);margin-top:12px;max-width:100%">從解剖學的角度來看，企鵝是鳥類中最「異類」的存在。牠們身上每一個結構，都在對抗飛行鳥類的演化邏輯，卻完美服務於海洋生存。</p>
+        <div class="env-cards" style="margin-top:16px">
+          <div class="env-card rv d2">
+            <span class="ec-yr">骨骼</span>
+            <span class="ec-tx">一般鳥類骨骼<b style="color:var(--white)">中空以減重</b>，飛行效率更高；但企鵝的骨骼<b style="color:var(--white)">完全實心且密度極高</b>，作為潛水時的天然配重，能克服浮力、穩定下潛軌跡，抵抗數百公尺深海的強大水壓。</span>
+          </div>
+          <div class="env-card rv d3">
+            <span class="ec-yr">槳狀翼</span>
+            <span class="ec-tx">翅膀關節已<b style="color:var(--white)">完全骨化無法彎曲</b>，進化成硬邦邦的「槳狀鰭肢」。這種結構在空中毫無用處，卻能在高密度的水中像槳葉一樣高效推進，最高泳速可達 <b style="color:var(--cyan)">36 km/h</b>。</span>
+          </div>
+          <div class="env-card rv d4">
+            <span class="ec-yr">羽毛</span>
+            <span class="ec-tx">每平方公分高達<b style="color:var(--white)">百根以上的羽毛</b>密度，遠超其他鳥類。羽毛間鎖住的空氣形成隔熱層，讓企鵝在 <b style="color:var(--cyan)">−60°C</b> 的南極環境中維持核心體溫。</span>
+          </div>
+          <div class="env-card hot rv d5">
+            <span class="ec-yr">結論</span>
+            <span class="ec-tx">這些極端的解剖特徵共同宣告：企鵝的身體已進行了<b style="color:var(--amber)">徹底的海洋特化</b>，是演化上最極致的「功能性捨棄」——它們用天空換取了海洋的絕對統治。</span>
+          </div>
+        </div>
+        <div class="specs rv d5" style="margin-top:14px">
+          <div class="spec"><span class="k">骨骼</span><span class="v">實心 · 高密度 · 天然配重</span></div>
+          <div class="spec"><span class="k">翅膀</span><span class="v am">槳狀鰭肢 · 骨化固定 · 無法折疊</span></div>
+          <div class="spec"><span class="k">泳速</span><span class="v">最高 36 km/h · 潛深 564 m</span></div>
+          <div class="spec"><span class="k">飛行</span><span class="v am">已完全且不可逆地喪失</span></div>
+        </div>
+      </div>
+      <!-- IMAGE SLOT: 現代企鵝照片（側面全身）-->
+      <div class="img-slot s2-img rv d2 has-img">
+        <img alt="現代企鵝照片" src="https://raw.githubusercontent.com/x8lua/images/main/slide2.png">
+        <div class="isl"><b>🐧</b>現代企鵝<br>動物圖片</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: fossil — tall narrow fossil image left, text right -->
+  <section class="slide" data-code="FOSSIL">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s3-grid">
+      <!-- IMAGE SLOT: 威馬奴企鵝化石或復原圖 -->
+      <div class="img-slot s3-img rv d1 has-img">
+        <img alt="威馬奴企鵝化石" src="https://raw.githubusercontent.com/x8lua/images/main/slide3.png">
+        <div class="isl"><b>🦴</b>威馬奴企鵝<br>化石 / 復原圖</div>
+      </div>
+      <div>
+        <div class="kicker rv d1">// 檔案 02 — 演化的起點</div>
+        <h2 class="title rv d2" style="font-size:clamp(40px,6vw,96px)">威馬奴<br><span class="hl">企鵝</span></h2>
+        <p class="sub rv d3" style="margin-top:12px;font-size:clamp(15px,1.5vw,18px)">要尋找進化的證據，化石是最直接、最無可辯駁的歷史刻度。這具出土於<b style="color:var(--white)">紐西蘭</b>的化石，是目前已知最古老的企鵝祖先——<b style="color:var(--cyan)">威馬奴企鵝（Waimanu manneringi）</b>，生活在距今約 6000 至 6200 萬年前的古新世，此時恐龍才剛滅絕不久。</p>
+        <ul class="bullets" style="margin-top:14px">
+          <li class="rv d3" style="font-size:clamp(15px,1.5vw,18px)"><b>過渡形態清晰可辨。</b>牠的身形長得很像現代的潛鳥——翅膀已開始明顯變短、變硬，但肩部關節仍殘留一定的活動幅度，保留了遠古祖先用於飛行的結構痕跡。</li>
+          <li class="rv d4" style="font-size:clamp(15px,1.5vw,18px)"><b>完美的演化缺口填補者。</b>威馬奴企鵝的發現，清晰填補了「能在空中飛行的海鳥」到「完全不會飛行的企鵝」之間的演化過渡期，是古生物學上的重大里程碑。</li>
+          <li class="rv d5" style="font-size:clamp(15px,1.5vw,18px)"><b>每一塊骨骼都是無聲的見證。</b>化石中保存的細節——骨骼密度、關節角度、翅膀比例——都精準指向一個正在從天空轉向海洋的演化瞬間，是 6000 萬年前最真實的生命快照。</li>
+        </ul>
+        <div class="specs rv d4" style="margin-top:16px">
+          <div class="spec"><span class="k">學名</span><span class="v">Waimanu manneringi</span></div>
+          <div class="spec"><span class="k">年代</span><span class="v am">6000–6200 萬年前 · 古新世</span></div>
+          <div class="spec"><span class="k">出土地點</span><span class="v">紐西蘭 New Zealand</span></div>
+          <div class="spec"><span class="k">意義</span><span class="v am">目前已知最古老企鵝祖先化石</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: giant — text left, two stacked images right -->
+  <section class="slide" data-code="GIANT">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s4-grid">
+      <div class="s4-text">
+        <div class="kicker rv">// 檔案 03 — 巨型化的黃金時代</div>
+        <h2 class="title rv d1" style="font-size:clamp(40px,6vw,96px)">體型的<br><span class="am">極致</span></h2>
+        <p class="sub rv d2" style="font-size:clamp(15px,1.5vw,18px);margin-top:12px">隨著時間推移，企鵝在演化中期經歷了一段令人驚嘆的「巨型化黃金時代」。距今約 <b style="color:var(--amber)">4000 萬年前</b>的始新世，南極洲出土了「卡氏古冠企鵝（Kumimanu biceae）」的化石。科學家根據其<b style="color:var(--white)">跗蹠骨</b>推算，這傢伙身高超過 2 公尺、體重達 115 公斤——站在現代帝企鵝身旁，簡直是降維打擊的巨無霸。</p>
+        <p class="sub rv d3" style="font-size:clamp(15px,1.5vw,18px);margin-top:10px">這項化石證據告訴我們：在當時溫暖的古新海洋中，<b style="color:var(--amber)">「更大的體型」有助於保存體溫、延長下潛時間</b>，是有效的深潛生存策略。巨型化，是企鵝演化中的一次大膽賭注。</p>
+        <div class="stats rv d3" style="grid-template-columns:1fr 1fr;margin-top:16px">
+          <div class="stat"><div class="num am" data-count="200">0</div><div class="lbl">古冠企鵝身高 cm</div></div>
+          <div class="stat"><div class="num" data-count="115">0</div><div class="lbl">古冠企鵝體重 kg</div></div>
+          <div class="stat"><div class="num am" data-count="122">0</div><div class="lbl">現代帝企鵝 cm</div></div>
+          <div class="stat"><div class="num" data-count="40">0</div><div class="lbl">現代帝企鵝 kg</div></div>
+        </div>
+        <div class="specs rv d4" style="margin-top:14px">
+          <div class="spec"><span class="k">學名</span><span class="v">Kumimanu biceae</span></div>
+          <div class="spec"><span class="k">年代</span><span class="v am">始新世 ～4000 萬年前</span></div>
+          <div class="spec"><span class="k">出土地點</span><span class="v">南極洲 Antarctica</span></div>
+          <div class="spec"><span class="k">推算依據</span><span class="v">跗蹠骨（Tarsometatarsus）化石</span></div>
+        </div>
+      </div>
+      <div class="s4-imgs">
+        <!-- IMAGE SLOT A: 古冠企鵝化石或復原圖 -->
+        <div class="img-slot s4-img-a rv d2 has-img">
+          <img alt="古冠企鵝化石" src="https://raw.githubusercontent.com/x8lua/images/main/slide4A.png">
+          <div class="isl"><b>🦴</b>卡氏古冠企鵝<br>化石 / 復原圖</div>
+        </div>
+        <!-- IMAGE SLOT B: 現代帝企鵝對比 -->
+        <div class="img-slot s4-img-b rv d3 has-img">
+          <img alt="現代帝企鵝" src="https://raw.githubusercontent.com/x8lua/images/main/slide4B.png">
+          <div class="isl"><b>🐧</b>現代帝企鵝<br>體型對比圖</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: environment — cards left, image right -->
+  <section class="slide" data-code="ENV">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s5-grid">
+      <div>
+        <div class="kicker rv">// 檔案 04 — 地質催化演化</div>
+        <h2 class="title rv d1" style="font-size:clamp(40px,6vw,96px)">為什麼<br><span class="hl">改變</span>？</h2>
+        <p class="sub rv d2" style="font-size:clamp(15px,1.5vw,18px);margin-top:12px;max-width:100%">生物的演化從不憑空發生——它往往需要一個<b style="color:var(--white)">地質環境的強力催化劑</b>。企鵝從飛行走向深海的這段歷程，正是地球板塊運動與氣候劇變共同書寫的演化傳奇。</p>
+        <div class="env-cards" style="margin-top:14px">
+          <div class="env-card rv d2">
+            <span class="ec-yr">板塊分裂</span>
+            <span class="ec-tx">始新世末期，地球板塊劇烈運動，南極洲與澳洲、南美洲<b style="color:var(--white)">徹底分離</b>。這一地質事件直接導致<b style="color:var(--cyan)">南極繞極流（ACC）</b>形成——一條環繞南極的強勁寒冷洋流，讓南極洲的氣候驟降，冰蓋開始形成。</span>
+          </div>
+          <div class="env-card hot rv d3">
+            <span class="ec-yr">意外的豐收</span>
+            <span class="ec-tx">寒流帶來的強烈<b style="color:var(--amber)">洋流湧升</b>，將深海富含營養的海水帶到表層，造就了爆炸性的魚蝦資源。更關鍵的是，當時海洋中<b style="color:var(--white)">缺乏大型掠食者</b>，陸地上也沒有天敵——一座巨大的「海洋自助餐廳」正式開張。</span>
+          </div>
+          <div class="env-card rv d4">
+            <span class="ec-yr">命運的抉擇</span>
+            <span class="ec-tx">面對如此巨大的機遇，企鵝的祖先迎來了演化史上最關鍵的<b style="color:var(--white)">命運交叉路口</b>：是繼續留在天空、一邊飛翔一邊覓食？還是徹底放棄飛行、全面投入那片豐沛的大海？地質環境已替牠們做出了最終的答案。</span>
+          </div>
+        </div>
+      </div>
+      <!-- IMAGE SLOT: 南極繞極流地圖 -->
+      <div class="img-slot s5-img rv d2 has-img">
+        <img alt="南極繞極流地圖" src="https://raw.githubusercontent.com/x8lua/images/main/slide5.png">
+        <div class="isl"><b>🌊</b>南極繞極流<br>地圖 / 板塊示意圖</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: biomechanics — VS layout, image centre -->
+  <section class="slide" data-code="BIOMECH">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="kicker rv" style="margin-bottom:12px">// 檔案 05 — 生物力學天平</div>
+    <h2 class="title rv d1" style="font-size:clamp(40px,5.5vw,84px);margin-bottom:18px">進化的<span class="am"> 代價</span>——為何不能兩者兼得？</h2>
+    <div class="s6-grid">
+      <!-- LEFT: 飛行 -->
+      <div class="vs-col rv d2">
+        <div class="vs-item">
+          <div class="vi-head">🦅 飛行的需求</div>
+          <div class="vi-body">翅膀須「<b style="color:var(--white)">大而輕</b>」，骨骼必須中空，展翼面積大才能產生足夠升力。想飛，就不能有沉重的骨頭和硬翼。</div>
+        </div>
+        <div class="vs-item">
+          <div class="vi-head">⚡ 耗能直接飆到點滿</div>
+          <div class="vi-body">翅膀越適合游泳，要是在天上飛，消耗的體力就會<b style="color:var(--white)">直接飆到點滿</b>。科學家研究發現，這個耗能是呈指數型飆升的，效益急速惡化至完全不划算。</div>
+        </div>
+        <div class="vs-item">
+          <div class="vi-head">✗ 物理上完全衝突</div>
+          <div class="vi-body">空氣與海水密度相差近 <b style="color:var(--white)">800 倍</b>。在流體力學上，同一對翅膀根本無法同時最佳化兩種環境，「一邊飛一邊游」在物理上就是死路一條。</div>
+        </div>
+      </div>
+      <!-- CENTRE: image -->
+      <div class="vs-divider rv d1">
+        <div class="img-slot s6-img has-img" style="width:100%">
+          <img alt="企鵝游泳對比" src="https://raw.githubusercontent.com/x8lua/images/main/slide6.png">
+          <div class="isl"><b>⚖️</b>企鵝游泳 vs<br>飛行鳥類</div>
+        </div>
+      </div>
+      <!-- RIGHT: 潛水 -->
+      <div class="vs-col rv d2">
+        <div class="vs-item am">
+          <div class="vi-head">🐟 潛水的需求</div>
+          <div class="vi-body">翅膀須「<b style="color:var(--amber)">小而硬</b>」，骨骼實心以抵抗水壓，槳狀鰭肢在高密度海水中才能高效推進，越硬越好。</div>
+        </div>
+        <div class="vs-item am">
+          <div class="vi-head">✓ 最划算的生存方式</div>
+          <div class="vi-body">水裡的食物<b style="color:var(--amber)">多到吃不完</b>，陸地上又很安全——企鵝就想通了：不飛了！把所有精力全拿來游泳，才是能量上最划算的生存方式。</div>
+        </div>
+        <div class="vs-item am">
+          <div class="vi-head">🏆 不是退化，是優化</div>
+          <div class="vi-body">這不是能力的喪失，而是演化史上最精準的<b style="color:var(--amber)">功能性取捨</b>。企鵝用天空的密鑰，換取了對南半球冷洋的完整統治權。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: DNA — text left, image top-right + specs bottom-right -->
+  <section class="slide" data-code="DNA">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s7-grid">
+      <div class="s7-text">
+        <div class="kicker rv">// 檔案 06 — 比較解剖學與基因證據</div>
+        <h2 class="title rv d1" style="font-size:clamp(40px,6vw,96px)">與近親的<br><span class="hl">關聯</span></h2>
+        <p class="sub rv d2" style="font-size:clamp(15px,1.5vw,18px);margin-top:12px;max-width:100%">除了化石，現代的 <b style="color:var(--white)">DNA 科技</b>與<b style="color:var(--white)">比較解剖學</b>也為這段演化歷程提供了無可辯駁的活體鐵證。</p>
+        <div class="env-cards" style="margin-top:14px">
+          <div class="env-card rv d2">
+            <span class="ec-yr">基因近親</span>
+            <span class="ec-tx">追溯企鵝的 DNA 基因演化樹，牠們現存最親近的近親，並非其他企鵝科動物，而是翱翔天空的<b style="color:var(--cyan)">信天翁（Albatross）</b>與<b style="color:var(--cyan)">鸌鳥（Petrel）</b>。這兩種鳥類同樣擁有極強的海面滑翔能力與淺層潛水技能，是企鵝祖先原始生態位最接近的現存代表。</span>
+          </div>
+          <div class="env-card hot rv d3">
+            <span class="ec-yr">鹽腺</span>
+            <span class="ec-tx">企鵝至今仍保留一個從飛行海鳥祖先繼承下來的<b style="color:var(--amber)">痕跡器官——眼眶上方的鹽腺</b>。這個腺體能將血液中多餘的鹽分濃縮後，以鹹水的形式從鼻孔排出，讓企鵝可以<b style="color:var(--white)">長期飲用海水而不中毒</b>，完全不需要攝取淡水。</span>
+          </div>
+          <div class="env-card rv d4">
+            <span class="ec-yr">活體血統</span>
+            <span class="ec-tx">鹽腺在現代企鵝身上仍然功能完整、真實運作，這是比任何化石更直接的<b style="color:var(--white)">活體血統證明</b>。它石錘了企鵝源自會飛行海鳥祖先的事實，是演化連續性在現存生命中留下的最清晰印記。</span>
+          </div>
+        </div>
+      </div>
+      <!-- IMAGE SLOT: 信天翁照片 -->
+      <div class="img-slot s7-top-img rv d2 has-img">
+        <img alt="信天翁照片" src="https://raw.githubusercontent.com/x8lua/images/main/slide7.png">
+        <div class="isl"><b>🦅</b>信天翁 / 鸌鳥<br>動物圖片</div>
+      </div>
+      <div class="s7-specs rv d3">
+        <div class="specs">
+          <div class="spec"><span class="k">DNA 最近親</span><span class="v">信天翁（Diomedeidae）</span></div>
+          <div class="spec"><span class="k">次近親</span><span class="v">鸌鳥（Procellariidae）</span></div>
+          <div class="spec"><span class="k">痕跡器官</span><span class="v am">眼眶上方鹽腺（Supraorbital gland）</span></div>
+          <div class="spec"><span class="k">鹽腺功能</span><span class="v">排鹽 · 無需飲用淡水</span></div>
+          <div class="spec"><span class="k">證據強度</span><span class="v am">活體結構 · 比化石更直接</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: conclusion — image left, timeline right -->
+  <section class="slide final" data-code="END" style="align-items:stretch;text-align:left">
+    <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br"></div>
+    <div class="s8-grid">
+      <div class="s8-head">
+        <div class="kicker rv" style="justify-content:flex-start">// 檔案結束 — 結論與總結</div>
+        <h2 class="title rv d1" style="font-size:clamp(40px,6.5vw,100px)">最成功的<span class="hl"> 逆行者</span></h2>
+      </div>
+      <!-- IMAGE SLOT -->
+      <div class="img-slot s8-img rv d2 has-img">
+        <img alt="企鵝群照片" src="https://raw.githubusercontent.com/x8lua/images/main/slide8.jpg">
+        <div class="isl"><b>🐧</b>南極企鵝群<br>代表性動物照片</div>
+      </div>
+      <div class="s8-timeline">
+        <div class="tl" style="margin-top:0">
+          <div class="tlitem rv d2">
+            <div class="yr">6200 萬年前</div>
+            <div class="tx"><b style="color:var(--white)">威馬奴企鵝</b>——從會飛的海鳥踏上演化征途。翅膀開始特化，古新世的化石完整記錄了這段從天空轉向海洋的關鍵過渡。</div>
+          </div>
+          <div class="tlitem rv d3">
+            <div class="yr">4000 萬年前</div>
+            <div class="tx"><b style="color:var(--white)">卡氏古冠企鵝</b>——身高 2 公尺 · 體重 115 公斤，企鵝演化史上的「巨型化黃金時代」，以龐大體型稱霸始新世的溫暖海洋。</div>
+          </div>
+          <div class="tlitem rv d4">
+            <div class="yr">始新世末期</div>
+            <div class="tx"><b style="color:var(--cyan)">南極繞極流</b>形成，地質催化演化。寒流帶來豐沛魚蝦資源，企鵝做出歷史上最重要的抉擇——徹底放棄飛行，投入海洋。</div>
+          </div>
+          <div class="tlitem rv d5" style="margin-bottom:0">
+            <div class="yr">現今</div>
+            <div class="tx"><b style="color:var(--white)">18 種企鵝</b>統治南半球冷洋。每一件化石、每一個數據、每一條 DNA 序列，都清晰印證了這場歷時 6000 萬年的演化奇蹟——牠們主動交出天空的密鑰，卻成為了演化史上最精準、最成功的<b style="color:var(--cyan)">逆行者</b>。</div>
+          </div>
+        </div>
+      </div>
+      <div class="s8-footer rv d5">
+        <div class="qrhint">⟡ 謝謝大家 · PENGUIN_ARCHIVE · END OF FILE ⟡</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<button class="nav" id="prev">‹</button>
+<button class="nav" id="next">›</button>
+<div id="dots"></div>
+
+<script>
+/* ===================== CURSOR ===================== */
+const dot=document.querySelector('.cursor-dot'),ring=document.querySelector('.cursor-ring');
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`;});
+(function ringLoop(){rx+=(mx-rx)*.18;ry+=(my-ry)*.18;ring.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`;requestAnimationFrame(ringLoop);})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('.nav,.dot')) ring.classList.add('hot');});
+document.addEventListener('mouseout',e=>{if(e.target.closest('.nav,.dot')) ring.classList.remove('hot');});
+
+/* ===================== CLOCK ===================== */
+setInterval(()=>{const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('en-GB');},1000);
+
+/* ===================== SNOW / PARTICLES ===================== */
+const sc=document.getElementById('snow'),sx=sc.getContext('2d');
+let W,H,flakes=[];
+function size(){W=sc.width=innerWidth;H=sc.height=innerHeight;ac.width=innerWidth;ac.height=innerHeight;}
+function initFlakes(){flakes=[];const n=Math.min(140,Math.floor(W/12));for(let i=0;i<n;i++)flakes.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.2+.4,d:Math.random()*.6+.2,sw:Math.random()*Math.PI*2});}
+function drawSnow(){sx.clearRect(0,0,W,H);for(const f of flakes){const tw=.5+Math.sin(f.sw+performance.now()/700)*.5;sx.beginPath();sx.arc(f.x,f.y,f.r,0,7);sx.fillStyle=`rgba(207,239,255,${.25+tw*.5})`;sx.shadowBlur=6;sx.shadowColor='rgba(31,224,255,.6)';sx.fill();f.y+=f.d;f.x+=Math.sin(f.sw+=.01)*.4;if(f.y>H){f.y=-5;f.x=Math.random()*W;}}requestAnimationFrame(drawSnow);}
+
+/* ===================== AURORA ===================== */
+const ac=document.getElementById('aurora'),ax=ac.getContext('2d');
+const blobs=[{x:.25,y:.3,c:'#1FE0FF',ph:0},{x:.7,y:.5,c:'#0a8aa8',ph:2},{x:.5,y:.8,c:'#FFB23E',ph:4}];
+function drawAurora(t){ax.clearRect(0,0,ac.width,ac.height);for(const b of blobs){const cx=(b.x+Math.sin(t/3000+b.ph)*.08)*ac.width;const cy=(b.y+Math.cos(t/3500+b.ph)*.08)*ac.height;const r=Math.min(ac.width,ac.height)*.45;const g=ax.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,b.c+'88');g.addColorStop(1,b.c+'00');ax.fillStyle=g;ax.beginPath();ax.arc(cx,cy,r,0,7);ax.fill();}requestAnimationFrame(drawAurora);}
+
+addEventListener('resize',()=>{size();initFlakes();});
+size();initFlakes();drawSnow();requestAnimationFrame(drawAurora);
+
+/* ===================== DECK NAV ===================== */
+const slides=[...document.querySelectorAll('.slide')];
+const dotsWrap=document.getElementById('dots');
+const bar=document.getElementById('bar');
+const glitch=document.getElementById('glitch');
+let cur=0,busy=false;
+
+slides.forEach((s,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>go(i);dotsWrap.appendChild(d);});
+const dots=[...document.querySelectorAll('.dot')];
+
+function activateExtras(s){
+  s.querySelectorAll('[data-count]').forEach(el=>{
+    const tgt=parseInt(el.dataset.count,10);const dur=1100;const st=performance.now();
+    (function tick(now){const p=Math.min((now-st)/dur,1);const e=1-Math.pow(1-p,3);el.textContent=Math.round(tgt*e);if(p<1)requestAnimationFrame(tick);else el.textContent=tgt;})(st);
+  });
+  s.querySelectorAll('.fill[data-w]').forEach(f=>{setTimeout(()=>f.style.width=f.dataset.w+'%',200);});
+}
+function resetExtras(s){
+  s.querySelectorAll('[data-count]').forEach(el=>el.textContent='0');
+  s.querySelectorAll('.fill[data-w]').forEach(f=>f.style.width='0');
+}
+
+/* penguin bg: 1s fade in on slide 1, 1s fade out on slide 2+ */
+const coverBgImg = document.getElementById('coverBgImg');
+function updatePenguinBg(slideIndex){
+  if(!coverBgImg) return;
+  coverBgImg.style.transition='opacity 1s ease';
+  coverBgImg.style.opacity = slideIndex === 0 ? '.1' : '0';
+}
+
+function go(n){
+  if(busy||n===cur||n<0||n>=slides.length)return;
+  busy=true;
+  glitch.classList.remove('go');void glitch.offsetWidth;glitch.classList.add('go');
+  const old=slides[cur];
+  old.classList.add('leaving');old.classList.remove('active');
+  resetExtras(old);
+  cur=n;
+  setTimeout(()=>{
+    old.classList.remove('leaving');
+    const s=slides[cur];
+    s.classList.add('active');
+    activateExtras(s);
+    updatePenguinBg(cur);
+    dots.forEach((d,i)=>d.classList.toggle('on',i===cur));
+    bar.style.width=((cur)/(slides.length-1))*100+'%';
+    document.getElementById('slidecode').textContent='SLIDE '+String(cur+1).padStart(2,'0');
+    document.querySelector('.blh').firstChild.textContent='SLIDE '+String(cur+1).padStart(2,'0')+'  ·  '+s.dataset.code+'  ';
+    busy=false;
+  },220);
+}
+
+document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('prev').onclick=()=>go(cur-1);
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft')go(cur-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(slides.length-1);
+});
+let tsx=0;addEventListener('touchstart',e=>tsx=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tsx;if(Math.abs(dx)>50)go(cur+(dx<0?1:-1));},{passive:true});
+
+bar.style.width='0';
+activateExtras(slides[0]);
+document.querySelector('.blh').firstChild.textContent='SLIDE 01  ·  COVER  ';
+
+/* ===== COVER BG IMAGE LOADER ===== */
+(function loadCoverBg(){
+  const img = document.getElementById('coverBgImg');
+  const urls = ['https://raw.githubusercontent.com/x8lua/images/main/pg.jpg'];
+  let idx=0;
+  function tryNext(){
+    if(idx>=urls.length)return;
+    img.onerror=()=>{idx++;tryNext();};
+    img.onload=()=>{ /* opacity controlled by updatePenguinBg */ };
+    img.style.opacity='0';
+    img.src=urls[idx++];
+  }
+  tryNext();
+})();
+
+/* ===================== INTRO SEQUENCE ===================== */
+(function(){
+  const intro   = document.getElementById('intro');
+  const x8El    = document.getElementById('x8-txt');
+  const shutter = document.getElementById('intro-shutter');
+  const deck    = document.getElementById('deck');
+  const hudIds  = ['hud-tl','clock','hud-bl'];
+
+  /* ── 24 FPS cap scoped only to intro animations ── */
+  const FRAME_MS = 1000/24;
+  let _introLast = 0;
+  function introRAF(cb){
+    requestAnimationFrame(function ticker(ts){
+      if(ts - _introLast >= FRAME_MS){
+        _introLast = ts - ((ts - _introLast) % FRAME_MS);
+        cb(ts);
+      } else {
+        requestAnimationFrame(t => ticker(t));
+      }
+    });
+  }
+
+  /* ── shutter flicker ── */
+  (function loop(){
+    requestAnimationFrame(ts=>{
+      shutter.style.opacity = ts - _introLast < FRAME_MS*0.22 ? '0.12' : '0';
+      loop();
+    });
+  })();
+
+  function easeOut(t){return 1-Math.pow(1-t,4);}
+
+  function animateVal(dur,onTick,onDone){
+    let start=null;
+    function frame(ts){
+      if(!start)start=ts;
+      const raw=Math.min((ts-start)/dur,1);
+      onTick(raw);
+      if(raw<1)introRAF(frame);
+      else if(onDone)onDone();
+    }
+    introRAF(frame);
+  }
+
+  function addSweep(el,text,cb){
+    /* remove any leftover spans */
+    el.querySelectorAll('span').forEach(s=>s.remove());
+    el.style.color='#111';
+
+    const sweep=document.createElement('span');
+    Object.assign(sweep.style,{
+      position:'absolute',inset:'0',
+      background:'linear-gradient(105deg,transparent 0%,rgba(255,255,255,0.95) 50%,transparent 100%)',
+      WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent',
+      backgroundSize:'300% 100%',backgroundPosition:'200% center',
+      fontFamily:'inherit',fontStyle:'inherit',fontWeight:'inherit',
+      fontSize:'inherit',letterSpacing:'inherit',lineHeight:'inherit',
+      pointerEvents:'none',whiteSpace:'nowrap'
+    });
+    sweep.textContent=text;
+    el.style.position='relative';
+    el.appendChild(sweep);
+
+    animateVal(1300,(raw)=>{
+      const t=easeOut(raw);
+      const pos=200-(t*250);
+      sweep.style.backgroundPosition=pos+'% center';
+      sweep.style.opacity=raw<0.15?String(raw/0.15):raw>0.85?String(1-(raw-0.85)/0.15):'1';
+      /* dark → white reveal, exact original */
+      const brightness=Math.min(raw*2,1);
+      const c=Math.round(brightness*255);
+      el.style.color=`rgb(${c},${c},${c})`;
+    },()=>{
+      el.style.color='#fff';
+      sweep.remove();
+      if(cb)cb();
+    });
+  }
+
+  function revealContent(){
+    intro.classList.add('fade-out');
+    setTimeout(()=>{
+      intro.style.display='none';
+      deck.style.transition='opacity .8s ease';
+      deck.style.opacity='1';
+      hudIds.forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){el.style.transition='opacity .8s ease';el.style.opacity='1';}
+      });
+      updatePenguinBg(0); /* fade penguin bg in */
+    },900);
+  }
+
+  /* autoplay on load — exact original timing */
+  setTimeout(()=>{
+    addSweep(x8El,'x8',()=>{
+      x8El.classList.add('glowing');
+      setTimeout(revealContent,800);
+    });
+  },600);
+})();
+</script>
+</body>
+</html>
