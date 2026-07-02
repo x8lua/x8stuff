@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>立體幾何專項特訓（基礎至中等）</title>
+    
+    <!-- 引入 MathJax 渲染 LaTeX 公式 -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <!-- 引入 TikZJax 渲染 3D 幾何圖形 -->
+    <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+    <script src="https://tikzjax.com/v1/tikzjax.js"></script>
+
+    <style>
+        body {
+            font-family: "Times New Roman", "PMingLiU", "MingLiU", serif;
+            line-height: 1.8;
+            color: #222;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fcfcfc;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #111;
+            margin-bottom: 30px;
+        }
+        
+        /* 分頁切換 Tabs */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: none;
+            color: #555;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            color: #0056b3;
+            border-color: #ddd;
+            border-bottom: 2px solid #fcfcfc;
+            margin-bottom: -2px;
+            background-color: #fff;
+        }
+        
+        .page {
+            display: none;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .page.active {
+            display: block;
+        }
+        
+        h2 {
+            font-size: 18px;
+            border-left: 4px solid #0056b3;
+            padding-left: 10px;
+            margin-top: 0;
+            color: #111;
+        }
+        .question {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+        }
+        .q-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .tikz-box {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        /* 提示按鈕 */
+        .hint-btn {
+            background-color: #e2e8f0;
+            border: none;
+            color: #4a5568;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .hint-btn:hover {
+            background-color: #cbd5e0;
+        }
+        .hint-content {
+            display: none;
+            background-color: #f0fff4;
+            border-left: 4px solid #38a169;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #276749;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>立體幾何專項強化特訓</h1>
+
+    <!-- 頁碼 Tabs -->
+    <div class="tab-container">
+        <button class="tab active" onclick="switchPage(1)">第一版：基礎概念篇（求公式與定理）</button>
+        <button class="tab" onclick="switchPage(2)">第二版：中等綜合篇（解組合與截面）</button>
+    </div>
+
+    <!-- ==================== 第一版 ==================== -->
+    <div id="page1" class="page active">
+        <h2>第一版：基礎概念特訓</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">本版著重於公式的基本代入、圓錐的母線定理、以及球體的基礎計算。</p>
+
+        <!-- Q1 -->
+        <div class="question">
+            <div class="q-title">Q1. 直三棱柱的體積計算</div>
+            <div>
+                已知一個直三棱柱的底面是一個直角三角形，直角邊分別為 $3$ 和 $4$。若該三棱柱的高（側棱長）為 $6$，求該直三棱柱的體積。
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint1')">顯示解題提示</button>
+            <div id="hint1" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 直三棱柱是「平頂」的，體積公式為 $V = S_{\text{底}} \times h$。<br>
+                2. 底面是直角三角形，面積 $S_{\text{底}} = \frac{1}{2} \times \text{直角邊}_1 \times \text{直角邊}_2 = \frac{1}{2} \times 3 \times 4 = 6$。<br>
+                3. 將底面積與高 $h=6$ 相乘即可得出答案。
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question">
+            <div class="q-title">Q2. 圓錐與母線定理</div>
+            <div>
+                如下圖所示，已知一個圓錐的底面半徑 $r = 3$，母線長度 $l = 5$。<br>
+                (1) 求該圓錐的高 $h$；<br>
+                (2) 求該圓錐的側面積。
+            </div>
+            <div class="tikz-box">
+                <script type="text/tikz">
+                    \begin{tikzpicture}[scale=0.9]
+                      \draw[thick] (-2,0) arc (180:360:2 and 0.6);
+                      \draw[dashed] (-2,0) arc (180:0:2 and 0.6);
+                      \draw[thick] (-2,0) -- (0,4) -- (2,0);
+                      \draw[dashed] (0,0) -- (0,4) node[midway, left] {$h$};
+                      \draw[dashed] (0,0) -- (2,0) node[midway, below] {$r=3$};
+                      \draw (0,4) -- (2,0) node[midway, right] {$l=5$};
+                      \draw[dashed] (0,0.2) -- (0.2,0.2) -- (0.2,0);
+                      \node[below] at (0,0) {$O$};
+                      \node[above] at (0,4) {$S$};
+                    \end{tikzpicture>
+                </script>
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint2')">顯示解題提示</button>
+            <div id="hint2" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 圓錐內部的「高 $h$、半徑 $r$、母線 $l$」構成直角三角形，滿足畢氏定理：$l^2 = r^2 + h^2$。代入即可解出 $h$。<br>
+                2. 圓錐的側面積公式為 $S_{\text{側}} = \pi r l$。直接套用公式，注意答案中要保留圓周率 $\pi$。
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question">
+            <div class="q-title">Q3. 球體體積與表面積轉換</div>
+            <div>
+                若一個球體的體積為 $36\pi$，求該球體的表面積。
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint3')">顯示解題提示</button>
+            <div id="hint3" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 球體體積公式為 $V = \frac{4}{3}\pi R^3$。已知 $V = 36\pi$，先求出半徑 $R$。<br>
+                2. 解方程：$\frac{4}{3}\pi R^3 = 36\pi \implies R^3 = 27 \implies R = 3$。<br>
+                3. 再套用球體表面積公式：$S = 4\pi R^2$ 計算最終答案。
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 第二版 ==================== -->
+    <div id="page2" class="page">
+        <h2>第二版：中等綜合特訓</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">本版模擬四校聯考中檔題，涉及常考的正四棱錐和空間位置關係計算。</p>
+
+        <!-- Q4 -->
+        <div class="question">
+            <div class="q-title">Q4. 正四棱錐的全面積與體積</div>
+            <div>
+                下圖為一個正四棱錐 $S-ABCD$，底面是邊長為 $6$ 的正方形，頂點 $S$ 到底面的投影為中心 $O$。若該四棱錐的高 $SO = 4$。<br>
+                (1) 求該正四棱錐的體積；<br>
+                (2) 求該正四棱錐的全面積（表面積）。
+            </div>
+            <div class="tikz-box">
+                <script type="text/tikz">
+                    \begin{tikzpicture}[scale=0.8]
+                      \draw[thick] (0,0) -- (4,-1) -- (6,0.5);
+                      \draw[dashed] (0,0) -- (2,1.5) -- (6,0.5);
+                      \coordinate (S) at (3,5);
+                      \coordinate (O) at (3,0.25);
+                      \draw[thick] (0,0) -- (S);
+                      \draw[thick] (4,-1) -- (S);
+                      \draw[thick] (6,0.5) -- (S);
+                      \draw[dashed] (2,1.5) -- (S);
+                      \draw[dashed] (S) -- (O) node[midway, left] {$h=4$};
+                      \draw[dashed] (O) -- (5,-0.25) node[midway, below] {$3$};
+                      \draw[thick] (S) -- (5,-0.25) node[midway, right] {$h_s$};
+                      \node[left] at (0,0) {$A$};
+                      \node[below] at (4,-1) {$B$};
+                      \node[right] at (6,0.5) {$C$};
+                      \node[above] at (S) {$S$};
+                    \end{tikzpicture>
+                </script>
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint4')">顯示解題提示</button>
+            <div id="hint4" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 體積部分：底面是邊長為 6 的正方形，底面積 $S = 6 \times 6 = 36$。利用 $V = \frac{1}{3} S \cdot h$ 計算。<br>
+                2. 表面積部分：全面積 = 底面積 + 4個側三角形面積。<br>
+                3. 求側三角形的斜高 $h_s$：在內部直角三角形中，直角邊分別是高 $h=4$ 和底邊的一半 $3$。因此 $h_s = \sqrt{4^2 + 3^2} = 5$。<br>
+                4. 每個側三角形面積為 $\frac{1}{2} \times \text{底} \times \text{高} = \frac{1}{2} \times 6 \times 5 = 15$。乘以 4 再加上底面積即可。
+            </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="question">
+            <div class="q-title">Q5. 正方體的外接球（跨概念組合）</div>
+            <div>
+                已知一個正方體的棱長（邊長）為 $2$。若該正方體的所有頂點都在同一個球面上，求這個球的體積。
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint5')">顯示解題提示</button>
+            <div id="hint5" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 正方體外接球的<strong>直徑 $2R$ 剛好等於正方體的體對角線長度</strong>。<br>
+                2. 棱長為 $a$ 的正方體，體對角線公式為 $d = \sqrt{3}a$。這裡 $a=2$，所以體對角線 $d = 2\sqrt{3}$。<br>
+                3. 因此球的直徑 $2R = 2\sqrt{3} \implies$ 球的半徑 $R = \sqrt{3}$。<br>
+                4. 最後代入球體體積公式 $V = \frac{4}{3}\pi R^3$ 進行計算（注意約分和保留 $\pi$）。
+            </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="question">
+            <div class="q-title">Q6. 直三棱柱的空間結構（中等綜合）</div>
+            <div>
+                如下圖所示，在直三棱柱 $ABC-A_1B_1C_1$ 中，底面 $\triangle ABC$ 是直角三角形，其中 $\angle ABC = 90^\circ$。已知 $AB = 3$，$BC = 4$，棱柱的高 $AA_1 = 5$。<br>
+                求該直三棱柱的全面積。
+            </div>
+            <div class="tikz-box">
+                <script type="text/tikz">
+                    \begin{tikzpicture}[scale=0.8]
+                      \draw[thick] (0,0) -- (3,-1) -- (2,1) -- cycle;
+                      \draw[thick] (0,4) -- (3,3) -- (2,5) -- cycle;
+                      \draw[thick] (0,0) -- (0,4);
+                      \draw[thick] (3,-1) -- (3,3);
+                      \draw[thick] (2,1) -- (2,5);
+                      \node[left] at (0,0) {$A$};
+                      \node[below] at (3,-1) {$B$};
+                      \node[right] at (2,1) {$C$};
+                      \node[left] at (0,4) {$A_1$};
+                      \node[below] at (3,3) {$B_1$};
+                      \node[right] at (2,5) {$C_1$};
+                    \end{tikzpicture}
+                </script>
+            </div>
+            <button class="hint-btn" onclick="toggleHint('hint6')">顯示解題提示</button>
+            <div id="hint6" class="hint-content">
+                <strong>提示：</strong><br>
+                1. 直三棱柱的全面積 = 2 $\times$ 底面積 + 3 $\times$ 側面矩形面積。<br>
+                2. 底面是直角三角形，直角邊為 3 和 4，斜邊 $AC = \sqrt{3^2 + 4^2} = 5$。底面積 $S_{\text{底}} = \frac{1}{2} \times 3 \times 4 = 6$。<br>
+                3. 三個側面的矩形，它們的寬度分別是底面的三條邊（3, 4, 5），高度都是高 $h=5$。<br>
+                4. 側面積 = $(3 + 4 + 5) \times 5 = 12 \times 5 = 60$。<br>
+                5. 全面積 = 側面積 + $2 \times S_{\text{底}}$。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切換頁面
+        function switchPage(pageNum) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById('page' + pageNum).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 切換提示顯示/隱藏
+        function toggleHint(hintId) {
+            const hint = document.getElementById(hintId);
+            if (hint.style.display === "block") {
+                hint.style.display = "none";
+            } else {
+                hint.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
