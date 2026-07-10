@@ -1,1 +1,1 @@
-{"name":"x8stuff","version":"1.0.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start"},"dependencies":{"@clerk/nextjs":"^6.31.10","next":"^14.2.15","react":"^18.3.1","react-dom":"^18.3.1"}}
+{"name":"x8stuff","version":"1.0.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start"},"dependencies":{"@clerk/nextjs":"^6.31.10","@supabase/supabase-js":"^2.50.0","next":"^14.2.15","react":"^18.3.1","react-dom":"^18.3.1"}}
