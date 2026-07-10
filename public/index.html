@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x8</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -159,13 +158,7 @@
   <audio id="audio" src="/lobby.mp3" autoplay loop></audio>
 
   <script>
-    // --- 配置 Supabase ---
-    const SUPABASE_URL = "https://ikiuqdudpemfkfxzyyfw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_hbSVU_6CWa_9z2Aiex-fjA_8qxF9Eio";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // --- 自動跳轉邏輯 ---
-    // --- 🚀 修正後的跳轉邏輯 ---
+    // --- 自動跳轉邏輯 (slug lookup handled server-side via /api/redirect) ---
     async function handleRedirect() {
       const path = window.location.pathname;
       if (path.startsWith('/i/')) {
@@ -175,27 +168,22 @@
         const info = document.getElementById('info');
         const statusMain = document.getElementById('status-main');
         const statusSub = document.getElementById('status-sub');
-        
+
         info.classList.add('open');
         statusMain.innerText = "Redirecting";
         statusSub.innerText = "warping through the x8 universe...";
 
-        const { data, error } = await _supabase
-          .from('workspace')
-          .select('content')
-          .eq('slug', slug)
-          .single();
+        const res = await fetch(`/api/redirect?slug=${encodeURIComponent(slug)}`);
+        const json = await res.json();
 
-        if (data && data.content) {
-          let target = data.content.trim();
-
-          // 核心修正：如果網址不是以 http 開頭，強行加上 https://
+        if (res.ok && json.target) {
+          let target = json.target.trim();
+          // 確保網址有 https:// 前綴
           if (!/^https?:\/\//i.test(target)) {
             target = 'https://' + target;
           }
-
           setTimeout(() => {
-            window.location.href = target; // 現在它會飛出你的網域了
+            window.location.href = target;
           }, 800);
         } else {
           statusMain.innerText = "404 - Void";
@@ -207,7 +195,7 @@
     // 啟動跳轉檢查
     handleRedirect();
 
-    // --- 原有音效邏輯 ---
+    // --- 音效邏輯 ---
     const audio = document.getElementById('audio');
     const slider = document.getElementById('vol');
     const fill = document.getElementById('vf');
@@ -219,7 +207,7 @@
       fill.style.width = (v * 100) + '%';
     });
 
-    // --- 原有切換邏輯 ---
+    // --- 切換邏輯 ---
     const logo = document.getElementById('logo');
     const info = document.getElementById('info');
     let open = false;
