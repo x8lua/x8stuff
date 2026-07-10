@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x8</title>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;1,700&family=Bebas+Neue&family=Orbitron:wght@700&family=Cinzel:wght@700&family=Playfair+Display:ital,wght@1,700&family=Syne:wght@700&family=Permanent+Marker&family=Space+Grotesk:wght@700&family=Raleway:ital,wght@1,700&family=Anton&family=Comfortaa:wght@700&family=Righteous&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -46,11 +46,12 @@
       cursor: pointer;
       opacity: 0;
       animation: appear 0.8s ease 0.1s forwards;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, font-family 0.04s, font-style 0.04s;
       position: relative;
       z-index: 2;
     }
     .logo:hover { opacity: 0.75; }
+    .logo.spinning { cursor: default; }
 
     /* ── INFO PANEL ── */
     .info-wrap {
@@ -127,6 +128,77 @@
       cursor: pointer;
     }
 
+    /* ── REROLL ── */
+    .reroll {
+      position: fixed;
+      bottom: 32px; left: 36px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.18;
+      transition: opacity 0.3s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .reroll:hover { opacity: 1; }
+    .reroll:disabled { opacity: 0.06; cursor: default; pointer-events: none; }
+    .reroll-icon {
+      font-size: 0.8rem;
+      color: #f0ede8;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reroll:not([disabled]):hover .reroll-icon {
+      transform: rotate(180deg);
+    }
+    .reroll-label {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: #f0ede8;
+      text-transform: uppercase;
+    }
+
+    /* ── CHANGELOG ── */
+    .changelog {
+      position: fixed;
+      top: 28px; right: 32px;
+      z-index: 20;
+      text-align: right;
+      opacity: 0.18;
+      transition: opacity 0.3s;
+    }
+    .changelog:hover { opacity: 1; }
+    .changelog-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      color: #f0ede8;
+      text-transform: uppercase;
+    }
+    .changelog-list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .changelog-entry {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      color: rgba(240,237,232,0.45);
+      white-space: nowrap;
+    }
+    .changelog-entry .date {
+      color: #f0ede8;
+      margin-right: 8px;
+      font-style: italic;
+    }
+
     @keyframes appear {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -142,11 +214,27 @@
     <div class="info-wrap" id="info">
       <div class="info-inner">
         <div class="info-main" id="status-main">Work in Progress</div>
-        <div class="info-sub" id="status-sub">last edited on 2026 / 4 / 3</div>
+        <div class="info-sub" id="status-sub">last edited on 2026 / 7 / 10</div>
       </div>
     </div>
   </div>
 
+  <!-- changelog — top right -->
+  <div class="changelog">
+    <div class="changelog-title">update log</div>
+    <div class="changelog-list">
+      <div class="changelog-entry"><span class="date">07/10</span>font roulette &amp; feature update</div>
+      <div class="changelog-entry"><span class="date">04/03</span>released</div>
+    </div>
+  </div>
+
+  <!-- reroll — bottom left -->
+  <button class="reroll" id="reroll" title="reroll font">
+    <span class="reroll-icon">&#x21BB;</span>
+    <span class="reroll-label">reroll</span>
+  </button>
+
+  <!-- volume — bottom right -->
   <div class="vol">
     <span class="vol-label">vol</span>
     <div class="vol-bar">
@@ -158,63 +246,169 @@
   <audio id="audio" src="/lobby.mp3" autoplay loop></audio>
 
   <script>
-    // --- 自動跳轉邏輯 (slug lookup handled server-side via /api/redirect) ---
-    async function handleRedirect() {
-      const path = window.location.pathname;
-      if (path.startsWith('/i/')) {
-        const slug = path.split('/').pop();
-        if (!slug) return;
+    // ── FONT ROULETTE ────────────────────────────────────────────────────────
+    var FONTS = [
+      { family: "'Google Sans', sans-serif",   style: 'italic', weight: '700' },
+      { family: "'Bebas Neue', sans-serif",    style: 'normal', weight: '400' },
+      { family: "'Orbitron', sans-serif",      style: 'normal', weight: '700' },
+      { family: "'Cinzel', serif",             style: 'normal', weight: '700' },
+      { family: "'Playfair Display', serif",   style: 'italic', weight: '700' },
+      { family: "'Syne', sans-serif",          style: 'normal', weight: '700' },
+      { family: "'Permanent Marker', cursive", style: 'normal', weight: '400' },
+      { family: "'Space Grotesk', sans-serif", style: 'normal', weight: '700' },
+      { family: "'Raleway', sans-serif",       style: 'italic', weight: '700' },
+      { family: "'Anton', sans-serif",         style: 'normal', weight: '400' },
+      { family: "'Comfortaa', cursive",        style: 'normal', weight: '700' },
+      { family: "'Righteous', cursive",        style: 'normal', weight: '400' },
+    ];
 
-        const info = document.getElementById('info');
-        const statusMain = document.getElementById('status-main');
-        const statusSub = document.getElementById('status-sub');
+    var audioCtx   = null;
+    var isSpinning = false;
 
-        info.classList.add('open');
-        statusMain.innerText = "Redirecting";
-        statusSub.innerText = "warping through the x8 universe...";
+    function getAudioCtx() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+      }
+      return audioCtx;
+    }
 
-        const res = await fetch(`/api/redirect?slug=${encodeURIComponent(slug)}`);
-        const json = await res.json();
+    function playTick(progress) {
+      try {
+        var ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        var osc  = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.value = 200 + (1 - progress) * 600;
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.04);
+      } catch(e) {}
+    }
 
-        if (res.ok && json.target) {
-          let target = json.target.trim();
-          // 確保網址有 https:// 前綴
-          if (!/^https?:\/\//i.test(target)) {
-            target = 'https://' + target;
-          }
-          setTimeout(() => {
-            window.location.href = target;
-          }, 800);
+    function playDing() {
+      try {
+        var ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        [880, 1108, 1320].forEach(function(freq, i) {
+          var osc  = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          var t = ctx.currentTime + i * 0.1;
+          gain.gain.setValueAtTime(0.12, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+          osc.start(t);
+          osc.stop(t + 0.6);
+        });
+      } catch(e) {}
+    }
+
+    function applyFont(f) {
+      var el = document.getElementById('logo');
+      el.style.fontFamily = f.family;
+      el.style.fontStyle  = f.style;
+      el.style.fontWeight = f.weight;
+    }
+
+    function spinFonts() {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      var btn  = document.getElementById('reroll');
+      var logo = document.getElementById('logo');
+      btn.disabled = true;
+      logo.classList.add('spinning');
+
+      var totalSteps = 32 + Math.floor(Math.random() * 13);
+      var finalIdx   = Math.floor(Math.random() * FONTS.length);
+      var step = 0;
+
+      function tick() {
+        applyFont(FONTS[step % FONTS.length]);
+        playTick(step / totalSteps);
+        step++;
+
+        if (step < totalSteps) {
+          var t     = step / totalSteps;
+          var delay = 45 + t * t * 335;
+          setTimeout(tick, delay);
         } else {
-          statusMain.innerText = "404 - Void";
-          statusSub.innerText = "this shortlink doesn't exist.";
+          applyFont(FONTS[finalIdx]);
+          playDing();
+          logo.classList.remove('spinning');
+          btn.disabled = false;
+          isSpinning   = false;
         }
+      }
+
+      tick();
+    }
+
+    // ── REDIRECT LOGIC ───────────────────────────────────────────────────────
+    async function handleRedirect() {
+      var path = window.location.pathname;
+      if (!path.startsWith('/i/')) return;
+
+      var slug = path.split('/').pop();
+      if (!slug) return;
+
+      var info       = document.getElementById('info');
+      var statusMain = document.getElementById('status-main');
+      var statusSub  = document.getElementById('status-sub');
+
+      info.classList.add('open');
+      statusMain.innerText = 'Redirecting';
+      statusSub.innerText  = 'warping through the x8 universe...';
+
+      var res  = await fetch('/api/redirect?slug=' + encodeURIComponent(slug));
+      var json = await res.json();
+
+      if (res.ok && json.target) {
+        var target = json.target.trim();
+        if (!/^https?:\/\//i.test(target)) target = 'https://' + target;
+        setTimeout(function() { window.location.href = target; }, 800);
+      } else {
+        statusMain.innerText = '404 - Void';
+        statusSub.innerText  = 'this shortlink does not exist.';
       }
     }
 
-    // 啟動跳轉檢查
-    handleRedirect();
-
-    // --- 音效邏輯 ---
-    const audio = document.getElementById('audio');
-    const slider = document.getElementById('vol');
-    const fill = document.getElementById('vf');
+    // ── AUDIO ────────────────────────────────────────────────────────────────
+    var audio  = document.getElementById('audio');
+    var slider = document.getElementById('vol');
+    var fill   = document.getElementById('vf');
     audio.volume = 0.5;
-    document.body.addEventListener('click', () => audio.play().catch(() => {}), { once: true });
-    slider.addEventListener('input', e => {
-      const v = +e.target.value;
+    document.body.addEventListener('click', function() { audio.play().catch(function() {}); }, { once: true });
+    slider.addEventListener('input', function(e) {
+      var v = +e.target.value;
       audio.volume = v;
       fill.style.width = (v * 100) + '%';
     });
 
-    // --- 切換邏輯 ---
-    const logo = document.getElementById('logo');
-    const info = document.getElementById('info');
-    let open = false;
-    logo.addEventListener('click', () => {
-      open = !open;
-      info.classList.toggle('open', open);
+    // ── LOGO CLICK (info toggle) ─────────────────────────────────────────────
+    var logo     = document.getElementById('logo');
+    var infoWrap = document.getElementById('info');
+    var infoOpen = false;
+    logo.addEventListener('click', function() {
+      if (isSpinning) return;
+      infoOpen = !infoOpen;
+      infoWrap.classList.toggle('open', infoOpen);
     });
+
+    // ── REROLL ───────────────────────────────────────────────────────────────
+    document.getElementById('reroll').addEventListener('click', spinFonts);
+
+    // ── INIT — spin after appear animation finishes (~0.95s) ─────────────────
+    setTimeout(spinFonts, 950);
+    handleRedirect();
   </script>
 </body>
 </html>
