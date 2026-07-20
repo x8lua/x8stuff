@@ -306,18 +306,13 @@
       <span class="status">運作中</span>
     </div>
 
-    <p class="sub-title">一鍵導入 <span>— 請選擇你的客戶端</span></p>
+    <p class="sub-title">一鍵導入 <span>— 點下面匯入</span></p>
 
-    <button class="sub-btn" onclick="importShadowrocket()">
-      <span class="left"><span class="idx">01</span><span class="name">Shadowrocket</span></span>
+    <button class="sub-btn" onclick="importClash()">
+      <span class="left"><span class="idx">01</span><span class="name">x8stuff.lol</span></span>
       <span class="arrow">→</span>
     </button>
     <p class="sub-hint">用iphone或ipad的人 點這顆就對了</p>
-
-    <button class="sub-btn" onclick="importClash()">
-      <span class="left"><span class="idx">02</span><span class="name">Clash</span></span>
-      <span class="arrow">→</span>
-    </button>
 
     <div class="sub-footer">
       <span class="url-preview" id="urlPreview"></span>
@@ -333,13 +328,12 @@
   document.getElementById('urlPreview').textContent = yamlUrl;
 
   function importClash() {
-    window.open("clash://install-config?url=" + encodeURIComponent(yamlUrl), "_blank");
-  }
-
-  function importShadowrocket() {
-    const remark = "x8stuff.lol";
-    const base64Url = btoa(yamlUrl);
-    window.location.href = "shadowrocket://add/sub/" + base64Url + "?remark=" + encodeURIComponent(remark);
+    const name = "x8stuff.lol";
+    const url = "clash://install-config?url=" + encodeURIComponent(yamlUrl)
+      + "&name=" + encodeURIComponent(name)
+      + "&flag=" + encodeURIComponent(name)
+      + "&remark=" + encodeURIComponent(name);
+    window.open(url, "_blank");
   }
 
   function copyLink() {
