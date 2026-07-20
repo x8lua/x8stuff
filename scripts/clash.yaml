@@ -1,0 +1,43 @@
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+proxies:
+  - name: "日本Hy2 | 3Gbps"
+    type: vless
+    server: 23.176.40.8
+    port: 12744
+    uuid: af137504-8fa5-426c-aa37-92e7e1f7347e
+    tls: true
+    flow: xtls-rprx-vision
+    reality-opts:
+      public-key: CZWBxOsACdCkOOskH1TJsL_raNYGBsjE5s6GQA4xuz8
+      short-id: 6ba85179e30d4fc2
+    servername: redis.io
+    client-fingerprint: chrome # 建議保持 chrome，穩定性高
+    network: tcp
+
+proxy-groups:
+  - name: 🚀 Nihon
+    type: select
+    proxies:
+      - "日本Hy2 | 3Gbps"
+      - DIRECT
+
+rules:
+  # 局域網與本地直連
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,localhost,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+
+  # 中國大陸地區網站與 IP 直連
+  - DOMAIN-SUFFIX,cn,DIRECT
+  - GEOIP,CN,DIRECT
+
+  # 剩餘的所有國外流量，通通交給 Nihon 暴力超頻
+  - MATCH,🚀 Nihon
