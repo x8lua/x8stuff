@@ -1,0 +1,348 @@
+<!-- ============================================================
+     SUBSCRIPTION IMPORT — dark, diagonal marquee OUTSIDE the card, montserrat
+     drop this into your page. edit yamlUrl below.
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+  }
+
+  .sub-wrap {
+    --bg: #0a0a0a;
+    --panel: #131313;
+    --line: #2c2c2c;
+    --line-strong: #3a3a3a;
+    --text: #f2f2f0;
+    --dim: #7a7a76;
+    --accent: #ff4d2e;
+    --watermark: rgba(255,255,255,0.02);
+    font-family: 'Montserrat', ui-sans-serif, sans-serif;
+    background: var(--bg);
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ---- diagonal marquee, now behind the whole wrapper, not the card ---- */
+  .sub-marquee {
+    position: absolute;
+    inset: -20% -30%;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 1px;
+    transform: rotate(-9deg);
+    pointer-events: none;
+  }
+
+  .sub-marquee .row {
+    display: flex;
+    width: max-content;
+    white-space: nowrap;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--watermark);
+    text-transform: lowercase;
+  }
+
+  .sub-marquee .row span { padding-right: 20px; }
+
+  .sub-marquee .row.right { animation: marquee-left 24s linear infinite; }
+  .sub-marquee .row.left  { animation: marquee-right 30s linear infinite; }
+
+  @keyframes marquee-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sub-marquee .row { animation: none; }
+  }
+
+  /* ---- the actual card, opaque, sits above the marquee ---- */
+  .sub-import {
+    position: relative;
+    z-index: 2;
+    background: var(--panel);
+    border: 1.5px solid var(--line-strong);
+    padding: 30px;
+    max-width: 460px;
+    width: 100%;
+    color: var(--text);
+  }
+
+  .sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1.5px dashed var(--line);
+  }
+
+  .sub-header .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .sub-header .status {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sub-header .status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,77,46,0.35); }
+    50% { opacity: 0.5; box-shadow: 0 0 0 4px rgba(255,77,46,0); }
+  }
+
+  .sub-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 20px;
+    color: var(--text);
+    display: inline-block;
+    padding: 2px 0;
+  }
+  .sub-title span { color: var(--dim); font-weight: 600; }
+
+  .sub-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px 18px;
+    margin-bottom: 10px;
+    background: #1a1a1a;
+    border: 1.5px solid var(--line-strong);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+
+  .sub-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--line-strong);
+    border-color: var(--accent);
+  }
+
+  .sub-btn:active { transform: translate(0, 0); box-shadow: none; }
+
+  .sub-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .sub-btn .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sub-btn .idx {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dim);
+  }
+
+  .sub-btn .name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .sub-btn .arrow {
+    color: var(--text);
+    font-size: 15px;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .sub-btn:hover .arrow {
+    color: var(--accent);
+    transform: translateX(3px);
+  }
+
+  .sub-footer {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1.5px dashed var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sub-footer .url-preview {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+
+  .sub-copy {
+    all: unset;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    cursor: pointer;
+    border: 1.5px solid var(--line-strong);
+    padding: 5px 9px;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .sub-copy:hover { background: var(--text); color: var(--bg); }
+  .sub-copy.copied { border-color: var(--accent); color: var(--accent); }
+  .sub-copy.copied:hover { background: var(--accent); color: #fff; }
+</style>
+
+<div class="sub-wrap">
+  <div class="sub-marquee" aria-hidden="true">
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row right">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+    <div class="row left">
+      <span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span><span>x8stuff.lol</span>
+    </div>
+  </div>
+
+  <div class="sub-import">
+    <div class="sub-header">
+      <span class="label">// subscription</span>
+      <span class="status">live</span>
+    </div>
+
+    <p class="sub-title">import to client <span>— pick one</span></p>
+
+    <button class="sub-btn" onclick="importClash()">
+      <span class="left"><span class="idx">01</span><span class="name">Clash</span></span>
+      <span class="arrow">→</span>
+    </button>
+
+    <button class="sub-btn" onclick="importShadowrocket()">
+      <span class="left"><span class="idx">02</span><span class="name">Shadowrocket</span></span>
+      <span class="arrow">→</span>
+    </button>
+
+    <div class="sub-footer">
+      <span class="url-preview" id="urlPreview"></span>
+      <button class="sub-copy" id="copyBtn" onclick="copyLink()">copy link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 你的 YAML 訂閱連結 — replace with your real link
+  const yamlUrl = "https://raw.githubusercontent.com/你的用戶名/你的倉庫名/main/clash.yaml";
+
+  document.getElementById('urlPreview').textContent = yamlUrl;
+
+  function importClash() {
+    window.open("clash://install-config?url=" + encodeURIComponent(yamlUrl), "_blank");
+  }
+
+  function importShadowrocket() {
+    const encoded = btoa(yamlUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    window.location.href = "sub://" + encoded;
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(yamlUrl).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const original = btn.textContent;
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  }
+</script>
