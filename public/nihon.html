@@ -312,7 +312,7 @@
       <span class="left"><span class="idx">01</span><span class="name">Shadowrocket</span></span>
       <span class="arrow">→</span>
     </button>
-    <p class="sub-hint">用iphone或ipad的人 點這顆（Shadowrocket) 就對了</p>
+    <p class="sub-hint">用iphone或ipad的人 點這顆就對了</p>
 
     <button class="sub-btn" onclick="importClash()">
       <span class="left"><span class="idx">02</span><span class="name">Clash</span></span>
@@ -338,7 +338,8 @@
 
   function importShadowrocket() {
     const remark = "x8stuff.lol";
-    window.location.href = "shadowrocket://add/subscription?url=" + encodeURIComponent(yamlUrl) + "&remark=" + encodeURIComponent(remark);
+    const base64Url = btoa(yamlUrl);
+    window.location.href = "shadowrocket://add/sub/" + base64Url + "?remark=" + encodeURIComponent(remark);
   }
 
   function copyLink() {
